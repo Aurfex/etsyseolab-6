@@ -1,0 +1,9 @@
+{
+  "name": "Copy of Copy of ETSY SEOLAB-6",
+  "description": "A comprehensive Etsy SEO optimization tool to enhance product titles, tags,descriptions, and images using AI, designed to boost visibility and sales for jewelry sellers.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "prompt": ""
+}

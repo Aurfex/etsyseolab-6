@@ -1,0 +1,27 @@
+
+{
+    "nav_dashboard": "Dashboard",
+    "nav_optimizer": "SEO Optimizer",
+    "nav_automation": "Automation",
+    "nav_autopilot": "Autopilot AI",
+    "nav_competitor": "Competitor Radar",
+    "nav_settings": "Settings",
+
+    "settings_title": "AI SEO Command Center",
+    "settings_subtitle": "Autonomous optimization powered by artificial intelligence",
+    "settings_api_config": "API Configuration",
+    "settings_ai_model": "AI Model",
+    "settings_preferences": "Preferences",
+    "settings_language": "Language",
+    "settings_theme": "Theme",
+    "settings_realtime_notifications": "Real-time Notifications",
+    "settings_performance_analytics": "Performance Analytics",
+    "settings_autopilot": "Autopilot Settings",
+    "settings_frequency": "Optimization Frequency",
+    "settings_safe_mode": "Safe Mode",
+    "settings_safe_mode_desc": "AI suggestions only, no automatic changes",
+    "settings_auto_approve": "Auto-approve Low Risk Changes",
+    "settings_auto_approve_desc": "Automatically apply tag and alt text optimizations",
+    "settings_save_button": "Save Configuration",
+    "settings_reset_button": "Reset to Defaults"
+}

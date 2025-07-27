@@ -1,0 +1,27 @@
+
+{
+    "nav_dashboard": "داشبورد",
+    "nav_optimizer": "بهینه‌ساز سئو",
+    "nav_automation": "اتوماسیون",
+    "nav_autopilot": "خلبان خودکار",
+    "nav_competitor": "رادار رقبا",
+    "nav_settings": "تنظیمات",
+    
+    "settings_title": "مرکز فرماندهی سئو با هوش مصنوعی",
+    "settings_subtitle": "بهینه‌سازی خودکار با قدرت هوش مصنوعی",
+    "settings_api_config": "پیکربندی API",
+    "settings_ai_model": "مدل هوش مصنوعی",
+    "settings_preferences": "تنظیمات شخصی",
+    "settings_language": "زبان",
+    "settings_theme": "پوسته",
+    "settings_realtime_notifications": "اعلان‌های لحظه‌ای",
+    "settings_performance_analytics": "تحلیل عملکرد",
+    "settings_autopilot": "تنظیمات خلبان خودکار",
+    "settings_frequency": "فرکانس بهینه‌سازی",
+    "settings_safe_mode": "حالت امن",
+    "settings_safe_mode_desc": "فقط پیشنهادات هوش مصنوعی، بدون تغییر خودکار",
+    "settings_auto_approve": "تایید خودکار تغییرات کم‌خطر",
+    "settings_auto_approve_desc": "اعمال خودکار بهینه‌سازی تگ و متن جایگزین",
+    "settings_save_button": "ذخیره تنظیمات",
+    "settings_reset_button": "بازنشانی به پیش‌فرض"
+}

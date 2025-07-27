@@ -1,0 +1,16 @@
+{
+  "short_name": "ETSY SEOLAB",
+  "name": "ETSY SEOLAB",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#111827",
+  "background_color": "#ffffff"
+}
