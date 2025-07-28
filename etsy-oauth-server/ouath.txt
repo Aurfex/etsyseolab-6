@@ -1,0 +1,13 @@
+✅ Got Authorization Code!
+Code: TJFnFMY_MBBEvRZLL7mIUWw_nJT4_JIMzpX_sk4CTqiAis8Y6icMzU6XdqIF1OWMytnAG1YoFo_Rmjd6OzzkUxDJiIU7qVXfw8b5
+
+State Verified ✅
+
+Check console for token exchange...
+
+✅ Callback query: [Object: null prototype] {
+  code: 'TJFnFMY_MBBEvRZLL7mIUWw_nJT4_JIMzpX_sk4CTqiAis8Y6icMzU6XdqIF1OWMytnAG1YoFo_Rmjd6OzzkUxDJiIU7qVXfw8b5',
+  state: '9578ccbea88589de155a47b2b3766549'
+}
+✅ ACCESS TOKEN: 19331530.mqBo_w7V801dXXU_lKrugt0rcUCHpi2cg6kOHq1e4PZmcYm-4N0c085AE-vf_g-7iM6gCA8iA8O9KGVzvpY-7OyCN14
+✅ REFRESH TOKEN: 19331530.QOLNlvNIirJuH2qsazV4DoQTg_kuJWKLFMLVIocDGWxIYHRcdH1aLp6Z5xU7S4Za3WZ4ENrck1O2GkwtOEMHBNvmZUu
