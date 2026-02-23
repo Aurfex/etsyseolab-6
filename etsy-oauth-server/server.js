@@ -2,14 +2,14 @@ const express = require("express");
 const dotenv = require("dotenv");
 const axios = require("axios");
 const crypto = require("crypto");
+const cookieParser = require("cookie-parser"); // Added cookie-parser
 const { generateCodeVerifier, generateCodeChallenge } = require("./pkceUtil");
 
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-let codeVerifier = "";
-let storedState = "";
+app.use(cookieParser()); // Use cookie-parser middleware
 
 // Home
 app.get("/", (req, res) => {
@@ -18,16 +18,32 @@ app.get("/", (req, res) => {
 
 // Step 1: Redirect to Etsy
 app.get("/auth/etsy", (req, res) => {
-  codeVerifier = generateCodeVerifier();
+  const codeVerifier = generateCodeVerifier();
   const codeChallenge = generateCodeChallenge(codeVerifier);
 
   // Generate a random state string for CSRF protection
-  storedState = crypto.randomBytes(16).toString("hex");
+  const state = crypto.randomBytes(16).toString("hex");
 
-  const authUrl = `https://www.etsy.com/oauth/connect?response_type=code&client_id=${process.env.ETSY_CLIENT_ID}&redirect_uri=${encodeURIComponent(process.env.ETSY_REDIRECT_URI)}&scope=${encodeURIComponent(process.env.ETSY_SCOPES)}&code_challenge=${codeChallenge}&code_challenge_method=S256&state=${storedState}`;
+  // Store codeVerifier and state in cookies (httpOnly for security)
+  res.cookie("etsy_code_verifier", codeVerifier, { 
+    httpOnly: true, 
+    secure: process.env.NODE_ENV === "production", // Secure only in production (HTTPS)
+    sameSite: "lax", 
+    maxAge: 300000 // 5 minutes expiration
+  });
+  
+  res.cookie("etsy_oauth_state", state, { 
+    httpOnly: true, 
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax", 
+    maxAge: 300000 
+  });
+
+  const authUrl = `https://www.etsy.com/oauth/connect?response_type=code&client_id=${process.env.ETSY_CLIENT_ID}&redirect_uri=${encodeURIComponent(process.env.ETSY_REDIRECT_URI)}&scope=${encodeURIComponent(process.env.ETSY_SCOPES)}&code_challenge=${codeChallenge}&code_challenge_method=S256&state=${state}`;
 
   console.log("🔗 Redirecting to:", authUrl);
-  console.log("Generated State:", storedState);
+  console.log("🔗 EXPECTED REDIRECT URI:", process.env.ETSY_REDIRECT_URI); // Debug log
+  console.log("Generated State:", state);
   res.redirect(authUrl);
 });
 
@@ -36,6 +52,11 @@ app.get("/auth/callback", async (req, res) => {
   console.log("✅ Callback query:", req.query);
 
   const { code, state, error } = req.query;
+  
+  // Retrieve stored values from cookies
+  const codeVerifier = req.cookies.etsy_code_verifier;
+  const storedState = req.cookies.etsy_oauth_state;
+
   if (error) {
     return res.send(`❌ OAuth Error: ${error}`);
   }
@@ -43,12 +64,20 @@ app.get("/auth/callback", async (req, res) => {
     return res.status(400).send("❌ Error: No code provided in callback");
   }
 
-  // Validate state
-  if (state !== storedState) {
-    return res.status(400).send("❌ Invalid state parameter. Possible CSRF detected.");
+  // Validate state (CSRF Protection)
+  if (!storedState || state !== storedState) {
+    return res.status(400).send("❌ Invalid state parameter. Possible CSRF detected or cookie missing/expired.");
+  }
+  
+  if (!codeVerifier) {
+    return res.status(400).send("❌ Code verifier missing from cookies. Please try again.");
   }
 
-  res.send(`<h2>✅ Got Authorization Code!</h2><p>Code: ${code}</p><p>State Verified ✅</p><p>Check console for token exchange...</p>`);
+  // Clear cookies after use
+  res.clearCookie("etsy_code_verifier");
+  res.clearCookie("etsy_oauth_state");
+
+  res.write(`<h2>✅ Got Authorization Code!</h2><p>Code: ${code}</p><p>State Verified ✅</p><p>Exchanging for token...</p>`);
 
   try {
     const tokenResponse = await axios.post(
@@ -66,8 +95,15 @@ app.get("/auth/callback", async (req, res) => {
     const { access_token, refresh_token } = tokenResponse.data;
     console.log("✅ ACCESS TOKEN:", access_token);
     console.log("✅ REFRESH TOKEN:", refresh_token);
+    
+    // In a real app, save these to your DB!
+    res.write(`<p>✅ Token Exchange Success!</p><pre>${JSON.stringify(tokenResponse.data, null, 2)}</pre>`);
+    res.end();
+    
   } catch (err) {
     console.error("❌ Token exchange failed:", err.response?.data || err.message);
+    res.write(`<p style="color:red">❌ Token exchange failed: ${JSON.stringify(err.response?.data || err.message)}</p>`);
+    res.end();
   }
 });
 

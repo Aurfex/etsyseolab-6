@@ -28,6 +28,35 @@ const App: React.FC = () => {
     setToast,
   } = useAppContext();
 
+  React.useEffect(() => {
+    // Check for tokens in URL hash (returned from OAuth callback)
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    const refreshToken = hashParams.get('refresh_token');
+
+    if (accessToken) {
+      sessionStorage.setItem('auth', JSON.stringify({ token: accessToken, refreshToken }));
+      
+      // Clean up URL
+      window.history.replaceState(null, '', window.location.pathname);
+      
+      setToast({
+        message: 'Successfully connected to Etsy! 🎉',
+        type: 'success'
+      });
+    }
+    
+    // Check for errors
+    const errorParams = new URLSearchParams(window.location.search);
+    const error = errorParams.get('error');
+    if (error) {
+      setToast({
+        message: `Connection failed: ${error}`,
+        type: 'error'
+      });
+    }
+  }, [setToast]);
+
   const renderPage = () => {
     switch (page) {
       case 'optimizer':
