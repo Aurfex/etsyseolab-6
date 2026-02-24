@@ -84,9 +84,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // Note: Etsy V3 listings endpoint defaults to active if not specified, 
             // but let's be explicit or try a different endpoint if 0.
             
-            // First try active listings with limit
+            // First try active listings with limit (REMOVE includes=Images to debug)
             let listingsResponse = await axios.get(
-                `https://openapi.etsy.com/v3/application/shops/${shopId}/listings/active?limit=100&includes=Images`, 
+                `https://openapi.etsy.com/v3/application/shops/${shopId}/listings/active?limit=100`, 
                 { headers }
             );
             
