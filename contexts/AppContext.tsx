@@ -138,6 +138,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         const savedAuth = sessionStorage.getItem('auth');
         return savedAuth ? JSON.parse(savedAuth) : defaultUnauthenticatedAuth;
     });
+    
+    // Force re-read from sessionStorage on mount to ensure sync
+    useEffect(() => {
+        const savedAuth = sessionStorage.getItem('auth');
+        if (savedAuth) {
+            console.log("🔄 Re-syncing Auth State from SessionStorage:", JSON.parse(savedAuth));
+            setAuth(JSON.parse(savedAuth));
+        }
+    }, []);
 
     // Review State
     const [reviewsData, setReviewsData] = useState<FullReviewData[]>([]);
