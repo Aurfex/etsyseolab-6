@@ -16,30 +16,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
     const token = authHeader.split(' ')[1];
 
-    // 2. Get API Key from Environment
-    const ETSY_API_KEY = process.env.ETSY_CLIENT_ID; // In V3, Client ID is the API Key
-    if (!ETSY_API_KEY) {
-        return res.status(500).json({ error: 'Server configuration error: Missing ETSY_CLIENT_ID.' });
+    // 2. Get API Key and Secret from Environment
+    const ETSY_API_KEY = process.env.ETSY_CLIENT_ID;
+    const ETSY_SHARED_SECRET = process.env.ETSY_CLIENT_SECRET; // Need Secret too!
+
+    if (!ETSY_API_KEY || !ETSY_SHARED_SECRET) {
+        return res.status(500).json({ error: 'Server configuration error: Missing ETSY_CLIENT_ID or ETSY_CLIENT_SECRET.' });
     }
     
-    console.log(`🔑 Using API Key (Start): ${ETSY_API_KEY.substring(0, 4)}...`);
+    // Construct the combined API key
+    const xApiKey = `${ETSY_API_KEY}:${ETSY_SHARED_SECRET}`;
 
     try {
         // --- GET Request: Fetch Listings ---
         if (req.method === 'GET' || (req.method === 'POST' && req.body.action === 'get_listings')) {
             console.log("📥 Fetching Etsy Listings...");
 
+            // Helper to use the combined key
+            const headers = {
+                'Authorization': `Bearer ${token}`,
+                'x-api-key': xApiKey,
+                'Content-Type': 'application/json'
+            };
+
             // Step 1: Get User ID
-            const userResponse = await axios.get('https://openapi.etsy.com/v3/application/users/me', {
-                headers: getEtsyHeaders(token, ETSY_API_KEY)
-            });
+            const userResponse = await axios.get('https://openapi.etsy.com/v3/application/users/me', { headers });
             const userId = userResponse.data.user_id;
             console.log(`👤 User ID found: ${userId}`);
 
             // Step 2: Get Shop ID
-            const shopResponse = await axios.get(`https://openapi.etsy.com/v3/application/users/${userId}/shops`, {
-                headers: getEtsyHeaders(token, ETSY_API_KEY)
-            });
+            const shopResponse = await axios.get(`https://openapi.etsy.com/v3/application/users/${userId}/shops`, { headers });
             const shop = shopResponse.data.shops?.[0]; // Get the first shop
             
             if (!shop) {
@@ -51,7 +57,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // Step 3: Get Active Listings (including images)
             const listingsResponse = await axios.get(
                 `https://openapi.etsy.com/v3/application/shops/${shopId}/listings/active?includes=Images`, 
-                { headers: getEtsyHeaders(token, ETSY_API_KEY) }
+                { headers }
             );
             
             const rawListings = listingsResponse.data.results;
