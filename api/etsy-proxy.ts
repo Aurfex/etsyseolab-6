@@ -63,7 +63,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
             
             if (!shopId) {
-                return res.status(404).json({ error: 'No Etsy shop found for this user.' });
+                return res.status(404).json({ 
+                    error: `No Etsy shop found for user ${userId}.`,
+                    debug_user_data: userResponse.data // Return raw data to debug
+                });
             }
 
             // Step 2: Get Active Listings (including images)
