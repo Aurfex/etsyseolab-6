@@ -22,9 +22,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
         
         const ai = new GoogleGenAI({ apiKey });
-        // Use 'gemini-1.5-flash' - it is the current standard. 
-        // If this fails, it might be an API Key restriction or region issue.
-        const model = 'gemini-1.5-flash';
+        // Use 'gemini-pro' (1.0) - the most widely available stable model.
+        // Flash models seem to have region/availability issues via Vercel iad1.
+        const model = 'gemini-pro';
 
         const optimizeTitle = async (originalTitle: string): Promise<string> => {
             const prompt = `Transform "${originalTitle}" into a highly optimized Etsy product title for a jewelry shop named 'dxbJewellery'. It should be long, descriptive, and include keywords like 'Handmade', material type, style (e.g., 'Minimalist'), and benefits (e.g., 'Hypoallergenic'). Target audience is women looking for jewelry gifts. Example transformation: "Gold Hoop Earrings" becomes "Handmade 14k Gold Hoop Earrings – Minimalist Jewelry for Women – Hypoallergenic – Lightweight Dangle Earrings".`;
