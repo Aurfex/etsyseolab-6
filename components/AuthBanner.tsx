@@ -30,9 +30,9 @@ export const AuthBanner: React.FC = () => {
                             Disconnect
                         </button>
                     ) : (
-                        <button onClick={login} className="bg-orange-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-orange-600 transition-colors">
+                        <a href="/api/auth/login" className="bg-orange-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-orange-600 transition-colors inline-block text-center no-underline">
                             Connect to Etsy Shop
-                        </button>
+                        </a>
                     )}
                 </div>
             </div>
