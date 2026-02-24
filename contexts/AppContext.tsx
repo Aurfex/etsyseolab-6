@@ -273,8 +273,53 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
 
     // --- Data Fetching ---
+    const fetchEtsyProducts = useCallback(async () => {
+        if (!auth.token) return;
+        
+        try {
+            // Call our new proxy endpoint to get real listings
+            const response = await fetch('/api/etsy-proxy', {
+                method: 'GET', // Or POST with action: 'get_listings'
+                headers: {
+                    'Authorization': `Bearer ${auth.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                console.error("Failed to fetch Etsy products:", errorData);
+                showToast({ message: `Failed to load Etsy products: ${errorData.error || response.statusText}`, type: 'error' });
+                return;
+            }
+
+            const data = await response.json();
+            
+            // Transform data to match our Product interface
+            const realProducts: Product[] = data.products.map((p: any) => ({
+                id: p.id,
+                title: p.title,
+                description: p.description,
+                tags: p.tags,
+                imageFilename: p.imageUrl ? p.imageUrl.split('/').pop() : 'placeholder.jpg', // Extract filename or use placeholder
+                imageUrl: p.imageUrl || 'https://via.placeholder.com/300', // Use real image URL
+                seoScore: p.seoScore || Math.floor(Math.random() * 40) + 50 // Mock score for now
+            }));
+
+            setProducts(realProducts);
+            showToast({ message: `Loaded ${realProducts.length} products from Etsy!`, type: 'success' });
+
+        } catch (error: any) {
+            console.error("Error fetching Etsy products:", error);
+            showToast({ message: "Error connecting to Etsy API.", type: 'error' });
+        }
+    }, [auth.token, showToast]);
+
     useEffect(() => {
         if (auth.isAuthenticated && auth.token) {
+            // Fetch real products from Etsy
+            fetchEtsyProducts();
+            
             setReviewsError(null);
             setFaqError(null);
             setLoyaltyError(null);
