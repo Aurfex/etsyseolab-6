@@ -97,6 +97,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const count = listingsResponse.data.count;
             console.log(`📦 Found ${count} listings via /listings?state=active. (Active Count in Shop: ${shopDetails.listing_active_count})`);
 
+            // Log the structure of the first listing to debug IMAGES
+            if (rawListings.length > 0) {
+                console.log("🔍 First Listing Keys:", Object.keys(rawListings[0]));
+                if (rawListings[0].images) {
+                    console.log("🖼️ First Listing Images:", JSON.stringify(rawListings[0].images));
+                } else if (rawListings[0].Images) {
+                    console.log("🖼️ First Listing Images (Capitalized):", JSON.stringify(rawListings[0].Images));
+                } else {
+                    console.log("❌ No 'images' or 'Images' field found in listing object.");
+                }
+            }
+
             // Step 4: Format for Frontend
             const formattedProducts = rawListings.map((listing: any) => ({
                 id: listing.listing_id.toString(),
@@ -107,8 +119,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 quantity: listing.quantity,
                 tags: listing.tags || [],
                 url: listing.url,
-                // Get the first image URL (full size)
-                imageUrl: listing.images?.[0]?.url_fullxfull || '', 
+                // Try multiple paths for images
+                imageUrl: listing.images?.[0]?.url_fullxfull || listing.Images?.[0]?.url_fullxfull || listing.images?.[0]?.url_570xN || '', 
                 seoScore: Math.floor(Math.random() * 40) + 50, // Mock SEO Score for now (50-90)
                 views: listing.views,
                 num_favorers: listing.num_favorers
