@@ -187,19 +187,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     // --- Auth Logic ---
     const login = useCallback(() => {
-        const fakeToken = `fake-jwt-token.${btoa(JSON.stringify({ user: 'Admin' })).slice(0, 20)}.${Date.now()}`;
-        const newAuth: Auth = {
-            isAuthenticated: true,
-            token: fakeToken,
-            user: { name: 'Admin', email: 'admin@etsyseolab.com' }
-        };
-        setAuth(newAuth);
-        showToast({ tKey: 'toast_login_success', type: 'success' });
-    }, [showToast]);
+        // Redirect to OAuth login endpoint
+        window.location.href = '/api/auth/login';
+    }, []);
     
     const logout = useCallback(() => {
+        sessionStorage.removeItem('auth');
         setAuth(defaultUnauthenticatedAuth);
-        showToast({ tKey: 'toast_logout_success', type: 'info' });
+        showToast({ message: 'Logged out successfully', type: 'info' });
+        // Optional: Redirect to home to clear URL params if needed
+        window.history.replaceState(null, '', '/');
     }, [showToast]);
 
     useEffect(() => {

@@ -39,15 +39,26 @@ const App: React.FC = () => {
 
     if (accessToken) {
       console.log("✅ Access Token Found!", accessToken.substring(0, 10) + "..."); // Debug Log
-      sessionStorage.setItem('auth', JSON.stringify({ token: accessToken, refreshToken }));
+      
+      const authData = {
+          isAuthenticated: true,
+          token: accessToken,
+          refreshToken: refreshToken,
+          user: { name: 'Etsy Seller', email: 'seller@etsy.com' } // Placeholder user info
+      };
+      
+      sessionStorage.setItem('auth', JSON.stringify(authData));
       
       // Clean up URL
       window.history.replaceState(null, '', window.location.pathname);
       
       setToast({
-        message: 'Successfully connected to Etsy! 🎉',
+        message: 'Successfully connected to Etsy! 🎉 Reloading...',
         type: 'success'
       });
+      
+      // Reload to update AppContext state from sessionStorage
+      setTimeout(() => window.location.reload(), 1500);
     } else {
       console.log("❌ No Access Token in URL");
     }
