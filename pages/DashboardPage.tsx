@@ -96,6 +96,8 @@ const DashboardPage: React.FC = () => {
     const recentActivities = activityLogs.slice(-4).reverse();
     const lastOptimized = activityLogs.find(log => log.type === 'title_optimization');
 
+    // Get latest 4 products to display
+    const latestProducts = products.slice(0, 4);
 
     return (
         <div className="space-y-8">
@@ -141,6 +143,52 @@ const DashboardPage: React.FC = () => {
                         <span className="font-medium">2 {t('queued_status')}</span>
                     </div>
                 </div>
+            </div>
+
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card dark:shadow-card-dark">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center mb-4">
+                    <Package className="w-5 h-5 me-2 text-blue-500"/>{t('your_listings')}
+                </h3>
+                {products.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                        {latestProducts.map(product => (
+                            <div key={product.id} className="bg-gray-50 dark:bg-gray-700/50 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 group hover:shadow-md transition-all">
+                                <div className="aspect-square w-full overflow-hidden bg-gray-200 dark:bg-gray-600 relative">
+                                    {product.imageUrl && product.imageUrl.startsWith('http') ? (
+                                        <img 
+                                            src={product.imageUrl} 
+                                            alt={product.title} 
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                            onError={(e) => {
+                                                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300?text=No+Image';
+                                            }}
+                                        />
+                                    ) : (
+                                        <div className="flex items-center justify-center h-full text-gray-400">
+                                            <ImageIcon className="w-8 h-8" />
+                                        </div>
+                                    )}
+                                    <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md backdrop-blur-sm">
+                                        SEO: {product.seoScore}%
+                                    </div>
+                                </div>
+                                <div className="p-3">
+                                    <h4 className="font-medium text-gray-900 dark:text-white text-sm line-clamp-2 h-10 mb-1" title={product.title}>
+                                        {product.title}
+                                    </h4>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                        {product.tags.slice(0, 3).join(', ')}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-8 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-dashed border-gray-300 dark:border-gray-600">
+                        <Package className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                        <p className="text-gray-500 dark:text-gray-400">No listings found. Connect your Etsy shop to see your products.</p>
+                    </div>
+                )}
             </div>
 
             <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card dark:shadow-card-dark">
