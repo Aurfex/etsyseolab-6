@@ -4,7 +4,7 @@ import axios from 'axios';
 // --- Helper Functions ---
 const getEtsyHeaders = (token: string, apiKey: string) => ({
     'Authorization': `Bearer ${token}`,
-    'x-api-key': apiKey, // Required by Etsy V3
+    // 'x-api-key': apiKey, // Try removing this to avoid "Shared secret required" error
     'Content-Type': 'application/json'
 });
 
