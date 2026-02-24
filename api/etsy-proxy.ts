@@ -4,7 +4,7 @@ import axios from 'axios';
 // --- Helper Functions ---
 const getEtsyHeaders = (token: string, apiKey: string) => ({
     'Authorization': `Bearer ${token}`,
-    'x-api-key': apiKey,
+    'x-api-key': apiKey, // Required by Etsy V3
     'Content-Type': 'application/json'
 });
 
@@ -21,6 +21,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!ETSY_API_KEY) {
         return res.status(500).json({ error: 'Server configuration error: Missing ETSY_CLIENT_ID.' });
     }
+    
+    console.log(`🔑 Using API Key (Start): ${ETSY_API_KEY.substring(0, 4)}...`);
 
     try {
         // --- GET Request: Fetch Listings ---
