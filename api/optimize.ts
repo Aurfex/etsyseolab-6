@@ -3,7 +3,6 @@ import { GoogleGenAI, GenerateContentResponse, Type } from "@google/genai";
 import { Product, OptimizationResult } from '../types';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-    // Enable CORS manually if needed, but Vercel usually handles same-origin
     res.setHeader('Content-Type', 'application/json');
 
     if (req.method !== 'POST') {
@@ -11,7 +10,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
-        // In Vercel Node functions, body is already parsed
         const { product } = req.body as { product: Product; };
         const apiKey = process.env.API_KEY;
 
@@ -24,8 +22,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
         
         const ai = new GoogleGenAI({ apiKey });
-        // Use specific version to avoid "not found" errors
-        const model = 'gemini-1.5-flash-001';
+        // Use 'gemini-1.5-flash' - it is the current standard. 
+        // If this fails, it might be an API Key restriction or region issue.
+        const model = 'gemini-1.5-flash';
 
         const optimizeTitle = async (originalTitle: string): Promise<string> => {
             const prompt = `Transform "${originalTitle}" into a highly optimized Etsy product title for a jewelry shop named 'dxbJewellery'. It should be long, descriptive, and include keywords like 'Handmade', material type, style (e.g., 'Minimalist'), and benefits (e.g., 'Hypoallergenic'). Target audience is women looking for jewelry gifts. Example transformation: "Gold Hoop Earrings" becomes "Handmade 14k Gold Hoop Earrings – Minimalist Jewelry for Women – Hypoallergenic – Lightweight Dangle Earrings".`;
@@ -35,7 +34,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const generateTags = async (title: string, description: string): Promise<string[]> => {
             const prompt = `Based on the product title "${title}" and description "${description}", generate exactly 13 SEO-optimized Etsy tags for a jewelry item. Include a mix of broad and long-tail keywords relevant for handmade jewelry. Return only a JSON array of strings.`;
-            // Using JSON mode properly
             const response: GenerateContentResponse = await ai.models.generateContent({ 
                 model, 
                 contents: prompt, 
@@ -77,7 +75,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             generateAltText(product.title, product.description)
         ]);
         
-        // Tags depend on the new title and description for best results
         const newTags = await generateTags(newTitle, newDescription);
 
         const result: OptimizationResult = {
