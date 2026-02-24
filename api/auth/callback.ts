@@ -49,40 +49,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { access_token, refresh_token, expires_in } = response.data;
     
-    // DEBUG MODE: Show tokens instead of redirecting
-    res.status(200).send(`
-      <h1>OAuth Callback Debugger 🎉</h1>
-      <p><strong>Status:</strong> Success! Tokens received.</p>
-      <hr>
-      <h3>Access Token:</h3>
-      <textarea rows="3" cols="80">${access_token}</textarea>
-      <h3>Refresh Token:</h3>
-      <textarea rows="3" cols="80">${refresh_token}</textarea>
-      <hr>
-      <p><strong>Next Step:</strong> Since we are in debug mode, automatic redirect is disabled.</p>
-      <p><a href="/#access_token=${access_token}&refresh_token=${refresh_token}&expires_in=${expires_in}">Click here to manually finish login</a></p>
-    `);
+    // Redirect back to the frontend with tokens in URL hash (safer than query params)
+    // The frontend should parse this hash and store tokens in sessionStorage
+    res.redirect(`/#access_token=${access_token}&refresh_token=${refresh_token}&expires_in=${expires_in}`);
 
   } catch (error: any) {
     console.error('Token exchange error:', error.response?.data || error.message);
-    
-    // DEBUG MODE: Show detailed error
-    res.status(500).send(`
-      <h1>OAuth Callback Debugger ❌</h1>
-      <p><strong>Status:</strong> Token Exchange Failed.</p>
-      <hr>
-      <h3>Error Message:</h3>
-      <pre>${error.message}</pre>
-      <h3>Error Details:</h3>
-      <pre>${JSON.stringify(error.response?.data || {}, null, 2)}</pre>
-      <hr>
-      <p><strong>Debug Info:</strong></p>
-      <ul>
-        <li>Code: ${code}</li>
-        <li>Verifier: ${codeVerifier ? 'Present ✅' : 'Missing ❌'}</li>
-        <li>State: ${state === storedState ? 'Matched ✅' : 'Mismatch ❌'}</li>
-      </ul>
-      <p><a href="/api/auth/login">Try Login Again</a></p>
-    `);
+    res.redirect(`/?error=token_exchange_failed&details=${encodeURIComponent(error.message)}`);
   }
 }

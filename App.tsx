@@ -30,11 +30,15 @@ const App: React.FC = () => {
 
   React.useEffect(() => {
     // Check for tokens in URL hash (returned from OAuth callback)
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const hash = window.location.hash.substring(1);
+    console.log("🔍 Checking URL Hash:", hash); // Debug Log
+
+    const hashParams = new URLSearchParams(hash);
     const accessToken = hashParams.get('access_token');
     const refreshToken = hashParams.get('refresh_token');
 
     if (accessToken) {
+      console.log("✅ Access Token Found!", accessToken.substring(0, 10) + "..."); // Debug Log
       sessionStorage.setItem('auth', JSON.stringify({ token: accessToken, refreshToken }));
       
       // Clean up URL
@@ -44,6 +48,8 @@ const App: React.FC = () => {
         message: 'Successfully connected to Etsy! 🎉',
         type: 'success'
       });
+    } else {
+      console.log("❌ No Access Token in URL");
     }
     
     // Check for errors
