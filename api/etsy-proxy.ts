@@ -84,18 +84,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // Note: Etsy V3 listings endpoint defaults to active if not specified, 
             // but let's be explicit or try a different endpoint if 0.
             
-            // First try active listings with limit (REMOVE includes=Images to debug)
+            // Try alternative endpoint: /listings with state=active
             let listingsResponse = await axios.get(
-                `https://openapi.etsy.com/v3/application/shops/${shopId}/listings/active?limit=100`, 
+                `https://openapi.etsy.com/v3/application/shops/${shopId}/listings?state=active&limit=50`, 
                 { headers }
             );
             
-            // If 0 found, maybe try fetching by receipt (sales) or just verify shop logic
-            // For now, let's stick to active but increase limit.
+            // Log FULL response data to debug structure
+            // console.log("DEBUG RESPONSE:", JSON.stringify(listingsResponse.data)); 
             
             const rawListings = listingsResponse.data.results;
             const count = listingsResponse.data.count;
-            console.log(`📦 Found ${count} listings. (Active Count in Shop: ${shopDetails.listing_active_count})`);
+            console.log(`📦 Found ${count} listings via /listings?state=active. (Active Count in Shop: ${shopDetails.listing_active_count})`);
 
             // Step 4: Format for Frontend
             const formattedProducts = rawListings.map((listing: any) => ({
