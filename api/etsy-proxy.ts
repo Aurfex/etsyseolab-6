@@ -70,14 +70,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 });
             }
 
-            // Step 2: Get Active Listings (including images)
-            const listingsResponse = await axios.get(
-                `https://openapi.etsy.com/v3/application/shops/${shopId}/listings/active?includes=Images`, 
+            // Step 2: Fetch Shop Details to confirm name and listing count
+            let shopDetails: any = {};
+            try {
+                const shopDetailsResponse = await axios.get(`https://openapi.etsy.com/v3/application/shops/${shopId}`, { headers });
+                shopDetails = shopDetailsResponse.data;
+                console.log(`🏪 Shop Details: Name=${shopDetails.shop_name}, Active Listings=${shopDetails.listing_active_count}`);
+            } catch (e) {
+                console.warn("Failed to fetch shop details:", e.message);
+            }
+
+            // Step 3: Get Listings (Try to get ALL listings, not just active, to debug)
+            // Note: Etsy V3 listings endpoint defaults to active if not specified, 
+            // but let's be explicit or try a different endpoint if 0.
+            
+            // First try active listings with limit
+            let listingsResponse = await axios.get(
+                `https://openapi.etsy.com/v3/application/shops/${shopId}/listings/active?limit=100&includes=Images`, 
                 { headers }
             );
             
+            // If 0 found, maybe try fetching by receipt (sales) or just verify shop logic
+            // For now, let's stick to active but increase limit.
+            
             const rawListings = listingsResponse.data.results;
-            console.log(`📦 Found ${listingsResponse.data.count} listings.`);
+            const count = listingsResponse.data.count;
+            console.log(`📦 Found ${count} listings. (Active Count in Shop: ${shopDetails.listing_active_count})`);
 
             // Step 4: Format for Frontend
             const formattedProducts = rawListings.map((listing: any) => ({
@@ -100,8 +118,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 products: formattedProducts,
                 shop: {
                     id: shopId,
-                    name: shop?.shop_name || `Shop ${shopId}`,
-                    url: shop?.url || ''
+                    name: shopDetails.shop_name || `Shop ${shopId}`,
+                    url: shopDetails.url || '',
+                    active_count: shopDetails.listing_active_count
+                },
+                debug_info: {
+                    userId,
+                    shopId,
+                    fetchedCount: count,
+                    shopDetails
                 }
             });
         }
