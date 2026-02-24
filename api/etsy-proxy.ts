@@ -44,6 +44,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const userId = userResponse.data.user_id;
             // Use the shop_id directly from the user response if available
             let shopId = userResponse.data.shop_id;
+            let shop: any = null; // Initialize shop variable
             
             console.log(`👤 User ID: ${userId}, Shop ID: ${shopId}`);
 
@@ -52,7 +53,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 console.log("⚠️ Shop ID not found in user profile, fetching shops...");
                 try {
                     const shopResponse = await axios.get(`https://openapi.etsy.com/v3/application/users/${userId}/shops`, { headers });
-                    const shop = shopResponse.data.shops?.[0];
+                    shop = shopResponse.data.shops?.[0]; // Assign to shop variable
                     if (shop) {
                         shopId = shop.shop_id;
                         console.log(`🏪 Found Shop via list: ${shopId}`);
@@ -99,8 +100,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 products: formattedProducts,
                 shop: {
                     id: shopId,
-                    name: shop.shop_name,
-                    url: shop.url
+                    name: shop?.shop_name || `Shop ${shopId}`,
+                    url: shop?.url || ''
                 }
             });
         }
