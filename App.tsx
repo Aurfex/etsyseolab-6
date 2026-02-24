@@ -26,6 +26,7 @@ const App: React.FC = () => {
     page,
     toast,
     setToast,
+    handleOAuthCallback // Get this from context
   } = useAppContext();
 
   React.useEffect(() => {
@@ -40,25 +41,12 @@ const App: React.FC = () => {
     if (accessToken) {
       console.log("✅ Access Token Found!", accessToken.substring(0, 10) + "..."); // Debug Log
       
-      const authData = {
-          isAuthenticated: true,
-          token: accessToken,
-          refreshToken: refreshToken,
-          user: { name: 'Etsy Seller', email: 'seller@etsy.com' } // Placeholder user info
-      };
-      
-      sessionStorage.setItem('auth', JSON.stringify(authData));
+      // Update Context & Session Storage
+      handleOAuthCallback(accessToken, refreshToken || undefined);
       
       // Clean up URL
       window.history.replaceState(null, '', window.location.pathname);
       
-      setToast({
-        message: 'Successfully connected to Etsy! 🎉 Reloading...',
-        type: 'success'
-      });
-      
-      // Reload to update AppContext state from sessionStorage
-      setTimeout(() => window.location.reload(), 1500);
     } else {
       console.log("❌ No Access Token in URL");
     }
@@ -72,7 +60,7 @@ const App: React.FC = () => {
         type: 'error'
       });
     }
-  }, [setToast]);
+  }, [setToast, handleOAuthCallback]);
 
   const renderPage = () => {
     switch (page) {

@@ -36,6 +36,7 @@ interface AppContextType {
   auth: Auth;
   login: () => void;
   logout: () => void;
+  handleOAuthCallback: (token: string, refreshToken?: string) => void;
   // Reviews
   reviewsData: FullReviewData[];
   quickReplies: QuickReply[];
@@ -191,6 +192,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         window.location.href = '/api/auth/login';
     }, []);
     
+    const handleOAuthCallback = useCallback((token: string, refreshToken?: string) => {
+        const newAuth: Auth = {
+            isAuthenticated: true,
+            token,
+            refreshToken: refreshToken || null,
+            user: { name: 'Etsy Seller', email: 'seller@etsy.com' } // Placeholder user info
+        };
+        // Update state
+        setAuth(newAuth);
+        // Persist to session storage
+        sessionStorage.setItem('auth', JSON.stringify(newAuth));
+        showToast({ message: 'Successfully connected to Etsy! 🎉', type: 'success' });
+        
+        // Clean up URL
+        window.history.replaceState(null, '', window.location.pathname);
+    }, [showToast]);
+
     const logout = useCallback(() => {
         sessionStorage.removeItem('auth');
         setAuth(defaultUnauthenticatedAuth);

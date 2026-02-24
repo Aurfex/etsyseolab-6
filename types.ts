@@ -92,6 +92,7 @@ export interface Translations {
 export interface Auth {
     isAuthenticated: boolean;
     token: string | null;
+    refreshToken?: string | null;
     user: { name: string; email: string; } | null;
 }
 
