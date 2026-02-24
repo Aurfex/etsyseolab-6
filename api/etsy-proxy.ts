@@ -39,22 +39,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 'Content-Type': 'application/json'
             };
 
-            // Step 1: Get User ID
+            // Step 1: Get User ID and Shop ID directly
             const userResponse = await axios.get('https://openapi.etsy.com/v3/application/users/me', { headers });
             const userId = userResponse.data.user_id;
-            console.log(`👤 User ID found: ${userId}`);
-
-            // Step 2: Get Shop ID
-            const shopResponse = await axios.get(`https://openapi.etsy.com/v3/application/users/${userId}/shops`, { headers });
-            const shop = shopResponse.data.shops?.[0]; // Get the first shop
+            // Use the shop_id directly from the user response if available
+            let shopId = userResponse.data.shop_id;
             
-            if (!shop) {
+            console.log(`👤 User ID: ${userId}, Shop ID: ${shopId}`);
+
+            // Fallback: If shop_id wasn't in users/me, try to fetch it (Legacy method)
+            if (!shopId) {
+                console.log("⚠️ Shop ID not found in user profile, fetching shops...");
+                try {
+                    const shopResponse = await axios.get(`https://openapi.etsy.com/v3/application/users/${userId}/shops`, { headers });
+                    const shop = shopResponse.data.shops?.[0];
+                    if (shop) {
+                        shopId = shop.shop_id;
+                        console.log(`🏪 Found Shop via list: ${shopId}`);
+                    }
+                } catch (e) {
+                    console.warn("Failed to fetch shop list:", e.message);
+                }
+            }
+            
+            if (!shopId) {
                 return res.status(404).json({ error: 'No Etsy shop found for this user.' });
             }
-            const shopId = shop.shop_id;
-            console.log(`🏪 Shop ID found: ${shopId} (${shop.shop_name})`);
 
-            // Step 3: Get Active Listings (including images)
+            // Step 2: Get Active Listings (including images)
             const listingsResponse = await axios.get(
                 `https://openapi.etsy.com/v3/application/shops/${shopId}/listings/active?includes=Images`, 
                 { headers }
