@@ -86,7 +86,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             
             // Try to get ALL listings (no state filter)
             let listingsResponse = await axios.get(
-                `https://openapi.etsy.com/v3/application/shops/${shopId}/listings?limit=50`, 
+                `https://openapi.etsy.com/v3/application/shops/${shopId}/listings?limit=100&includes=Images`, 
                 { headers }
             );
             
