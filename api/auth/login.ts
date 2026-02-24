@@ -40,5 +40,17 @@ export default function handler(_req: VercelRequest, res: VercelResponse) {
   const authUrl = `https://www.etsy.com/oauth/connect?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}&code_challenge=${codeChallenge}&code_challenge_method=S256&state=${state}`;
 
   console.log('Redirecting to Etsy:', authUrl);
-  res.redirect(authUrl);
+  
+  // DEBUG MODE: Print URLs instead of redirecting
+  res.status(200).send(`
+    <h1>OAuth Debugger 🕵️‍♂️</h1>
+    <p><strong>Configured Redirect URI (from env):</strong> <code>${redirectUri}</code></p>
+    <p><strong>Full Auth URL (sent to Etsy):</strong> <br><a href="${authUrl}">${authUrl}</a></p>
+    <hr>
+    <h3>Instructions:</h3>
+    <ol>
+      <li>Check if "Configured Redirect URI" matches EXACTLY what is in Etsy Developer Console.</li>
+      <li>Click the "Full Auth URL" link above to test the redirect manually.</li>
+    </ol>
+  `);
 }
