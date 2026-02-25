@@ -9,21 +9,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
     const token = authHeader.split(' ')[1];
 
-    // 2. Get API Key
+    // 2. Get API Key and Secret
     const ETSY_API_KEY = process.env.ETSY_CLIENT_ID;
+    const ETSY_SHARED_SECRET = process.env.ETSY_CLIENT_SECRET;
+
     if (!ETSY_API_KEY) {
         return res.status(500).json({ error: 'Server configuration error: Missing ETSY_CLIENT_ID.' });
     }
 
+    // Construct the combined API key (REQUIRED based on your logs)
+    // If secret is missing, it falls back to just ID, but ideally both are needed if the error says so.
+    const xApiKey = ETSY_SHARED_SECRET ? `${ETSY_API_KEY}:${ETSY_SHARED_SECRET}` : ETSY_API_KEY;
+
     const headers = {
         'Authorization': `Bearer ${token}`,
-        'x-api-key': ETSY_API_KEY,
+        'x-api-key': xApiKey,
         'Content-Type': 'application/json'
     };
 
     try {
         if (req.method === 'GET' || (req.method === 'POST' && req.body.action === 'get_listings')) {
-            console.log("📥 Fetching Etsy Listings (Simple Proxy)...");
+            console.log("📥 Fetching Etsy Listings (With Secret)...");
 
             // Step 1: Get User & Shop
             const userResponse = await axios.get('https://openapi.etsy.com/v3/application/users/me', { headers });

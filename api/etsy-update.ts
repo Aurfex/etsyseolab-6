@@ -10,13 +10,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
     const token = authHeader.split(' ')[1];
+    
+    // 2. Keys
     const ETSY_API_KEY = process.env.ETSY_CLIENT_ID;
+    const ETSY_SHARED_SECRET = process.env.ETSY_CLIENT_SECRET;
     
     if (!ETSY_API_KEY) return res.status(500).json({ error: 'Server Config Error' });
 
+    // Combine keys if secret exists (Critical Fix)
+    const xApiKey = ETSY_SHARED_SECRET ? `${ETSY_API_KEY}:${ETSY_SHARED_SECRET}` : ETSY_API_KEY;
+
     const headers = {
         'Authorization': `Bearer ${token}`,
-        'x-api-key': ETSY_API_KEY,
+        'x-api-key': xApiKey,
         'Content-Type': 'application/json'
     };
 
