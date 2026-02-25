@@ -45,19 +45,18 @@ export async function createListing(data: NewProductData): Promise<{ listing_id:
  * @returns A promise that resolves to an object indicating success.
  */
 export async function updateListing(listingId: string | number, updates: Partial<NewProductData>): Promise<{ success: boolean }> {
-  console.log(`Updating listing ${listingId} via proxy...`);
+  console.log(`Updating listing ${listingId} via dedicated update API...`);
   
   const token = getAuthToken();
   if (!token) throw new Error("Authentication required.");
 
-  const response = await fetch('/api/etsy-proxy', {
+  const response = await fetch('/api/etsy-update', {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify({
-          action: 'update_listing',
           listing_id: listingId,
           payload: updates,
       })
