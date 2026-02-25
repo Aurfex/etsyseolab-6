@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Sparkles, Copy, Info, Loader2, ArrowLeft, Search, Save, CheckCircle, Tag, Image as ImageIcon, Type } from 'lucide-react';
+import { Sparkles, Copy, Info, Loader2, ArrowLeft, Search, Save, CheckCircle, Tag, Image as ImageIcon, Type, FileText } from 'lucide-react';
 import { OptimizationResult, Product } from '../types';
 import { useAppContext } from '../contexts/AppContext';
 import { useTranslation } from '../contexts/LanguageContext';
+import { runFullOptimization, generateOptimizedTags, generateOptimizedDescription } from '../services/optimizationService';
+import { updateListing } from '../services/etsyApiService';
 
 const Card: React.FC<{children: React.ReactNode, className?: string}> = ({ children, className }) => (
   <div className={`bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card dark:shadow-card-dark ${className}`}>
@@ -11,13 +13,14 @@ const Card: React.FC<{children: React.ReactNode, className?: string}> = ({ child
 );
 
 const OptimizerPage: React.FC = () => {
-  const { products, runFullOptimization, showToast } = useAppContext();
+  const { products, showToast } = useAppContext();
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isGeneratingItem, setIsGeneratingItem] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [optimizedData, setOptimizedData] = useState<OptimizationResult | null>(null);
-  const [activeTab, setActiveTab] = useState<'title' | 'altText' | 'tags'>('title');
+  const [activeTab, setActiveTab] = useState<'title' | 'description' | 'altText' | 'tags'>('title');
   
   // State for product selection
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
@@ -32,7 +35,7 @@ const OptimizerPage: React.FC = () => {
     p.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  const handleOptimize = async () => {
+  const handleFullOptimize = async () => {
       if (!productToOptimize) return;
       
       setIsLoading(true);
@@ -40,8 +43,7 @@ const OptimizerPage: React.FC = () => {
       try {
           const result = await runFullOptimization(productToOptimize);
           setOptimizedData(result);
-          // Show toast on success
-          showToast({ tKey: 'optimizer_toast_success', options: { message: 'Optimization complete!' }, type: 'success' });
+          showToast({ tKey: 'optimizer_toast_success', options: { message: 'Optimization suggestions generated!' }, type: 'success' });
       } catch (err: any) {
           setError(err.message);
           showToast({ tKey: 'optimizer_toast_optimization_failed', options: { error: err.message }, type: 'error' });
@@ -50,23 +52,50 @@ const OptimizerPage: React.FC = () => {
       }
   };
 
-  const handleSaveToEtsy = async () => {
+  const handleGenerateTags = async () => {
     if (!productToOptimize || !optimizedData) return;
+    setIsGeneratingItem('tags');
+    try {
+        const newTags = await generateOptimizedTags({ ...productToOptimize, title: optimizedData.title || productToOptimize.title, description: optimizedData.description || productToOptimize.description });
+        setOptimizedData(prev => prev ? { ...prev, tags: newTags } : null);
+        showToast({ tKey: 'optimizer_toast_success', options: { message: 'Tags regenerated!' }, type: 'success' });
+    } catch (err: any) {
+        showToast({ tKey: 'optimizer_toast_error', options: { message: 'Failed to generate tags' }, type: 'error' });
+    } finally {
+        setIsGeneratingItem(null);
+    }
+  };
+
+  const handleGenerateDescription = async () => {
+    if (!productToOptimize || !optimizedData) return;
+    setIsGeneratingItem('description');
+    try {
+        const newDesc = await generateOptimizedDescription({ ...productToOptimize, title: optimizedData.title || productToOptimize.title });
+        setOptimizedData(prev => prev ? { ...prev, description: newDesc } : null);
+        showToast({ tKey: 'optimizer_toast_success', options: { message: 'Description regenerated!' }, type: 'success' });
+    } catch (err: any) {
+        showToast({ tKey: 'optimizer_toast_error', options: { message: 'Failed to generate description' }, type: 'error' });
+    } finally {
+        setIsGeneratingItem(null);
+    }
+  };
+
+  const handleSaveToEtsy = async () => {
+    if (!productToOptimize || !optimizedData || !productToOptimize.listing_id) return;
 
     setIsSaving(true);
     try {
-        // TODO: Implement actual API call to update Etsy listing
-        // await api.updateListing(productToOptimize.id, optimizedData);
+        const updates: any = {};
+        if (optimizedData.title && optimizedData.title !== productToOptimize.title) updates.title = optimizedData.title;
+        if (optimizedData.description && optimizedData.description !== productToOptimize.description) updates.description = optimizedData.description;
+        if (optimizedData.tags && optimizedData.tags.length > 0) updates.tags = optimizedData.tags;
         
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        await updateListing(productToOptimize.listing_id, updates);
         
         showToast({ tKey: 'optimizer_toast_success', options: { message: 'Changes saved to Etsy successfully!' }, type: 'success' });
         
-        // Optimistically update the UI/Product list (in a real app, you'd re-fetch or update context)
-        // updateProduct(productToOptimize.id, { ...productToOptimize, title: optimizedData.title, ... });
-        
     } catch (err: any) {
+        console.error("Save error:", err);
         showToast({ tKey: 'optimizer_toast_error', options: { message: 'Failed to save to Etsy' }, type: 'error' });
     } finally {
         setIsSaving(false);
@@ -101,14 +130,13 @@ const OptimizerPage: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredProducts.map(product => {
-                    const isOptimized = product.seoScore >= 85; // Example logic for "Optimized" badge
+                    const isOptimized = product.seoScore >= 85; 
                     return (
                         <div 
                             key={product.id} 
                             onClick={() => { setSelectedProductId(product.id); setOptimizedData(null); }}
                             className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md border border-gray-200 dark:border-gray-700 cursor-pointer transition-all hover:scale-[1.02] group relative"
                         >
-                             {/* Optimized Badge */}
                              {isOptimized && (
                                 <div className="absolute top-2 left-2 z-10 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center shadow-sm">
                                     <CheckCircle className="w-3 h-3 mr-1" />
@@ -156,7 +184,7 @@ const OptimizerPage: React.FC = () => {
 
   // --- View: Optimizer Panel ---
   const originalScore = productToOptimize.seoScore;
-  const optimizedScore = optimizedData ? Math.min(99, originalScore + 25) : 0; // Dynamic mock score
+  const optimizedScore = optimizedData ? Math.min(99, originalScore + 25) : 0; 
 
   return (
     <div className="space-y-8 pb-12">
@@ -259,7 +287,7 @@ const OptimizerPage: React.FC = () => {
             </div>
 
             <button 
-                onClick={handleOptimize}
+                onClick={handleFullOptimize}
                 disabled={isLoading}
                 className="w-full mt-4 bg-gradient-to-r from-purple-600 to-blue-500 text-white font-semibold py-3 rounded-lg flex items-center justify-center space-x-2 hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg transform active:scale-[0.99]"
             >
@@ -272,24 +300,31 @@ const OptimizerPage: React.FC = () => {
 
       {/* Tabs Section */}
       <Card className="overflow-hidden p-0">
-        <div className="flex border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+        <div className="flex border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 overflow-x-auto">
           <button 
             onClick={() => setActiveTab('title')}
-            className={`flex items-center px-6 py-4 text-sm font-medium transition-colors border-b-2 ${activeTab === 'title' ? 'text-purple-600 border-purple-600 bg-white dark:bg-gray-800 dark:text-purple-400' : 'text-gray-500 border-transparent hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+            className={`flex items-center px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'title' ? 'text-purple-600 border-purple-600 bg-white dark:bg-gray-800 dark:text-purple-400' : 'text-gray-500 border-transparent hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
           >
             <Type className="w-4 h-4 mr-2" />
             Title
           </button>
           <button 
+            onClick={() => setActiveTab('description')}
+            className={`flex items-center px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'description' ? 'text-purple-600 border-purple-600 bg-white dark:bg-gray-800 dark:text-purple-400' : 'text-gray-500 border-transparent hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            Description
+          </button>
+          <button 
             onClick={() => setActiveTab('altText')}
-            className={`flex items-center px-6 py-4 text-sm font-medium transition-colors border-b-2 ${activeTab === 'altText' ? 'text-purple-600 border-purple-600 bg-white dark:bg-gray-800 dark:text-purple-400' : 'text-gray-500 border-transparent hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+            className={`flex items-center px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'altText' ? 'text-purple-600 border-purple-600 bg-white dark:bg-gray-800 dark:text-purple-400' : 'text-gray-500 border-transparent hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
           >
             <ImageIcon className="w-4 h-4 mr-2" />
             Alt Text
           </button>
           <button 
             onClick={() => setActiveTab('tags')}
-            className={`flex items-center px-6 py-4 text-sm font-medium transition-colors border-b-2 ${activeTab === 'tags' ? 'text-purple-600 border-purple-600 bg-white dark:bg-gray-800 dark:text-purple-400' : 'text-gray-500 border-transparent hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+            className={`flex items-center px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'tags' ? 'text-purple-600 border-purple-600 bg-white dark:bg-gray-800 dark:text-purple-400' : 'text-gray-500 border-transparent hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
           >
             <Tag className="w-4 h-4 mr-2" />
             Tags
@@ -320,7 +355,7 @@ const OptimizerPage: React.FC = () => {
                             <div className="relative group">
                                 <textarea 
                                     value={optimizedData.title} 
-                                    readOnly 
+                                    onChange={(e) => setOptimizedData({...optimizedData, title: e.target.value})}
                                     rows={3}
                                     className="w-full bg-gray-50 dark:bg-gray-900 p-4 rounded-lg pr-12 text-gray-900 dark:text-gray-200 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 outline-none resize-none" 
                                 />
@@ -331,6 +366,38 @@ const OptimizerPage: React.FC = () => {
                             <p className="text-xs text-gray-500 mt-2 flex items-center">
                                 <Info className="w-3 h-3 mr-1" />
                                 Contains high-value keywords for Etsy search algorithm.
+                            </p>
+                        </div>
+                    )}
+
+                    {/* DESCRIPTION TAB */}
+                    {activeTab === 'description' && (
+                        <div className="animate-fadeIn">
+                            <div className="flex justify-between items-center mb-2">
+                                <label className="text-sm font-medium text-gray-900 dark:text-white block">Optimized Product Description</label>
+                                <button 
+                                    onClick={handleGenerateDescription}
+                                    disabled={isGeneratingItem === 'description'}
+                                    className="text-xs flex items-center bg-purple-100 hover:bg-purple-200 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 px-3 py-1.5 rounded transition-colors"
+                                >
+                                    {isGeneratingItem === 'description' ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Sparkles className="w-3 h-3 mr-1" />}
+                                    Regenerate Description
+                                </button>
+                            </div>
+                            <div className="relative group">
+                                <textarea 
+                                    value={optimizedData.description} 
+                                    onChange={(e) => setOptimizedData({...optimizedData, description: e.target.value})}
+                                    rows={10}
+                                    className="w-full bg-gray-50 dark:bg-gray-900 p-4 rounded-lg pr-12 text-gray-900 dark:text-gray-200 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 outline-none resize-none text-sm" 
+                                />
+                                <button onClick={() => handleCopyToClipboard(optimizedData.description)} className="absolute right-3 top-3 p-2 text-gray-400 hover:text-purple-500 bg-white dark:bg-gray-800 rounded-md shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Copy className="w-4 h-4" />
+                                </button>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-2 flex items-center">
+                                <Info className="w-3 h-3 mr-1" />
+                                Optimized for readability and keyword density.
                             </p>
                         </div>
                     )}
@@ -362,16 +429,26 @@ const OptimizerPage: React.FC = () => {
                         <div className="animate-fadeIn">
                              <div className="flex justify-between items-center mb-3">
                                 <label className="text-sm font-medium text-gray-900 dark:text-white">Generated Tags ({optimizedData.tags.length})</label>
-                                <button onClick={() => handleCopyToClipboard(optimizedData.tags.join(', '))} className="text-xs text-purple-600 hover:text-purple-700 flex items-center">
-                                    <Copy className="w-3 h-3 mr-1" /> Copy All
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    <button 
+                                        onClick={handleGenerateTags}
+                                        disabled={isGeneratingItem === 'tags'}
+                                        className="text-xs flex items-center bg-purple-100 hover:bg-purple-200 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 px-3 py-1.5 rounded transition-colors"
+                                    >
+                                        {isGeneratingItem === 'tags' ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Sparkles className="w-3 h-3 mr-1" />}
+                                        Regenerate Tags
+                                    </button>
+                                    <button onClick={() => handleCopyToClipboard(optimizedData.tags.join(', '))} className="text-xs text-purple-600 hover:text-purple-700 flex items-center px-3 py-1.5">
+                                        <Copy className="w-3 h-3 mr-1" /> Copy All
+                                    </button>
+                                </div>
                              </div>
                              
                              <div className="flex flex-wrap gap-2 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700 min-h-[100px]">
                                 {optimizedData.tags.map((tag, idx) => (
-                                    <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 border border-purple-200 dark:border-purple-800/50">
+                                    <span key={idx} className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${tag.length > 20 ? 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300' : 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-800/50'}`}>
                                         <Tag className="w-3 h-3 mr-1.5 opacity-70" />
-                                        {tag}
+                                        {tag} {tag.length > 20 && "(!)"}
                                     </span>
                                 ))}
                              </div>

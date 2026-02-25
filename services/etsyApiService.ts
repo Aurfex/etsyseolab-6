@@ -39,6 +39,39 @@ export async function createListing(data: NewProductData): Promise<{ listing_id:
 }
 
 /**
+ * Updates an existing Etsy listing by calling the secure backend proxy.
+ * @param listingId The ID of the listing to update.
+ * @param updates The partial data to update (title, description, tags).
+ * @returns A promise that resolves to an object indicating success.
+ */
+export async function updateListing(listingId: string | number, updates: Partial<NewProductData>): Promise<{ success: boolean }> {
+  console.log(`Updating listing ${listingId} via proxy...`);
+  
+  const token = getAuthToken();
+  if (!token) throw new Error("Authentication required.");
+
+  const response = await fetch('/api/etsy-proxy', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+          action: 'update_listing',
+          listing_id: listingId,
+          payload: updates,
+      })
+  });
+
+  if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Failed to update listing.' }));
+      throw new Error(errorData.error || `Etsy API Error: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+/**
  * Uploads an image for a given Etsy listing by calling the secure backend proxy.
  * @param listingId The ID of the listing to associate the image with.
  * @param file The image file to upload.
