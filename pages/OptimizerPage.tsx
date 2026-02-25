@@ -96,7 +96,10 @@ const OptimizerPage: React.FC = () => {
         
     } catch (err: any) {
         console.error("Save error:", err);
-        showToast({ tKey: 'optimizer_toast_error', options: { message: 'Failed to save to Etsy' }, type: 'error' });
+        // Show detailed error message from server if available
+        const errorMessage = err.message || "Failed to save to Etsy";
+        alert(`Error Saving: ${errorMessage}`); // Using alert for immediate visibility of the exact error
+        showToast({ tKey: 'optimizer_toast_error', options: { message: errorMessage }, type: 'error' });
     } finally {
         setIsSaving(false);
     }

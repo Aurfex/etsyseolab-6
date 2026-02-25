@@ -28,18 +28,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     try {
         const { listing_id, payload } = req.body;
-        console.log(`📝 Updating Listing ID: ${listing_id}`);
+        console.log(`📝 START Update Listing ID: ${listing_id}`);
 
         // Get Shop ID
-        const userResponse = await axios.get('https://openapi.etsy.com/v3/application/users/me', { headers });
-        let shopId = userResponse.data.shop_id;
-        if (!shopId) {
-             const userId = userResponse.data.user_id;
-             const shopResponse = await axios.get(`https://openapi.etsy.com/v3/application/users/${userId}/shops`, { headers });
-             if (shopResponse.data.shops?.[0]) shopId = shopResponse.data.shops[0].shop_id;
+        let shopId;
+        try {
+            const userResponse = await axios.get('https://openapi.etsy.com/v3/application/users/me', { headers });
+            shopId = userResponse.data.shop_id;
+            if (!shopId) {
+                 const userId = userResponse.data.user_id;
+                 const shopResponse = await axios.get(`https://openapi.etsy.com/v3/application/users/${userId}/shops`, { headers });
+                 if (shopResponse.data.shops?.[0]) shopId = shopResponse.data.shops[0].shop_id;
+            }
+        } catch (fetchError: any) {
+            console.error("❌ Failed to fetch Shop ID for update:", fetchError.message);
+            // If fetching shop ID fails, we can't proceed with update
+            throw new Error(`Could not verify Shop ID: ${fetchError.response?.data?.error || fetchError.message}`);
         }
 
         if (!shopId) return res.status(404).json({ error: 'Shop ID not found' });
+
+        console.log(`✅ Shop ID found: ${shopId}. Preparing update payload...`);
 
         // Update Body
         const updateBody: any = {};
@@ -47,16 +56,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (payload.description) updateBody.description = payload.description;
         if (payload.tags) updateBody.tags = payload.tags;
 
+        console.log(`📤 Sending PUT to Etsy...`);
+
         const updateResponse = await axios.put(
             `https://openapi.etsy.com/v3/application/shops/${shopId}/listings/${listing_id}`,
             updateBody,
             { headers }
         );
 
+        console.log("✅ Etsy Update Response Status:", updateResponse.status);
         return res.status(200).json({ success: true, data: updateResponse.data });
 
     } catch (error: any) {
-        console.error("❌ Update Error:", error.response?.data || error.message);
-        return res.status(error.response?.status || 500).json({ error: error.message, details: error.response?.data });
+        console.error("❌ Update Request FAILED:", error.message);
+        if (error.response) {
+            console.error("❌ Etsy Response Data:", JSON.stringify(error.response.data, null, 2));
+            return res.status(error.response.status).json({ 
+                error: error.response.data.error || 'Etsy API Error', 
+                details: error.response.data 
+            });
+        }
+        return res.status(500).json({ error: error.message });
     }
 }
