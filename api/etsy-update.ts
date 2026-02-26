@@ -57,7 +57,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (Array.isArray(payload?.tags)) {
             updateBody.tags = payload.tags
                 .map((t: string) => String(t).trim())
-                .filter((t: string) => t.length > 0)
+                .filter((t: string) => t.length > 0 && t.length <= 20)
                 .slice(0, 13);
         }
 
@@ -81,9 +81,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         console.error("❌ Update Request FAILED:", error.message);
         if (error.response) {
             console.error("❌ Etsy Response Data:", JSON.stringify(error.response.data, null, 2));
+            const etsyData = error.response.data || {};
+            const etsyMessage = etsyData.error || etsyData.error_description || etsyData.detail || 'Etsy API Error';
             return res.status(error.response.status).json({ 
-                error: error.response.data.error || 'Etsy API Error', 
-                details: error.response.data 
+                error: etsyMessage,
+                details: etsyData
             });
         }
         return res.status(500).json({ error: error.message });

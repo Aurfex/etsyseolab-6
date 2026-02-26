@@ -1,0 +1,10 @@
+/* Base stylesheet required by index.html to avoid 404 */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+}
