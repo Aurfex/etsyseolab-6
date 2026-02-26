@@ -76,6 +76,27 @@ export async function updateListing(listingId: string | number, updates: Partial
  * @param file The image file to upload.
  * @returns A promise that resolves to an object indicating success.
  */
+export async function compareSeoWithCompetitors(input: { listing_id?: string | number; title: string; description?: string; tags?: string[] }): Promise<{ yourScore: number; yourRank: number; totalCompared: number; avgTopScore: number; topCompetitorTitle: string | null; recommendations: string[]; keywords: string }> {
+  const token = getAuthToken();
+  if (!token) throw new Error("Authentication required.");
+
+  const response = await fetch('/api/seo-compare', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(input)
+  });
+
+  if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Failed to compare SEO.' }));
+      throw new Error(errorData.error || `SEO Compare API Error: ${response.status}`);
+  }
+
+  return response.json();
+}
+
 export async function uploadListingImage(listingId: string | number, file: File): Promise<{ success: boolean }> {
   console.log(`Uploading image ${file.name} for listing ID ${listingId} via proxy.`);
 

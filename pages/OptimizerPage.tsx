@@ -4,7 +4,7 @@ import { OptimizationResult, Product } from '../types';
 import { useAppContext } from '../contexts/AppContext';
 import { useTranslation } from '../contexts/LanguageContext';
 import { runFullOptimization, generateOptimizedTags, generateOptimizedDescription } from '../services/optimizationService';
-import { updateListing } from '../services/etsyApiService';
+import { updateListing, compareSeoWithCompetitors } from '../services/etsyApiService';
 
 const Card: React.FC<{children: React.ReactNode, className?: string}> = ({ children, className }) => (
   <div className={`bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card dark:shadow-card-dark ${className}`}>
@@ -30,6 +30,8 @@ const OptimizerPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [optimizedData, setOptimizedData] = useState<OptimizationResult | null>(null);
   const [activeTab, setActiveTab] = useState<'title' | 'description' | 'altText' | 'tags'>('title');
+  const [isComparing, setIsComparing] = useState(false);
+  const [compareResult, setCompareResult] = useState<null | { yourScore: number; yourRank: number; totalCompared: number; avgTopScore: number; topCompetitorTitle: string | null; recommendations: string[]; keywords: string }>(null);
   
   // State for product selection
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
@@ -138,6 +140,25 @@ const OptimizerPage: React.FC = () => {
     showToast({ tKey: 'optimizer_toast_copied_to_clipboard', type: 'success' });
   }
 
+  const handleCompareSeo = async () => {
+    if (!productToOptimize) return;
+    setIsComparing(true);
+    try {
+      const result = await compareSeoWithCompetitors({
+        listing_id: productToOptimize.listing_id,
+        title: optimizedData?.title || productToOptimize.title,
+        description: optimizedData?.description || productToOptimize.description,
+        tags: optimizedData?.tags || productToOptimize.tags,
+      });
+      setCompareResult(result);
+      showToast({ tKey: 'optimizer_toast_success', options: { message: 'Competitor comparison completed.' }, type: 'success' });
+    } catch (err: any) {
+      showToast({ tKey: 'optimizer_toast_error', options: { message: err.message || 'Comparison failed.' }, type: 'error' });
+    } finally {
+      setIsComparing(false);
+    }
+  }
+
   // --- View: Product List ---
   if (!productToOptimize) {
       return (
@@ -166,7 +187,7 @@ const OptimizerPage: React.FC = () => {
                     return (
                         <div 
                             key={product.id} 
-                            onClick={() => { setSelectedProductId(product.id); setOptimizedData(null); }}
+                            onClick={() => { setSelectedProductId(product.id); setOptimizedData(null); setCompareResult(null); }}
                             className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md border border-gray-200 dark:border-gray-700 cursor-pointer transition-all hover:scale-[1.02] group relative"
                         >
                              {isOptimized && (
@@ -326,6 +347,28 @@ const OptimizerPage: React.FC = () => {
                 {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
                 <span>{isLoading ? t('optimizer_optimizing_button') : t('optimizer_optimize_button')}</span>
             </button>
+
+            <button
+                onClick={handleCompareSeo}
+                disabled={isComparing}
+                className="w-full mt-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-semibold py-2.5 rounded-lg flex items-center justify-center space-x-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all disabled:opacity-50"
+            >
+                {isComparing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                <span>{isComparing ? 'Comparing...' : 'Compare With Competitors'}</span>
+            </button>
+
+            {compareResult && (
+              <div className="mt-4 p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 text-sm">
+                <div className="flex justify-between"><span>Your rank</span><b>{compareResult.yourRank}/{compareResult.totalCompared}</b></div>
+                <div className="flex justify-between mt-1"><span>Your score</span><b>{compareResult.yourScore}</b></div>
+                <div className="flex justify-between mt-1"><span>Top avg</span><b>{compareResult.avgTopScore}</b></div>
+                <p className="mt-2 text-xs text-gray-500">Keyword seed: {compareResult.keywords}</p>
+                {compareResult.topCompetitorTitle && <p className="mt-1 text-xs text-gray-500">Top competitor: {compareResult.topCompetitorTitle}</p>}
+                <ul className="mt-2 list-disc pl-5 space-y-1 text-xs text-gray-600 dark:text-gray-300">
+                  {compareResult.recommendations.map((r, i) => <li key={i}>{r}</li>)}
+                </ul>
+              </div>
+            )}
           </div>
         </Card>
       </div>
