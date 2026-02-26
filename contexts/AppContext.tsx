@@ -298,9 +298,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             // Transform data to match our Product interface
             const realProducts: Product[] = data.products.map((p: any) => ({
                 id: p.id,
+                listing_id: p.listing_id || p.id,
                 title: p.title,
                 description: p.description,
-                tags: p.tags,
+                tags: p.tags || [],
+                quantity: p.quantity ?? 0,
+                price: p.price ?? 0,
                 imageFilename: p.imageUrl ? p.imageUrl.split('/').pop() : 'placeholder.jpg', // Extract filename or use placeholder
                 imageUrl: p.imageUrl || 'https://via.placeholder.com/300', // Use real image URL
                 seoScore: p.seoScore || Math.floor(Math.random() * 40) + 50 // Mock score for now
