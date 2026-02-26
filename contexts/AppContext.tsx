@@ -296,18 +296,39 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             const data = await response.json();
             
             // Transform data to match our Product interface
-            const realProducts: Product[] = data.products.map((p: any) => ({
-                id: p.id,
-                listing_id: p.listing_id || p.id,
-                title: p.title,
-                description: p.description,
-                tags: p.tags || [],
-                quantity: p.quantity ?? 0,
-                price: p.price ?? 0,
-                imageFilename: p.imageUrl ? p.imageUrl.split('/').pop() : 'placeholder.jpg', // Extract filename or use placeholder
-                imageUrl: p.imageUrl || 'https://via.placeholder.com/300', // Use real image URL
-                seoScore: p.seoScore || Math.floor(Math.random() * 40) + 50 // Mock score for now
-            }));
+            const calcSeoScore = (title: string, description: string, tags: string[]) => {
+                let score = 30;
+                if (title.length >= 90 && title.length <= 140) score += 25;
+                else if (title.length >= 60) score += 15;
+                else if (title.length >= 30) score += 8;
+
+                if (description.length >= 300) score += 20;
+                else if (description.length >= 120) score += 12;
+                else if (description.length >= 60) score += 6;
+
+                score += Math.min(tags.length, 13) * 1.8;
+                if (tags.length >= 10) score += 5;
+                return Math.max(20, Math.min(99, Math.round(score)));
+            };
+
+            const realProducts: Product[] = data.products.map((p: any) => {
+                const title = p.title || '';
+                const description = p.description || '';
+                const tags = p.tags || [];
+
+                return ({
+                    id: p.id,
+                    listing_id: p.listing_id || p.id,
+                    title,
+                    description,
+                    tags,
+                    quantity: p.quantity ?? 0,
+                    price: p.price ?? 0,
+                    imageFilename: p.imageUrl ? p.imageUrl.split('/').pop() : 'placeholder.jpg', // Extract filename or use placeholder
+                    imageUrl: p.imageUrl || 'https://via.placeholder.com/300', // Use real image URL
+                    seoScore: Number.isFinite(p.seoScore) ? p.seoScore : calcSeoScore(title, description, tags)
+                });
+            });
 
             setProducts(realProducts);
             showToast({ message: `Loaded ${realProducts.length} products from Etsy!`, type: 'success' });

@@ -55,18 +55,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 if (listing.images?.[0]) img = listing.images[0].url_fullxfull || listing.images[0].url_570xN;
                 else if (listing.Images?.[0]) img = listing.Images[0].url_fullxfull || listing.Images[0].url_570xN;
 
+                const title = listing.title || '';
+                const description = listing.description || '';
+                const tags = Array.isArray(listing.tags) ? listing.tags : [];
+
+                // Deterministic SEO score (no randomness)
+                let seoScore = 30;
+                if (title.length >= 90 && title.length <= 140) seoScore += 25;
+                else if (title.length >= 60) seoScore += 15;
+                else if (title.length >= 30) seoScore += 8;
+
+                if (description.length >= 300) seoScore += 20;
+                else if (description.length >= 120) seoScore += 12;
+                else if (description.length >= 60) seoScore += 6;
+
+                seoScore += Math.min(tags.length, 13) * 1.8;
+                if (tags.length >= 10) seoScore += 5;
+                seoScore = Math.max(20, Math.min(99, Math.round(seoScore)));
+
                 return {
                     id: listing.listing_id.toString(),
                     listing_id: listing.listing_id.toString(),
-                    title: listing.title,
-                    description: listing.description,
+                    title,
+                    description,
                     price: listing.price.amount / listing.price.divisor,
                     currency: listing.price.currency_code,
                     quantity: listing.quantity,
-                    tags: listing.tags || [],
+                    tags,
                     url: listing.url,
                     imageUrl: img || 'https://via.placeholder.com/400x300',
-                    seoScore: Math.floor(Math.random() * 40) + 50,
+                    seoScore,
                     views: listing.views,
                     num_favorers: listing.num_favorers
                 };

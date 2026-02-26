@@ -14,6 +14,15 @@ const Card: React.FC<{children: React.ReactNode, className?: string}> = ({ child
 
 const OptimizerPage: React.FC = () => {
   const { products, showToast } = useAppContext();
+
+  const getOptimizedIds = (): string[] => {
+    try {
+      const raw = localStorage.getItem('optimizedListingIds');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  };
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -106,6 +115,11 @@ const OptimizerPage: React.FC = () => {
         if ((result as any)?.skipped) {
             showToast({ tKey: 'optimizer_toast_success', options: { message: 'No changes detected.' }, type: 'info' });
         } else {
+            const current = getOptimizedIds();
+            const lid = String(productToOptimize.listing_id);
+            if (!current.includes(lid)) {
+              localStorage.setItem('optimizedListingIds', JSON.stringify([...current, lid]));
+            }
             showToast({ tKey: 'optimizer_toast_success', options: { message: 'Changes saved to Etsy successfully!' }, type: 'success' });
         }
         
@@ -146,7 +160,8 @@ const OptimizerPage: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredProducts.map(product => {
-                    const isOptimized = product.seoScore >= 85; 
+                    const optimizedIds = getOptimizedIds();
+                    const isOptimized = optimizedIds.includes(String((product as any).listing_id || product.id)); 
                     return (
                         <div 
                             key={product.id} 

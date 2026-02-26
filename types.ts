@@ -4,12 +4,15 @@ export type Language = 'en' | 'fa';
 
 export interface Product {
   id: string;
+  listing_id?: string;
   title: string;
   description: string;
   tags: string[];
   imageFilename: string;
   imageUrl: string;
   seoScore: number;
+  quantity?: number;
+  price?: number;
 }
 
 export interface OptimizationResult {
