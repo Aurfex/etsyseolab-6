@@ -52,7 +52,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // Update Body (partial, safe)
         const updateBody: any = {};
-        if (payload?.title && typeof payload.title === 'string') updateBody.title = payload.title.trim();
+        if (payload?.title && typeof payload.title === 'string') {
+            const trimmedTitle = payload.title.trim();
+            updateBody.title = trimmedTitle.length > 140 ? trimmedTitle.slice(0, 140) : trimmedTitle;
+        }
         if (payload?.description && typeof payload.description === 'string') updateBody.description = payload.description;
         if (Array.isArray(payload?.tags)) {
             updateBody.tags = payload.tags

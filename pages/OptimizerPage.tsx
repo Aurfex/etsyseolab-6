@@ -86,13 +86,19 @@ const OptimizerPage: React.FC = () => {
     setIsSaving(true);
     try {
         const updates: any = {};
-        if (optimizedData.title && optimizedData.title !== productToOptimize.title) updates.title = optimizedData.title;
+        if (optimizedData.title && optimizedData.title !== productToOptimize.title) {
+            updates.title = optimizedData.title.length > 140 ? optimizedData.title.slice(0, 140) : optimizedData.title;
+        }
         if (optimizedData.description && optimizedData.description !== productToOptimize.description) updates.description = optimizedData.description;
         if (optimizedData.tags && optimizedData.tags.length > 0) updates.tags = optimizedData.tags;
         
         if (Object.keys(updates).length === 0) {
             showToast({ tKey: 'optimizer_toast_success', options: { message: 'No changes to save.' }, type: 'info' });
             return;
+        }
+
+        if (optimizedData.title && optimizedData.title.length > 140) {
+            showToast({ tKey: 'optimizer_toast_error', options: { message: 'Title was too long; trimmed to 140 chars for Etsy.' }, type: 'info' });
         }
 
         const result = await updateListing(productToOptimize.listing_id, updates);
