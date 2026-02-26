@@ -6,22 +6,12 @@ type Material = '14k Gold' | 'Platinum' | 'Silver 925';
 type RingSize = { size: string; circumference: number };
 
 const RING_SIZES: RingSize[] = [
-  { size: '4', circumference: 46.8 },
-  { size: '4.5', circumference: 48.0 },
-  { size: '5', circumference: 49.3 },
-  { size: '5.5', circumference: 50.6 },
   { size: '6', circumference: 51.9 },
-  { size: '6.5', circumference: 53.1 },
   { size: '7', circumference: 54.4 },
-  { size: '7.5', circumference: 55.7 },
   { size: '8', circumference: 57.0 },
-  { size: '8.5', circumference: 58.3 },
   { size: '9', circumference: 59.5 },
-  { size: '9.5', circumference: 60.8 },
   { size: '10', circumference: 62.1 },
-  { size: '10.5', circumference: 63.4 },
   { size: '11', circumference: 64.6 },
-  { size: '11.5', circumference: 65.9 },
   { size: '12', circumference: 67.2 },
 ];
 
