@@ -24,21 +24,39 @@ const getAllVariationValues = (product: any): string[] => {
   return values;
 };
 
+const normalizeSizeNum = (v: any): string => {
+  const m = String(v ?? '').match(/\d+(?:\.\d+)?/);
+  return m ? m[0] : '';
+};
+
+const normalizeMaterialKey = (v: any): string => {
+  const s = compact(v);
+  const hasGold = s.includes('gold');
+  const hasPlatinum = s.includes('platinum');
+  const hasSilver = s.includes('silver') || s.includes('sterling');
+  const has925 = s.includes('925');
+  const has14k = s.includes('14k') || s.includes('k14') || s.includes('14kt') || (s.includes('14') && s.includes('gold'));
+
+  if (hasGold && has14k) return 'gold14k';
+  if (hasPlatinum) return 'platinum';
+  if (hasSilver && has925) return 'silver925';
+  if (hasSilver) return 'silver';
+  if (hasGold) return 'gold';
+  return s;
+};
+
 const matchesRow = (product: any, row: PricingRow) => {
   const vals = getAllVariationValues(product);
   if (!vals.length) return false;
 
-  const sizeN = compact(row.size);
-  const materialN = compact(row.material);
+  const rowSize = normalizeSizeNum(row.size);
+  const rowMat = normalizeMaterialKey(row.material);
 
-  let hasSize = false;
-  let hasMaterial = false;
+  const productSizeCandidates = vals.map(normalizeSizeNum).filter(Boolean);
+  const productMaterialCandidates = vals.map(normalizeMaterialKey).filter(Boolean);
 
-  for (const v of vals) {
-    const vn = compact(v);
-    if (!hasSize && sizeN && (vn === sizeN || vn.includes(sizeN) || sizeN.includes(vn))) hasSize = true;
-    if (!hasMaterial && materialN && (vn === materialN || vn.includes(materialN) || materialN.includes(vn))) hasMaterial = true;
-  }
+  const hasSize = !!rowSize && productSizeCandidates.some((s) => s === rowSize);
+  const hasMaterial = !!rowMat && productMaterialCandidates.some((m) => m === rowMat || m.includes(rowMat) || rowMat.includes(m));
 
   return hasSize && hasMaterial;
 };
