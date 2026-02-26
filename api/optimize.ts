@@ -1,6 +1,86 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import OpenAI from "openai";
+import axios from 'axios';
 import { Product, OptimizationResult } from '../types';
+
+type CompetitorInsights = {
+    keywordSeed: string;
+    yourRank: number;
+    totalCompared: number;
+    yourScore: number;
+    avgTopScore: number;
+    topCompetitorTitle: string;
+    recommendations: string[];
+};
+
+const calcScore = (title: string, description: string, tags: string[]) => {
+    let score = 30;
+    if (title.length >= 90 && title.length <= 140) score += 25;
+    else if (title.length >= 60) score += 15;
+    else if (title.length >= 30) score += 8;
+
+    if (description.length >= 300) score += 20;
+    else if (description.length >= 120) score += 12;
+    else if (description.length >= 60) score += 6;
+
+    score += Math.min(tags.length, 13) * 1.8;
+    if (tags.length >= 10) score += 5;
+    return Math.max(20, Math.min(99, Math.round(score)));
+};
+
+async function getCompetitorInsights(product: Product, token: string): Promise<CompetitorInsights | null> {
+    const apiKey = process.env.ETSY_CLIENT_ID;
+    const secret = process.env.ETSY_CLIENT_SECRET;
+    if (!apiKey) return null;
+
+    const xApiKey = secret ? `${apiKey}:${secret}` : apiKey;
+    const headers = {
+        Authorization: `Bearer ${token}`,
+        'x-api-key': xApiKey,
+        'Content-Type': 'application/json'
+    };
+
+    const keywordSeed = (product.title || '').split(/\s+/).filter(Boolean).slice(0, 5).join(' ');
+    if (!keywordSeed) return null;
+
+    const { data } = await axios.get(
+        `https://openapi.etsy.com/v3/application/listings/active?keywords=${encodeURIComponent(keywordSeed)}&limit=20`,
+        { headers }
+    );
+
+    const items = Array.isArray(data?.results) ? data.results : [];
+    const competitors = items
+        .filter((r: any) => String(r.listing_id) !== String((product as any).listing_id || product.id))
+        .map((r: any) => {
+            const title = r.title || '';
+            const description = r.description || '';
+            const tags = Array.isArray(r.tags) ? r.tags : [];
+            return { listing_id: String(r.listing_id), title, score: calcScore(title, description, tags) };
+        });
+
+    const yourScore = calcScore(product.title || '', product.description || '', product.tags || []);
+    const selfId = String((product as any).listing_id || product.id || 'self');
+    const ranked = [...competitors, { listing_id: selfId, title: product.title || '', score: yourScore }].sort((a, b) => b.score - a.score);
+    const yourRank = Math.max(1, ranked.findIndex((r) => r.listing_id === selfId) + 1);
+    const top5 = ranked.slice(0, 5);
+    const avgTopScore = top5.length ? Math.round(top5.reduce((acc, i) => acc + i.score, 0) / top5.length) : yourScore;
+
+    const recommendations: string[] = [];
+    if ((product.title || '').length < 90) recommendations.push('Title is short. Aim for 90-140 chars with strong keywords.');
+    if ((product.tags || []).length < 10) recommendations.push('Use 10-13 relevant tags (<=20 chars each).');
+    if ((product.description || '').length < 120) recommendations.push('Description is too short. Add benefits, materials, use-case, and CTA.');
+    if (recommendations.length === 0) recommendations.push('Great baseline. Improve keyword intent in the first 40 title chars.');
+
+    return {
+        keywordSeed,
+        yourRank,
+        totalCompared: ranked.length,
+        yourScore,
+        avgTopScore,
+        topCompetitorTitle: ranked[0]?.title || '',
+        recommendations,
+    };
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Set CORS headers
@@ -23,6 +103,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     try {
         const { product, type = 'all' } = req.body as { product: Product; type?: 'all' | 'tags' | 'description' };
+
+        const authHeader = req.headers.authorization;
+        const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : '';
         
         // Use OpenAI API Key from environment variables
         const apiKey = process.env.OPENAI_API_KEY;
@@ -40,15 +123,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const openai = new OpenAI({ apiKey: apiKey });
         const model = "gpt-4o"; // Or "gpt-3.5-turbo" if needed for cost/speed
 
+        let competitorInsights: CompetitorInsights | null = null;
+        try {
+            if (token) competitorInsights = await getCompetitorInsights(product, token);
+        } catch (insightError: any) {
+            console.warn('Competitor insight fetch failed, proceeding without it:', insightError?.message || insightError);
+        }
+
+        const competitorContext = competitorInsights
+            ? `\nCOMPETITOR INSIGHTS:\n- Current rank: ${competitorInsights.yourRank}/${competitorInsights.totalCompared}\n- Current score: ${competitorInsights.yourScore}\n- Top average score: ${competitorInsights.avgTopScore}\n- Keyword seed: ${competitorInsights.keywordSeed}\n- Top competitor title: ${competitorInsights.topCompetitorTitle}\n- Recommendations:\n${competitorInsights.recommendations.map((r, i) => `  ${i + 1}. ${r}`).join('\n')}\n\nOptimization priority: improve relative ranking vs competitors while staying natural and high-converting.\n`
+            : '';
+
         const optimizeTitle = async (originalTitle: string): Promise<string> => {
-            const prompt = `Transform "${originalTitle}" into a highly optimized Etsy product title for a jewelry shop named 'dxbJewellery'. It should be long, descriptive, and include keywords like 'Handmade', material type, style (e.g., 'Minimalist'), and benefits (e.g., 'Hypoallergenic'). Target audience is women looking for jewelry gifts. Example transformation: "Gold Hoop Earrings" becomes "Handmade 14k Gold Hoop Earrings – Minimalist Jewelry for Women – Hypoallergenic – Lightweight Dangle Earrings". Return ONLY the title.`;
+            const prompt = `Transform "${originalTitle}" into a highly optimized Etsy product title for a jewelry shop named 'dxbJewellery'. It should be long, descriptive, and include keywords like 'Handmade', material type, style (e.g., 'Minimalist'), and benefits (e.g., 'Hypoallergenic'). Target audience is women looking for jewelry gifts. Example transformation: "Gold Hoop Earrings" becomes "Handmade 14k Gold Hoop Earrings – Minimalist Jewelry for Women – Hypoallergenic – Lightweight Dangle Earrings".${competitorContext}\nSTRICT CONSTRAINT: final title must be 90-140 characters. Return ONLY the title.`;
             try {
                 const response = await openai.chat.completions.create({
                     model: model,
                     messages: [{ role: "user", content: prompt }],
                     temperature: 0.7,
                 });
-                return response.choices[0].message.content?.trim().replace(/^"|"$/g, '') || originalTitle;
+                const generated = response.choices[0].message.content?.trim().replace(/^"|"$/g, '') || originalTitle;
+                return generated.length > 140 ? generated.slice(0, 140) : generated;
             } catch (e) {
                 console.error("Title optimization error:", e);
                 return originalTitle;
@@ -56,12 +151,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         };
 
         const generateTags = async (title: string, description: string): Promise<string[]> => {
-            const prompt = `Based on the product title "${title}" and description "${description}", generate exactly 13 high-traffic, relevant Etsy SEO tags. 
+            const prompt = `Based on the product title "${title}" and description "${description}", generate exactly 13 high-traffic, relevant Etsy SEO tags.${competitorContext}
             IMPORTANT CONSTRAINTS:
             1. EXACTLY 13 tags.
             2. Each tag MUST be 20 characters or LESS.
             3. No special characters except spaces.
             4. Multi-word tags are better (e.g., "gold ring" instead of "ring").
+            5. Prefer intent hinted by keyword seed and competitor gaps.
             
             Return ONLY a valid JSON array of strings (e.g., ["tag1", "tag2"]). Do not include markdown formatting or explanations.`;
             
@@ -84,7 +180,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         };
 
         const rewriteDescription = async (originalDescription: string): Promise<string> => {
-            const prompt = `Rewrite this Etsy product description to be persuasive, keyword-rich, and structured for sales. Use an engaging opening, bullet points for features/materials, and a clear call to action. Keep the tone friendly and professional. Original description: "${originalDescription}"`;
+            const prompt = `Rewrite this Etsy product description to be persuasive, keyword-rich, and structured for sales. Use an engaging opening, bullet points for features/materials, and a clear call to action. Keep the tone friendly and professional.${competitorContext} Original description: "${originalDescription}"`;
             try {
                 const response = await openai.chat.completions.create({
                     model: model,
@@ -99,7 +195,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         };
 
         const generateAltText = async (title: string, description: string): Promise<string> => {
-            const prompt = `Generate a descriptive and SEO-friendly alt text for an e-commerce product image. The product is: "${title}". Description: "${description}". The alt text should be useful for visually impaired users and search engines, and be under 125 characters. Return ONLY the alt text.`;
+            const prompt = `Generate a descriptive and SEO-friendly alt text for an e-commerce product image. The product is: "${title}". Description: "${description}".${competitorContext} The alt text should be useful for visually impaired users and search engines, and be under 125 characters. Return ONLY the alt text.`;
             try {
                 const response = await openai.chat.completions.create({
                     model: model,
