@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Info } from 'lucide-react';
 import { ToastData } from '../types';
 import { useTranslation } from '../contexts/LanguageContext';
 
@@ -36,6 +36,13 @@ const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
       textColor: 'text-red-800 dark:text-red-200',
       bgColor: 'bg-red-50 dark:bg-red-900/50',
       borderColor: 'border-red-200 dark:border-red-700'
+    },
+    info: {
+      icon: Info,
+      barColor: 'bg-blue-500',
+      textColor: 'text-blue-800 dark:text-blue-200',
+      bgColor: 'bg-blue-50 dark:bg-blue-900/40',
+      borderColor: 'border-blue-200 dark:border-blue-700'
     },
   };
 
