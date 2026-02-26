@@ -90,15 +90,22 @@ const OptimizerPage: React.FC = () => {
         if (optimizedData.description && optimizedData.description !== productToOptimize.description) updates.description = optimizedData.description;
         if (optimizedData.tags && optimizedData.tags.length > 0) updates.tags = optimizedData.tags;
         
-        await updateListing(productToOptimize.listing_id, updates);
+        if (Object.keys(updates).length === 0) {
+            showToast({ tKey: 'optimizer_toast_success', options: { message: 'No changes to save.' }, type: 'info' });
+            return;
+        }
+
+        const result = await updateListing(productToOptimize.listing_id, updates);
         
-        showToast({ tKey: 'optimizer_toast_success', options: { message: 'Changes saved to Etsy successfully!' }, type: 'success' });
+        if ((result as any)?.skipped) {
+            showToast({ tKey: 'optimizer_toast_success', options: { message: 'No changes detected.' }, type: 'info' });
+        } else {
+            showToast({ tKey: 'optimizer_toast_success', options: { message: 'Changes saved to Etsy successfully!' }, type: 'success' });
+        }
         
     } catch (err: any) {
         console.error("Save error:", err);
-        // Show detailed error message from server if available
         const errorMessage = err.message || "Failed to save to Etsy";
-        alert(`Error Saving: ${errorMessage}`); // Using alert for immediate visibility of the exact error
         showToast({ tKey: 'optimizer_toast_error', options: { message: errorMessage }, type: 'error' });
     } finally {
         setIsSaving(false);

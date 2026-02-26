@@ -44,7 +44,7 @@ export async function createListing(data: NewProductData): Promise<{ listing_id:
  * @param updates The partial data to update (title, description, tags).
  * @returns A promise that resolves to an object indicating success.
  */
-export async function updateListing(listingId: string | number, updates: Partial<NewProductData>): Promise<{ success: boolean }> {
+export async function updateListing(listingId: string | number, updates: Partial<NewProductData>): Promise<{ success: boolean; skipped?: boolean; reason?: string }> {
   console.log(`Updating listing ${listingId} via dedicated update API...`);
   
   const token = getAuthToken();

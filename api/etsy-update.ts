@@ -50,15 +50,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         console.log(`✅ Shop ID found: ${shopId}. Preparing update payload...`);
 
-        // Update Body
+        // Update Body (partial, safe)
         const updateBody: any = {};
-        if (payload.title) updateBody.title = payload.title;
-        if (payload.description) updateBody.description = payload.description;
-        if (payload.tags) updateBody.tags = payload.tags;
+        if (payload?.title && typeof payload.title === 'string') updateBody.title = payload.title.trim();
+        if (payload?.description && typeof payload.description === 'string') updateBody.description = payload.description;
+        if (Array.isArray(payload?.tags)) {
+            updateBody.tags = payload.tags
+                .map((t: string) => String(t).trim())
+                .filter((t: string) => t.length > 0)
+                .slice(0, 13);
+        }
 
-        console.log(`📤 Sending PUT to Etsy...`);
+        // No-op if nothing changed (prevents noisy failures)
+        if (Object.keys(updateBody).length === 0) {
+            return res.status(200).json({ success: true, skipped: true, reason: 'No fields to update.' });
+        }
 
-        const updateResponse = await axios.put(
+        console.log(`📤 Sending PATCH to Etsy with fields:`, Object.keys(updateBody));
+
+        const updateResponse = await axios.patch(
             `https://openapi.etsy.com/v3/application/shops/${shopId}/listings/${listing_id}`,
             updateBody,
             { headers }
