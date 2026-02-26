@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Sparkles, Copy, Info, Loader2, ArrowLeft, Search, Save, CheckCircle, Tag, Image as ImageIcon, Type, FileText } from 'lucide-react';
+import { Sparkles, Copy, Info, Loader2, ArrowLeft, Search, Save, CheckCircle, Tag, Image as ImageIcon, Type, FileText, DollarSign, Upload } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { OptimizationResult, Product } from '../types';
 import { useAppContext } from '../contexts/AppContext';
 import { useTranslation } from '../contexts/LanguageContext';
@@ -29,9 +30,11 @@ const OptimizerPage: React.FC = () => {
   const [isGeneratingItem, setIsGeneratingItem] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [optimizedData, setOptimizedData] = useState<OptimizationResult | null>(null);
-  const [activeTab, setActiveTab] = useState<'title' | 'description' | 'altText' | 'tags'>('title');
+  const [activeTab, setActiveTab] = useState<'title' | 'description' | 'altText' | 'tags' | 'prices'>('title');
   const [isComparing, setIsComparing] = useState(false);
   const [compareResult, setCompareResult] = useState<null | { yourScore: number; yourRank: number; totalCompared: number; avgTopScore: number; topCompetitorTitle: string | null; recommendations: string[]; keywords: string }>(null);
+  const [priceToSave, setPriceToSave] = useState<number | null>(null);
+  const [pricingRows, setPricingRows] = useState<Array<{ size: string; material: string; price: number }>>([]);
   
   // State for product selection
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
@@ -102,6 +105,7 @@ const OptimizerPage: React.FC = () => {
         }
         if (optimizedData.description && optimizedData.description !== productToOptimize.description) updates.description = optimizedData.description;
         if (optimizedData.tags && optimizedData.tags.length > 0) updates.tags = optimizedData.tags;
+        if (priceToSave && priceToSave > 0) updates.price = priceToSave;
         
         if (Object.keys(updates).length === 0) {
             showToast({ tKey: 'optimizer_toast_success', options: { message: 'No changes to save.' }, type: 'info' });
@@ -156,6 +160,34 @@ const OptimizerPage: React.FC = () => {
       showToast({ tKey: 'optimizer_toast_error', options: { message: err.message || 'Comparison failed.' }, type: 'error' });
     } finally {
       setIsComparing(false);
+    }
+  }
+
+  const handlePricingFileUpload = async (file: File) => {
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows: any[] = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+      const mapped = rows
+        .map((r) => ({
+          size: String(r.Size || r.size || r['Ring Size'] || '').trim(),
+          material: String(r.Material || r.material || '').trim(),
+          price: Number(r['Final Price (CAD)'] || r['Final Price'] || r.price || r.Price || 0),
+        }))
+        .filter((r) => r.size && r.material && !Number.isNaN(r.price) && r.price > 0);
+
+      setPricingRows(mapped);
+
+      if (mapped.length > 0) {
+        const preferred = mapped.find((r) => r.size === '7' && /gold/i.test(r.material)) || mapped[0];
+        setPriceToSave(preferred.price);
+      }
+
+      showToast({ tKey: 'optimizer_toast_success', options: { message: `Loaded ${mapped.length} pricing rows.` }, type: 'success' });
+    } catch (err: any) {
+      showToast({ tKey: 'optimizer_toast_error', options: { message: err.message || 'Failed to parse pricing file.' }, type: 'error' });
     }
   }
 
@@ -404,6 +436,13 @@ const OptimizerPage: React.FC = () => {
             <Tag className="w-4 h-4 mr-2" />
             Tags
           </button>
+          <button 
+            onClick={() => setActiveTab('prices')}
+            className={`flex items-center px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'prices' ? 'text-purple-600 border-purple-600 bg-white dark:bg-gray-800 dark:text-purple-400' : 'text-gray-500 border-transparent hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+          >
+            <DollarSign className="w-4 h-4 mr-2" />
+            Prices
+          </button>
         </div>
 
         <div className="p-6 min-h-[200px]">
@@ -532,6 +571,62 @@ const OptimizerPage: React.FC = () => {
                                 13 tags optimized for Etsy's matching algorithm.
                             </p>
                         </div>
+                    )}
+
+                    {activeTab === 'prices' && (
+                      <div className="animate-fadeIn space-y-4">
+                        <label className="text-sm font-medium text-gray-900 dark:text-white block">Pricing Import (dXb-pricing CSV/XLSX)</label>
+                        <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900">
+                          <Upload className="w-4 h-4" />
+                          <span className="text-sm">Upload pricing file</span>
+                          <input
+                            type="file"
+                            accept=".csv,.xlsx,.xls"
+                            className="hidden"
+                            onChange={(e) => {
+                              const f = e.target.files?.[0];
+                              if (f) handlePricingFileUpload(f);
+                            }}
+                          />
+                        </label>
+
+                        <div>
+                          <label className="text-xs text-gray-500">Price to save on Etsy (base listing price)</label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={priceToSave ?? ''}
+                            onChange={(e) => setPriceToSave(e.target.value ? Number(e.target.value) : null)}
+                            className="mt-1 w-full bg-gray-50 dark:bg-gray-900 p-3 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 outline-none"
+                            placeholder="e.g. 249.99"
+                          />
+                          <p className="text-xs text-gray-500 mt-2">Tip: for full size/material variation pricing on Etsy, next step is inventory variation endpoint. This tab currently saves base listing price + SEO fields.</p>
+                        </div>
+
+                        {pricingRows.length > 0 && (
+                          <div className="max-h-56 overflow-auto border rounded-lg border-gray-200 dark:border-gray-700">
+                            <table className="w-full text-xs">
+                              <thead className="bg-gray-100 dark:bg-gray-800 sticky top-0">
+                                <tr>
+                                  <th className="text-left p-2">Size</th>
+                                  <th className="text-left p-2">Material</th>
+                                  <th className="text-left p-2">Price</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {pricingRows.slice(0, 80).map((r, i) => (
+                                  <tr key={`${r.size}-${r.material}-${i}`} className="border-t border-gray-100 dark:border-gray-800">
+                                    <td className="p-2">{r.size}</td>
+                                    <td className="p-2">{r.material}</td>
+                                    <td className="p-2">${r.price.toFixed(2)}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
                     )}
                 </>
             )}

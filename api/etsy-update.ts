@@ -63,6 +63,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 .filter((t: string) => t.length > 0 && t.length <= 20)
                 .slice(0, 13);
         }
+        if (payload?.price !== undefined && payload?.price !== null) {
+            const priceNum = Number(payload.price);
+            if (!Number.isNaN(priceNum) && priceNum > 0) {
+                updateBody.price = priceNum.toFixed(2);
+            }
+        }
 
         // No-op if nothing changed (prevents noisy failures)
         if (Object.keys(updateBody).length === 0) {
