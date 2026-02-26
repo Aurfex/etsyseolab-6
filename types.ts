@@ -1,4 +1,4 @@
-export type Page = 'dashboard' | 'optimizer' | 'automation' | 'autopilot' | 'competitor' | 'settings' | 'reviews' | 'faq' | 'assistant' | 'gift_finder' | 'loyalty' | 'story_magazine' | 'add_product';
+export type Page = 'dashboard' | 'optimizer' | 'automation' | 'autopilot' | 'competitor' | 'settings' | 'reviews' | 'faq' | 'assistant' | 'gift_finder' | 'loyalty' | 'story_magazine' | 'add_product' | 'pricing';
 export type Theme = 'light' | 'dark' | 'system';
 export type Language = 'en' | 'fa';
 

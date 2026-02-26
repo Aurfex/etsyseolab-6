@@ -20,6 +20,7 @@ import GiftFinderPage from './pages/GiftFinderPage';
 import LoyaltyPage from './pages/LoyaltyPage';
 import StoryMagazinePage from './pages/StoryMagazinePage';
 import AddProductPage from './pages/AddProductPage';
+import PricingCalculatorPage from './pages/PricingCalculatorPage';
 
 const App: React.FC = () => {
   const { 
@@ -86,6 +87,8 @@ const App: React.FC = () => {
         return <StoryMagazinePage />;
       case 'add_product':
         return <AddProductPage />;
+      case 'pricing':
+        return <PricingCalculatorPage />;
       case 'settings':
         return <SettingsPage />;
       case 'dashboard':
