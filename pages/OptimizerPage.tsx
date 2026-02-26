@@ -13,7 +13,7 @@ const Card: React.FC<{children: React.ReactNode, className?: string}> = ({ child
 );
 
 const OptimizerPage: React.FC = () => {
-  const { products, showToast } = useAppContext();
+  const { products, showToast, refreshProducts } = useAppContext();
 
   const getOptimizedIds = (): string[] => {
     try {
@@ -120,7 +120,8 @@ const OptimizerPage: React.FC = () => {
             if (!current.includes(lid)) {
               localStorage.setItem('optimizedListingIds', JSON.stringify([...current, lid]));
             }
-            showToast({ tKey: 'optimizer_toast_success', options: { message: 'Changes saved to Etsy successfully!' }, type: 'success' });
+            await refreshProducts();
+            showToast({ tKey: 'optimizer_toast_success', options: { message: 'Changes saved to Etsy and synced successfully!' }, type: 'success' });
         }
         
     } catch (err: any) {
