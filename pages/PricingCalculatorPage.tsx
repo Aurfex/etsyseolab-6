@@ -76,7 +76,6 @@ const PricingCalculatorPage: React.FC = () => {
         const totalCostWithTax = totalCostBeforeTax * (1 + inputs.taxRate);
         const finalPrice = totalCostWithTax * (1 + inputs.profitMargin);
         const profitAmount = finalPrice - totalCostWithTax;
-        const profitMarginPercent = finalPrice > 0 ? (profitAmount / finalPrice) * 100 : 0;
 
         return {
           size: s.size,
@@ -87,7 +86,6 @@ const PricingCalculatorPage: React.FC = () => {
           totalCostWithTax,
           finalPrice,
           profitAmount,
-          profitMarginPercent,
         };
       })
     );
@@ -103,7 +101,6 @@ const PricingCalculatorPage: React.FC = () => {
       'Total Cost With Tax (CAD)',
       'Final Price (CAD)',
       'Profit Amount (CAD)',
-      'Profit Margin (%)',
     ];
 
     const body = rows.map((r) => [
@@ -115,7 +112,6 @@ const PricingCalculatorPage: React.FC = () => {
       r.totalCostWithTax.toFixed(2),
       r.finalPrice.toFixed(2),
       r.profitAmount.toFixed(2),
-      r.profitMarginPercent.toFixed(2),
     ]);
 
     const csv = [headers, ...body].map((r) => r.join(',')).join('\n');
@@ -213,7 +209,7 @@ const PricingCalculatorPage: React.FC = () => {
                 <th className="p-2">Material Cost</th>
                 <th className="p-2">Cost+Tax</th>
                 <th className="p-2">Final Price</th>
-                <th className="p-2">Profit Margin %</th>
+                <th className="p-2">Profit (CAD)</th>
               </tr>
             </thead>
             <tbody>
@@ -225,7 +221,7 @@ const PricingCalculatorPage: React.FC = () => {
                   <td className="p-2">${r.materialCost.toFixed(2)}</td>
                   <td className="p-2">${r.totalCostWithTax.toFixed(2)}</td>
                   <td className="p-2 font-semibold">${r.finalPrice.toFixed(2)}</td>
-                  <td className="p-2">{r.profitMarginPercent.toFixed(2)}%</td>
+                  <td className="p-2">${r.profitAmount.toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>
