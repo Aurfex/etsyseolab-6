@@ -1,4 +1,7 @@
-/* Base stylesheet required by index.html to avoid 404 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 html, body, #root {
   margin: 0;
   padding: 0;
@@ -7,4 +10,26 @@ html, body, #root {
 
 body {
   font-family: 'Inter', sans-serif;
+}
+
+/* Optional custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
 }
