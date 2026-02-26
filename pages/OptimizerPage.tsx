@@ -95,24 +95,25 @@ const OptimizerPage: React.FC = () => {
   };
 
   const handleSaveToEtsy = async () => {
-    if (!productToOptimize || !optimizedData || !productToOptimize.listing_id) return;
+    if (!productToOptimize || !productToOptimize.listing_id) return;
 
     setIsSaving(true);
     try {
         const updates: any = {};
-        if (optimizedData.title && optimizedData.title !== productToOptimize.title) {
+        if (optimizedData?.title && optimizedData.title !== productToOptimize.title) {
             updates.title = optimizedData.title.length > 140 ? optimizedData.title.slice(0, 140) : optimizedData.title;
         }
-        if (optimizedData.description && optimizedData.description !== productToOptimize.description) updates.description = optimizedData.description;
-        if (optimizedData.tags && optimizedData.tags.length > 0) updates.tags = optimizedData.tags;
+        if (optimizedData?.description && optimizedData.description !== productToOptimize.description) updates.description = optimizedData.description;
+        if (optimizedData?.tags && optimizedData.tags.length > 0) updates.tags = optimizedData.tags;
         if (priceToSave && priceToSave > 0) updates.price = priceToSave;
+        if (pricingRows.length > 0) updates.pricingRows = pricingRows;
         
         if (Object.keys(updates).length === 0) {
             showToast({ tKey: 'optimizer_toast_success', options: { message: 'No changes to save.' }, type: 'info' });
             return;
         }
 
-        if (optimizedData.title && optimizedData.title.length > 140) {
+        if (optimizedData?.title && optimizedData.title.length > 140) {
             showToast({ tKey: 'optimizer_toast_error', options: { message: 'Title was too long; trimmed to 140 chars for Etsy.' }, type: 'info' });
         }
 
@@ -172,9 +173,9 @@ const OptimizerPage: React.FC = () => {
 
       const mapped = rows
         .map((r) => ({
-          size: String(r.Size || r.size || r['Ring Size'] || '').trim(),
-          material: String(r.Material || r.material || '').trim(),
-          price: Number(r['Final Price (CAD)'] || r['Final Price'] || r.price || r.Price || 0),
+          size: String(r.Size ?? '').trim(),
+          material: String(r.Material ?? '').trim(),
+          price: Number(r['Final Price (CAD)'] ?? 0),
         }))
         .filter((r) => r.size && r.material && !Number.isNaN(r.price) && r.price > 0);
 
@@ -601,7 +602,7 @@ const OptimizerPage: React.FC = () => {
                             className="mt-1 w-full bg-gray-50 dark:bg-gray-900 p-3 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 outline-none"
                             placeholder="e.g. 249.99"
                           />
-                          <p className="text-xs text-gray-500 mt-2">Tip: for full size/material variation pricing on Etsy, next step is inventory variation endpoint. This tab currently saves base listing price + SEO fields.</p>
+                          <p className="text-xs text-gray-500 mt-2">This tab sends only Size, Material, and Final Price (CAD) rows to Etsy inventory variations, and can also save a base listing price.</p>
                         </div>
 
                         {pricingRows.length > 0 && (
