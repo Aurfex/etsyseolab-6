@@ -104,57 +104,63 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     let inventoryMatched = 0;
+    let inventoryWarning: string | null = null;
     if (didInventory) {
-      console.log(`📥 Loading inventory for listing ${listing_id}...`);
-      const inventoryResp = await axios.get(
-        `https://openapi.etsy.com/v3/application/shops/${shopId}/listings/${listing_id}/inventory`,
-        { headers }
-      );
-
-      const inventory = inventoryResp.data || {};
-      const products = Array.isArray(inventory.products) ? inventory.products : [];
-
-      const byKey = new Map<string, number>();
-      for (const r of pricingRows) {
-        byKey.set(`${norm(r.size)}|${norm(r.material)}`, Number(r.price.toFixed(2)));
-      }
-
-      const updatedProducts = products.map((p: any) => {
-        const size = getVariationValue(p, 'size');
-        const material = getVariationValue(p, 'material');
-        const key = `${norm(size)}|${norm(material)}`;
-        const matched = byKey.get(key);
-        if (matched === undefined) return p;
-
-        inventoryMatched += 1;
-        const offerings = Array.isArray(p.offerings) ? p.offerings : [];
-        const newOfferings = offerings.map((o: any) => ({
-          ...o,
-          price: matched.toFixed(2),
-        }));
-
-        return {
-          ...p,
-          offerings: newOfferings,
-        };
-      });
-
-      if (inventoryMatched > 0) {
-        const inventoryBody = {
-          products: updatedProducts,
-          price_on_property: Array.isArray(inventory.price_on_property) ? inventory.price_on_property : [],
-          quantity_on_property: Array.isArray(inventory.quantity_on_property) ? inventory.quantity_on_property : [],
-          sku_on_property: Array.isArray(inventory.sku_on_property) ? inventory.sku_on_property : [],
-        };
-
-        console.log(`📤 Sending inventory update (${inventoryMatched} matched variation rows)...`);
-        await axios.put(
-          `https://openapi.etsy.com/v3/application/shops/${shopId}/listings/${listing_id}/inventory`,
-          inventoryBody,
+      try {
+        console.log(`📥 Loading inventory for listing ${listing_id}...`);
+        const inventoryResp = await axios.get(
+          `https://openapi.etsy.com/v3/application/listings/${listing_id}/inventory`,
           { headers }
         );
-      } else {
-        console.log('ℹ️ No variation rows matched current Etsy inventory.');
+
+        const inventory = inventoryResp.data || {};
+        const products = Array.isArray(inventory.products) ? inventory.products : [];
+
+        const byKey = new Map<string, number>();
+        for (const r of pricingRows) {
+          byKey.set(`${norm(r.size)}|${norm(r.material)}`, Number(r.price.toFixed(2)));
+        }
+
+        const updatedProducts = products.map((p: any) => {
+          const size = getVariationValue(p, 'size');
+          const material = getVariationValue(p, 'material');
+          const key = `${norm(size)}|${norm(material)}`;
+          const matched = byKey.get(key);
+          if (matched === undefined) return p;
+
+          inventoryMatched += 1;
+          const offerings = Array.isArray(p.offerings) ? p.offerings : [];
+          const newOfferings = offerings.map((o: any) => ({
+            ...o,
+            price: matched.toFixed(2),
+          }));
+
+          return {
+            ...p,
+            offerings: newOfferings,
+          };
+        });
+
+        if (inventoryMatched > 0) {
+          const inventoryBody = {
+            products: updatedProducts,
+            price_on_property: Array.isArray(inventory.price_on_property) ? inventory.price_on_property : [],
+            quantity_on_property: Array.isArray(inventory.quantity_on_property) ? inventory.quantity_on_property : [],
+            sku_on_property: Array.isArray(inventory.sku_on_property) ? inventory.sku_on_property : [],
+          };
+
+          console.log(`📤 Sending inventory update (${inventoryMatched} matched variation rows)...`);
+          await axios.put(
+            `https://openapi.etsy.com/v3/application/listings/${listing_id}/inventory`,
+            inventoryBody,
+            { headers }
+          );
+        } else {
+          console.log('ℹ️ No variation rows matched current Etsy inventory.');
+        }
+      } catch (invError: any) {
+        console.error('⚠️ Inventory update failed (keeping base patch success if applied):', invError.message);
+        inventoryWarning = invError?.response?.data?.error || invError?.message || 'Inventory update failed';
       }
     }
 
@@ -165,6 +171,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         attempted: didInventory,
         rows: pricingRows.length,
         matched: inventoryMatched,
+        warning: inventoryWarning,
       },
     });
   } catch (error: any) {
