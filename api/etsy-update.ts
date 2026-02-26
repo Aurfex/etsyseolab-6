@@ -4,16 +4,43 @@ import axios from 'axios';
 type PricingRow = { size: string; material: string; price: number };
 
 const norm = (v: any) => String(v ?? '').trim().toLowerCase();
+const compact = (v: any) => norm(v).replace(/[^a-z0-9]/g, '');
 
-const getVariationValue = (product: any, key: 'size' | 'material') => {
+const getAllVariationValues = (product: any): string[] => {
   const propertyValues = Array.isArray(product?.property_values) ? product.property_values : [];
-  const byName = propertyValues.find((pv: any) => norm(pv?.property_name).includes(key));
-  if (byName?.values?.[0]) return String(byName.values[0]).trim();
+  const values: string[] = [];
+  for (const pv of propertyValues) {
+    if (Array.isArray(pv?.values)) {
+      for (const val of pv.values) {
+        if (val !== null && val !== undefined && String(val).trim()) values.push(String(val).trim());
+      }
+    }
+    if (Array.isArray(pv?.value_ids)) {
+      for (const id of pv.value_ids) {
+        if (id !== null && id !== undefined && String(id).trim()) values.push(String(id).trim());
+      }
+    }
+  }
+  return values;
+};
 
-  // Fallback for non-standard property names/order
-  if (key === 'size') return propertyValues?.[0]?.values?.[0] ? String(propertyValues[0].values[0]).trim() : '';
-  if (key === 'material') return propertyValues?.[1]?.values?.[0] ? String(propertyValues[1].values[0]).trim() : '';
-  return '';
+const matchesRow = (product: any, row: PricingRow) => {
+  const vals = getAllVariationValues(product);
+  if (!vals.length) return false;
+
+  const sizeN = compact(row.size);
+  const materialN = compact(row.material);
+
+  let hasSize = false;
+  let hasMaterial = false;
+
+  for (const v of vals) {
+    const vn = compact(v);
+    if (!hasSize && sizeN && (vn === sizeN || vn.includes(sizeN) || sizeN.includes(vn))) hasSize = true;
+    if (!hasMaterial && materialN && (vn === materialN || vn.includes(materialN) || materialN.includes(vn))) hasMaterial = true;
+  }
+
+  return hasSize && hasMaterial;
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -116,23 +143,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const inventory = inventoryResp.data || {};
         const products = Array.isArray(inventory.products) ? inventory.products : [];
 
-        const byKey = new Map<string, number>();
-        for (const r of pricingRows) {
-          byKey.set(`${norm(r.size)}|${norm(r.material)}`, Number(r.price.toFixed(2)));
-        }
-
         const updatedProducts = products.map((p: any) => {
-          const size = getVariationValue(p, 'size');
-          const material = getVariationValue(p, 'material');
-          const key = `${norm(size)}|${norm(material)}`;
-          const matched = byKey.get(key);
-          if (matched === undefined) return p;
+          const row = pricingRows.find((r) => matchesRow(p, r));
+          if (!row) return p;
 
           inventoryMatched += 1;
           const offerings = Array.isArray(p.offerings) ? p.offerings : [];
           const newOfferings = offerings.map((o: any) => ({
             ...o,
-            price: matched.toFixed(2),
+            price: Number(row.price).toFixed(2),
           }));
 
           return {
@@ -156,7 +175,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             { headers }
           );
         } else {
-          console.log('ℹ️ No variation rows matched current Etsy inventory.');
+          const sampleInventory = products.slice(0, 3).map((p: any) => getAllVariationValues(p));
+          const sampleCsv = pricingRows.slice(0, 3).map((r) => ({ size: r.size, material: r.material }));
+          console.log('ℹ️ No variation rows matched current Etsy inventory.', { sampleInventory, sampleCsv });
         }
       } catch (invError: any) {
         console.error('⚠️ Inventory update failed (keeping base patch success if applied):', invError.message);
