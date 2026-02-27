@@ -18,10 +18,8 @@ const toEtsyPriceShape = (existingPrice: any, newPrice: number) => {
 };
 
 const sanitizeOfferingForPut = (o: any) => ({
-  offering_id: o?.offering_id,
   quantity: o?.quantity,
   is_enabled: o?.is_enabled,
-  is_deleted: o?.is_deleted,
   price: o?.price,
 });
 
