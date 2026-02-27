@@ -6,6 +6,17 @@ type PricingRow = { size: string; material: string; price: number };
 const norm = (v: any) => String(v ?? '').trim().toLowerCase();
 const compact = (v: any) => norm(v).replace(/[^a-z0-9]/g, '');
 
+const toEtsyPriceShape = (existingPrice: any, newPrice: number) => {
+  // Keep Etsy shape compatible with whatever inventory GET returns
+  if (existingPrice && typeof existingPrice === 'object') {
+    const divisor = Number(existingPrice.divisor || 100);
+    const currency_code = existingPrice.currency_code || 'CAD';
+    const amount = Math.round(newPrice * divisor);
+    return { amount, divisor, currency_code };
+  }
+  return Number(newPrice.toFixed(2));
+};
+
 const getAllVariationValues = (product: any): string[] => {
   const propertyValues = Array.isArray(product?.property_values) ? product.property_values : [];
   const values: string[] = [];
@@ -169,7 +180,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           const offerings = Array.isArray(p.offerings) ? p.offerings : [];
           const newOfferings = offerings.map((o: any) => ({
             ...o,
-            price: Number(row.price).toFixed(2),
+            price: toEtsyPriceShape(o?.price, Number(row.price)),
           }));
 
           return {
@@ -199,6 +210,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
       } catch (invError: any) {
         console.error('⚠️ Inventory update failed (keeping base patch success if applied):', invError.message);
+        if (invError?.response?.data) {
+          console.error('⚠️ Inventory error details:', JSON.stringify(invError.response.data, null, 2));
+        }
         inventoryWarning = invError?.response?.data?.error || invError?.message || 'Inventory update failed';
       }
     }
