@@ -26,7 +26,7 @@ const sanitizeOfferingForPut = (o: any) => ({
 });
 
 const sanitizeProductForPut = (p: any) => ({
-  sku: Array.isArray(p?.sku) ? p.sku : [],
+  sku: Array.isArray(p?.sku) ? (p.sku[0] ?? '') : (typeof p?.sku === 'string' ? p.sku : ''),
   property_values: Array.isArray(p?.property_values) ? p.property_values : [],
   offerings: Array.isArray(p?.offerings) ? p.offerings.map(sanitizeOfferingForPut) : [],
 });
