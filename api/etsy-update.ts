@@ -27,6 +27,7 @@ const sanitizeOfferingForPut = (o: any) => ({
 
 const sanitizePropertyValueForPut = (pv: any) => ({
   property_id: pv?.property_id,
+  property_name: typeof pv?.property_name === 'string' ? pv.property_name : '',
   value_ids: Array.isArray(pv?.value_ids) ? pv.value_ids : [],
   values: Array.isArray(pv?.values) ? pv.values : [],
   scale_id: pv?.scale_id,
