@@ -11,10 +11,31 @@ const toEtsyPriceShape = (_existingPrice: any, newPrice: number) => {
   return Number(newPrice.toFixed(2));
 };
 
+const normalizeOfferingPrice = (p: any): number => {
+  if (typeof p === 'number') return Number(p.toFixed(2));
+  if (typeof p === 'string') {
+    const n = Number(p);
+    return Number.isFinite(n) ? Number(n.toFixed(2)) : 0;
+  }
+  if (Array.isArray(p)) {
+    const first = p[0];
+    const n = Number(first);
+    return Number.isFinite(n) ? Number(n.toFixed(2)) : 0;
+  }
+  if (p && typeof p === 'object') {
+    const amount = Number(p.amount);
+    const divisor = Number(p.divisor || 100);
+    if (Number.isFinite(amount) && Number.isFinite(divisor) && divisor > 0) {
+      return Number((amount / divisor).toFixed(2));
+    }
+  }
+  return 0;
+};
+
 const sanitizeOfferingForPut = (o: any) => ({
   quantity: o?.quantity,
   is_enabled: o?.is_enabled,
-  price: o?.price,
+  price: normalizeOfferingPrice(o?.price),
 });
 
 const sanitizePropertyValueForPut = (pv: any) => ({
