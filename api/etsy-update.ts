@@ -6,14 +6,8 @@ type PricingRow = { size: string; material: string; price: number };
 const norm = (v: any) => String(v ?? '').trim().toLowerCase();
 const compact = (v: any) => norm(v).replace(/[^a-z0-9]/g, '');
 
-const toEtsyPriceShape = (existingPrice: any, newPrice: number) => {
-  // Keep Etsy shape compatible with whatever inventory GET returns
-  if (existingPrice && typeof existingPrice === 'object') {
-    const divisor = Number(existingPrice.divisor || 100);
-    const currency_code = existingPrice.currency_code || 'CAD';
-    const amount = Math.round(newPrice * divisor);
-    return { amount, divisor, currency_code };
-  }
+const toEtsyPriceShape = (_existingPrice: any, newPrice: number) => {
+  // Etsy inventory update expects float for offering.price
   return Number(newPrice.toFixed(2));
 };
 
