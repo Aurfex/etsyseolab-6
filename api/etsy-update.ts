@@ -17,6 +17,20 @@ const toEtsyPriceShape = (existingPrice: any, newPrice: number) => {
   return Number(newPrice.toFixed(2));
 };
 
+const sanitizeOfferingForPut = (o: any) => ({
+  offering_id: o?.offering_id,
+  quantity: o?.quantity,
+  is_enabled: o?.is_enabled,
+  is_deleted: o?.is_deleted,
+  price: o?.price,
+});
+
+const sanitizeProductForPut = (p: any) => ({
+  sku: Array.isArray(p?.sku) ? p.sku : [],
+  property_values: Array.isArray(p?.property_values) ? p.property_values : [],
+  offerings: Array.isArray(p?.offerings) ? p.offerings.map(sanitizeOfferingForPut) : [],
+});
+
 const getAllVariationValues = (product: any): string[] => {
   const propertyValues = Array.isArray(product?.property_values) ? product.property_values : [];
   const values: string[] = [];
@@ -191,7 +205,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         if (inventoryMatched > 0) {
           const inventoryBody = {
-            products: updatedProducts,
+            products: updatedProducts.map(sanitizeProductForPut),
             price_on_property: Array.isArray(inventory.price_on_property) ? inventory.price_on_property : [],
             quantity_on_property: Array.isArray(inventory.quantity_on_property) ? inventory.quantity_on_property : [],
             sku_on_property: Array.isArray(inventory.sku_on_property) ? inventory.sku_on_property : [],
