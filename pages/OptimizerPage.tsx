@@ -118,6 +118,8 @@ const OptimizerPage: React.FC = () => {
         }
 
         const result = await updateListing(productToOptimize.listing_id, updates);
+        const inventoryMeta: any = (result as any)?.inventory;
+        const inventoryWarning = inventoryMeta?.warning;
         
         if ((result as any)?.skipped) {
             showToast({ tKey: 'optimizer_toast_success', options: { message: 'No changes detected.' }, type: 'info' });
@@ -128,7 +130,14 @@ const OptimizerPage: React.FC = () => {
               localStorage.setItem('optimizedListingIds', JSON.stringify([...current, lid]));
             }
             await refreshProducts();
-            showToast({ tKey: 'optimizer_toast_success', options: { message: 'Changes saved to Etsy and synced successfully!' }, type: 'success' });
+
+            if (inventoryWarning) {
+              const matched = Number(inventoryMeta?.matched || 0);
+              const rows = Number(inventoryMeta?.rows || 0);
+              showToast({ tKey: 'optimizer_toast_error', options: { message: `Base fields saved, but variation pricing failed (${matched}/${rows} matched). ${inventoryWarning}` }, type: 'error' });
+            } else {
+              showToast({ tKey: 'optimizer_toast_success', options: { message: 'Changes saved to Etsy and synced successfully!' }, type: 'success' });
+            }
         }
         
     } catch (err: any) {
