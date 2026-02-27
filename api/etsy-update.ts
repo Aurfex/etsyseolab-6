@@ -25,9 +25,16 @@ const sanitizeOfferingForPut = (o: any) => ({
   price: o?.price,
 });
 
+const sanitizePropertyValueForPut = (pv: any) => ({
+  property_id: pv?.property_id,
+  value_ids: Array.isArray(pv?.value_ids) ? pv.value_ids : [],
+  values: Array.isArray(pv?.values) ? pv.values : [],
+  scale_id: pv?.scale_id,
+});
+
 const sanitizeProductForPut = (p: any) => ({
   sku: Array.isArray(p?.sku) ? (p.sku[0] ?? '') : (typeof p?.sku === 'string' ? p.sku : ''),
-  property_values: Array.isArray(p?.property_values) ? p.property_values : [],
+  property_values: Array.isArray(p?.property_values) ? p.property_values.map(sanitizePropertyValueForPut) : [],
   offerings: Array.isArray(p?.offerings) ? p.offerings.map(sanitizeOfferingForPut) : [],
 });
 
