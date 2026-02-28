@@ -19,19 +19,21 @@ const BASE = 54.4;
 
 type FieldInputProps = {
   label: string;
-  value: number;
+  value: string;
   onChange: (v: string) => void;
+  onBlur: () => void;
 };
 
-const FieldInput: React.FC<FieldInputProps> = ({ label, value, onChange }) => (
+const FieldInput: React.FC<FieldInputProps> = ({ label, value, onChange, onBlur }) => (
   <div>
     <label className="text-xs text-gray-500">{label}</label>
     <input
-      type="number"
-      step="0.01"
+      type="text"
+      inputMode="decimal"
       className="mt-1 w-full p-2 rounded border bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700"
-      value={Number.isFinite(value) ? value : 0}
+      value={value}
       onChange={(e) => onChange(e.target.value)}
+      onBlur={onBlur}
     />
   </div>
 );
@@ -143,10 +145,39 @@ const PricingCalculatorPage: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
-  const setNum = (k: keyof typeof inputs, v: string) =>
-    setInputs((p) => ({ ...p, [k]: Number(v || 0) }));
+  const [draftInputs, setDraftInputs] = useState<Record<keyof typeof inputs, string>>(() => {
+    const init: any = {};
+    (Object.keys(inputs) as Array<keyof typeof inputs>).forEach((k) => {
+      init[k] = String(inputs[k]);
+    });
+    return init;
+  });
 
-  const setTaxPreset = (rate: number) => setInputs((p) => ({ ...p, taxRate: rate }));
+  const setNum = (k: keyof typeof inputs, v: string) => {
+    const n = Number(v);
+    setInputs((p) => ({ ...p, [k]: Number.isFinite(n) ? n : 0 }));
+  };
+
+  const bindField = (k: keyof typeof inputs, fallbackDecimals = 2) => ({
+    value: draftInputs[k] ?? String(inputs[k]),
+    onChange: (v: string) => setDraftInputs((p) => ({ ...p, [k]: v })),
+    onBlur: () => {
+      const raw = (draftInputs[k] ?? '').trim();
+      const n = Number(raw);
+      if (!raw || !Number.isFinite(n)) {
+        const reset = String(inputs[k]);
+        setDraftInputs((p) => ({ ...p, [k]: reset }));
+        return;
+      }
+      setInputs((p) => ({ ...p, [k]: n }));
+      setDraftInputs((p) => ({ ...p, [k]: String(Number(n.toFixed(fallbackDecimals))) }));
+    },
+  });
+
+  const setTaxPreset = (rate: number) => {
+    setInputs((p) => ({ ...p, taxRate: rate }));
+    setDraftInputs((p) => ({ ...p, taxRate: String(rate) }));
+  };
 
 
   return (
@@ -162,36 +193,37 @@ const PricingCalculatorPage: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 space-y-4 max-h-[75vh] overflow-auto">
-          <FieldInput label="Gold Price / g" value={inputs.goldPricePerGram} onChange={(v) => setNum('goldPricePerGram', v)} />
-          <FieldInput label="Platinum Price / g" value={inputs.platinumPricePerGram} onChange={(v) => setNum('platinumPricePerGram', v)} />
-          <FieldInput label="Silver Fixed Price / Ring" value={inputs.silverFixedPrice} onChange={(v) => setNum('silverFixedPrice', v)} />
-          <FieldInput label="Base Weight Size 7 (g)" value={inputs.baseWeightSize7} onChange={(v) => setNum('baseWeightSize7', v)} />
+          <FieldInput label="Gold Price / g" {...bindField('goldPricePerGram')} />
+          <FieldInput label="Platinum Price / g" {...bindField('platinumPricePerGram')} />
+          <FieldInput label="Silver Fixed Price / Ring" {...bindField('silverFixedPrice')} />
+          <FieldInput label="Base Weight Size 7 (g)" {...bindField('baseWeightSize7')} />
 
           <hr className="border-gray-200 dark:border-gray-700" />
-          <FieldInput label="Design" value={inputs.designCost} onChange={(v) => setNum('designCost', v)} />
-          <FieldInput label="3D Printing" value={inputs.printing3DCost} onChange={(v) => setNum('printing3DCost', v)} />
-          <FieldInput label="Casting" value={inputs.castingCost} onChange={(v) => setNum('castingCost', v)} />
-          <FieldInput label="Soldering, Cleaning & Polishing" value={inputs.finishingCost} onChange={(v) => setNum('finishingCost', v)} />
-          <FieldInput label="Plating" value={inputs.platingCost} onChange={(v) => setNum('platingCost', v)} />
-          <FieldInput label="Stone Setting" value={inputs.stoneSettingCost} onChange={(v) => setNum('stoneSettingCost', v)} />
-          <FieldInput label="Laser Engraving" value={inputs.engravingCost} onChange={(v) => setNum('engravingCost', v)} />
-          <FieldInput label="Stone Price" value={inputs.stonePrice} onChange={(v) => setNum('stonePrice', v)} />
-          <FieldInput label="Finding" value={inputs.findingCost} onChange={(v) => setNum('findingCost', v)} />
-          <FieldInput label="Tools" value={inputs.toolsCost} onChange={(v) => setNum('toolsCost', v)} />
-          <FieldInput label="Packaging" value={inputs.packagingCost} onChange={(v) => setNum('packagingCost', v)} />
-          <FieldInput label="Post (Shipping)" value={inputs.shippingCost} onChange={(v) => setNum('shippingCost', v)} />
+          <FieldInput label="Design" {...bindField('designCost')} />
+          <FieldInput label="3D Printing" {...bindField('printing3DCost')} />
+          <FieldInput label="Casting" {...bindField('castingCost')} />
+          <FieldInput label="Soldering, Cleaning & Polishing" {...bindField('finishingCost')} />
+          <FieldInput label="Plating" {...bindField('platingCost')} />
+          <FieldInput label="Stone Setting" {...bindField('stoneSettingCost')} />
+          <FieldInput label="Laser Engraving" {...bindField('engravingCost')} />
+          <FieldInput label="Stone Price" {...bindField('stonePrice')} />
+          <FieldInput label="Finding" {...bindField('findingCost')} />
+          <FieldInput label="Tools" {...bindField('toolsCost')} />
+          <FieldInput label="Packaging" {...bindField('packagingCost')} />
+          <FieldInput label="Post (Shipping)" {...bindField('shippingCost')} />
 
           <hr className="border-gray-200 dark:border-gray-700" />
-          <FieldInput label="Profit Margin (e.g. 0.30)" value={inputs.profitMargin} onChange={(v) => setNum('profitMargin', v)} />
+          <FieldInput label="Profit Margin (e.g. 0.30)" {...bindField('profitMargin', 4)} />
 
           <div>
             <label className="text-xs text-gray-500">Tax Rate</label>
             <input
-              type="number"
-              step="0.0001"
+              type="text"
+              inputMode="decimal"
               className="mt-1 w-full p-2 rounded border bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700"
-              value={inputs.taxRate}
-              onChange={(e) => setNum('taxRate', e.target.value)}
+              value={draftInputs.taxRate}
+              onChange={(e) => setDraftInputs((p) => ({ ...p, taxRate: e.target.value }))}
+              onBlur={() => bindField('taxRate', 5).onBlur()}
             />
             <div className="grid grid-cols-2 gap-2 mt-2">
               <button onClick={() => setTaxPreset(0.14975)} className="px-2 py-1 text-xs rounded border border-gray-200 dark:border-gray-700">QC (14.975%)</button>
