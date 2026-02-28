@@ -583,34 +583,34 @@ const StepPricing: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNex
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const rowsRaw: any[] = XLSX.utils.sheet_to_json(sheet, { defval: '' });
 
-        // Match Optimizer Prices tab mapping exactly
+        // Match Optimizer Prices tab behavior (accept both summary/export variants)
         const rows = rowsRaw
-            .map((r) => ({
-                size: String(r.Size ?? '').trim(),
-                material: String(r.Material ?? '').trim(),
-                price: Number(r['Final Price (CAD)'] ?? 0),
-                quantity: r.Quantity !== undefined && r.Quantity !== '' ? Number(r.Quantity) : undefined,
-                sku: r.SKU !== undefined ? String(r.SKU).trim() : undefined,
-            }))
+            .map((r) => {
+                const size = String(r.Size ?? r.size ?? r['Ring Size'] ?? '').trim();
+                const materialRaw = String(r.Material ?? r.material ?? r.Metal ?? '').trim();
+                const material = materialRaw
+                    .replace(/silver\s*925/i, 'sterling silver')
+                    .replace(/sterling\s*service/i, 'sterling silver')
+                    .trim();
+                const priceCell = r['Final Price (CAD)'] ?? r['Final Price'] ?? r.Price ?? r.price ?? 0;
+                const price = Number(String(priceCell).replace(/[^0-9.\-]/g, ''));
+                const quantity = r.Quantity !== undefined && r.Quantity !== '' ? Number(r.Quantity) : undefined;
+                const sku = r.SKU !== undefined ? String(r.SKU).trim() : undefined;
+                return { size, material, price, quantity, sku };
+            })
             .filter((r) => r.size && r.material && !Number.isNaN(r.price) && r.price > 0);
 
         if (rows.length === 0) {
-            throw new Error('Pricing file parsed but no valid rows found. Expected columns: Size, Material, Final Price (CAD).');
+            throw new Error('Pricing file parsed but no valid rows found. Expected columns like: Size, Material, Final Price (CAD) or Final Price.');
         }
-        const expected = new Set(sizes.flatMap(s => materials.map(m => `${s}__${m.toLowerCase()}`)));
-        const got = new Set(rows.map(r => `${r.size}__${String(r.material).toLowerCase()}`));
-        const missing = [...expected].filter(k => !got.has(k));
-        const invalid = rows.filter(r => !Number.isFinite(r.price) || r.price <= 0);
 
-        if (missing.length > 0) {
-            throw new Error(`CSV is missing ${missing.length} size/material combinations.`);
-        }
+        const invalid = rows.filter(r => !Number.isFinite(r.price) || r.price <= 0);
         if (invalid.length > 0) {
-            throw new Error(`CSV contains ${invalid.length} invalid price rows.`);
+            throw new Error(`Pricing file contains ${invalid.length} invalid price rows.`);
         }
 
         updateNewProductData({ pricing_rows: rows });
-        setCsvStatus(`Loaded ${rows.length} pricing rows.`);
+        setCsvStatus(`Loaded ${rows.length} pricing rows (Optimizer-compatible).`);
     };
 
     const onFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
