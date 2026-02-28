@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
-import { Bot, FileText, AlertTriangle, Loader2 } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Bot, AlertTriangle, Loader2, Search, Wrench } from 'lucide-react';
 import { useAppContext } from '../contexts/AppContext';
 import { Product } from '../types';
 import { useTranslation } from '../contexts/LanguageContext';
-
 
 const Card: React.FC<{children: React.ReactNode, className?: string}> = ({ children, className }) => (
   <div className={`bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card dark:shadow-card-dark ${className}`}>
@@ -11,163 +10,157 @@ const Card: React.FC<{children: React.ReactNode, className?: string}> = ({ child
   </div>
 );
 
-const ActivityItem: React.FC<{icon: React.ElementType, title: string, subtitle: string, tagText: string, time: string}> = ({ icon: Icon, title, subtitle, tagText, time }) => (
-    <div className="flex items-center space-x-4 py-3">
-      <div className="p-2 bg-gray-100 dark:bg-gray-700/50 rounded-full">
-        <Icon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-      </div>
-      <div className="flex-grow">
-        <p className="font-semibold text-gray-900 dark:text-white">{title}</p>
-        <p className="text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>
-      </div>
-      <div className="text-right">
-        <span className="text-sm font-medium text-gray-900 dark:text-white">{tagText}</span>
-        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{time}</p>
-      </div>
-    </div>
-);
+type Severity = 'high' | 'medium' | 'low';
+type Issue = {
+  id: string;
+  productId: string;
+  productTitle: string;
+  type: 'title' | 'tags' | 'description' | 'seo';
+  severity: Severity;
+  message: string;
+};
 
-const WatchlistItem: React.FC<{product: Product, reason: string, level: 'high' | 'medium' | 'low'}> = ({product, reason, level}) => {
-    const { title, seoScore } = product;
-    const levelColors = {
-        high: 'border-red-500',
-        medium: 'border-yellow-500',
-        low: 'border-blue-500'
-    };
-    const levelText = {
-        high: 'text-red-500 font-bold',
-        medium: 'text-yellow-500 font-bold',
-        low: 'text-blue-500 font-bold'
-    }
-    const { t } = useTranslation();
-    return (
-        <div className={`p-4 border-l-4 ${levelColors[level]} bg-gray-50 dark:bg-gray-900/50 rounded-r-lg`}>
-            <div className="flex justify-between items-center mb-2">
-                <p className="font-semibold text-gray-900 dark:text-white">{title}</p>
-                <span className={`text-xs uppercase font-bold ${levelText[level]}`}>{t(`watchlist_level_${level}`)}</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500 dark:text-gray-400">{t('watchlist_seo_score')}</span>
-                <span className="font-bold text-gray-900 dark:text-white">{seoScore}%</span>
-            </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 my-2">
-                <div className="bg-purple-500 h-1.5 rounded-full" style={{width: `${seoScore}%`}}></div>
-            </div>
-            <div className="flex items-center text-xs text-yellow-600 dark:text-yellow-400">
-                <AlertTriangle className="w-4 h-4 me-2" />
-                <span>{reason}</span>
-            </div>
-        </div>
-    )
-}
+const severityClass: Record<Severity, string> = {
+  high: 'text-red-600',
+  medium: 'text-yellow-600',
+  low: 'text-blue-600',
+};
+
+const scanProduct = (p: Product): Issue[] => {
+  const issues: Issue[] = [];
+  const title = String(p.title || '');
+  const description = String(p.description || '');
+  const tags = Array.isArray(p.tags) ? p.tags : [];
+
+  if (title.length < 90) {
+    issues.push({ id: `${p.id}-title-short`, productId: p.id, productTitle: p.title, type: 'title', severity: 'high', message: 'Title is short (target 90-140 chars).' });
+  } else if (title.length > 140) {
+    issues.push({ id: `${p.id}-title-long`, productId: p.id, productTitle: p.title, type: 'title', severity: 'high', message: 'Title exceeds 140 chars.' });
+  }
+
+  const duplicateTags = tags.length !== new Set(tags.map(t => t.toLowerCase().trim())).size;
+  const invalidTagLen = tags.some(t => String(t).trim().length > 20 || String(t).trim().length === 0);
+  if (tags.length < 10 || tags.length > 13 || duplicateTags || invalidTagLen) {
+    issues.push({ id: `${p.id}-tags`, productId: p.id, productTitle: p.title, type: 'tags', severity: 'high', message: 'Tags need optimization (count/duplicates/length).' });
+  }
+
+  if (description.length < 300) {
+    issues.push({ id: `${p.id}-desc-short`, productId: p.id, productTitle: p.title, type: 'description', severity: 'medium', message: 'Description is short (target 300+ chars).' });
+  }
+
+  if ((p.seoScore || 0) < 85) {
+    issues.push({ id: `${p.id}-seo`, productId: p.id, productTitle: p.title, type: 'seo', severity: 'low', message: 'SEO score is below target (85+).' });
+  }
+
+  return issues;
+};
 
 const AutopilotPage: React.FC = () => {
-    const { products, activityLogs, runAutopilotFix, settings, updateSettings } = useAppContext();
-    const { t } = useTranslation();
-    const [isLoading, setIsLoading] = useState(false);
+  const { products, settings, updateSettings, runFullOptimization } = useAppContext();
+  const { t } = useTranslation();
 
-    const watchlistReasons = [
-        t('watchlist_reason_alt_text'),
-        t('watchlist_reason_title_structure'),
-        t('watchlist_reason_tags'),
-    ];
-    
-    const watchlistLevels: ('high' | 'medium' | 'low')[] = ['high', 'medium', 'low'];
-    
-    const watchlist = products.slice(0, 3).map((p, i) => ({
-        product: p,
-        reason: watchlistReasons[i % watchlistReasons.length],
-        level: watchlistLevels[i % watchlistLevels.length]
-    })).filter(item => item.product);
+  const [issues, setIssues] = useState<Issue[]>([]);
+  const [isScanning, setIsScanning] = useState(false);
+  const [fixingIssueId, setFixingIssueId] = useState<string | null>(null);
 
-    const autopilotLogs = activityLogs.filter(log => log.type === 'title_optimization').slice(-4).reverse();
-    const optimizationsToday = autopilotLogs.length;
+  const stats = useMemo(() => ({
+    totalProducts: products.length,
+    totalIssues: issues.length,
+    high: issues.filter(i => i.severity === 'high').length,
+  }), [products.length, issues]);
 
-    const handleFixAll = async () => {
-        setIsLoading(true);
-        await runAutopilotFix(watchlist.map(item => item.product));
-        setIsLoading(false);
+  const runScan = async () => {
+    setIsScanning(true);
+    try {
+      const allIssues = products.flatMap(scanProduct);
+      setIssues(allIssues);
+    } finally {
+      setIsScanning(false);
     }
+  };
 
-    const handleAutopilotToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
-        updateSettings({
-            ...settings,
-            autopilot: {
-                ...settings.autopilot,
-                enabled: e.target.checked,
-            }
-        });
+  const fixIssue = async (issue: Issue) => {
+    const product = products.find(p => p.id === issue.productId);
+    if (!product) return;
+    setFixingIssueId(issue.id);
+    try {
+      await runFullOptimization(product);
+      const rescanned = products.flatMap(scanProduct).filter(i => i.productId !== issue.productId);
+      setIssues(rescanned);
+    } finally {
+      setFixingIssueId(null);
     }
-    
+  };
+
+  const handleAutopilotToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateSettings({
+      ...settings,
+      autopilot: {
+        ...settings.autopilot,
+        enabled: e.target.checked,
+      }
+    });
+  };
+
   return (
     <div className="space-y-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-            <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('autopilot_page_title')}</h1>
-                <p className="text-gray-500 dark:text-gray-400 mt-1">{t('autopilot_page_subtitle')}</p>
-            </div>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('autopilot_page_title')}</h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">Phase 1: Scan listings, detect SEO issues, and apply one-click fixes.</p>
+      </div>
 
       <Card>
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center mb-2">
           <Bot className="w-5 h-5 me-2 text-purple-500" />
-          {t('autopilot_command_center_title')}
+          Autopilot Status
         </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400">{t('autopilot_command_center_subtitle')}</p>
-        <div className="mt-4 bg-green-50 dark:bg-green-900/20 p-4 rounded-lg flex justify-between items-center">
+        <div className="mt-2 bg-green-50 dark:bg-green-900/20 p-4 rounded-lg flex justify-between items-center">
           <div>
-            <p className="font-semibold text-green-800 dark:text-green-300">{t('autopilot_status_title')}</p>
-            <p className="text-sm text-green-700 dark:text-green-400">{settings.autopilot.enabled ? t('autopilot_status_active', { count: products.length }) : t('autopilot_status_inactive')}</p>
+            <p className="font-semibold text-green-800 dark:text-green-300">{settings.autopilot.enabled ? 'Enabled' : 'Disabled'}</p>
+            <p className="text-sm text-green-700 dark:text-green-400">Products: {stats.totalProducts} | Issues found: {stats.totalIssues} (High: {stats.high})</p>
           </div>
-           <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-            <input type="checkbox" name="toggle" id="autopilot-toggle" checked={settings.autopilot.enabled} onChange={handleAutopilotToggle} className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+          <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+            <input type="checkbox" id="autopilot-toggle" checked={settings.autopilot.enabled} onChange={handleAutopilotToggle} className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
             <label htmlFor="autopilot-toggle" className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 dark:bg-gray-700 cursor-pointer"></label>
           </div>
         </div>
-         <div className="mt-2 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-          <p className="font-semibold text-blue-800 dark:text-blue-300">{t('autopilot_ai_working_title')}</p>
-          <p className="text-sm text-blue-700 dark:text-blue-400">{t('autopilot_ai_working_subtitle', { count: optimizationsToday })}</p>
+
+        <div className="mt-4 flex gap-3">
+          <button onClick={runScan} disabled={isScanning} className="inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-60">
+            {isScanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />} Scan Shop
+          </button>
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('autopilot_activity_log_title')}</h3>
-          <div className="divide-y divide-gray-200 dark:divide-gray-700">
-            {autopilotLogs.map(log => (
-                 <ActivityItem key={log.id} icon={FileText} title={t(log.tKey, log.options)} subtitle={log.subtitle || ''} tagText={log.change || t(`status_${log.status.toLowerCase()}` as any)} time={log.timestamp.toLocaleTimeString()} />
+      <Card>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center">
+          <AlertTriangle className="w-5 h-5 me-2 text-yellow-500" /> Detected Issues
+        </h3>
+        {issues.length === 0 ? (
+          <p className="text-sm text-gray-500">No issues yet. Run Scan Shop.</p>
+        ) : (
+          <div className="space-y-3">
+            {issues.map(issue => (
+              <div key={issue.id} className="p-3 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-gray-900 dark:text-white">{issue.productTitle}</p>
+                    <p className={`text-xs uppercase ${severityClass[issue.severity]}`}>{issue.severity}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">{issue.message}</p>
+                  </div>
+                  <button
+                    onClick={() => fixIssue(issue)}
+                    disabled={fixingIssueId === issue.id}
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm disabled:opacity-60"
+                  >
+                    {fixingIssueId === issue.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wrench className="w-4 h-4" />}
+                    {fixingIssueId === issue.id ? 'Fixing...' : 'Fix'}
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
-        </Card>
-        <Card>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('autopilot_watchlist_title')}</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t('autopilot_watchlist_subtitle')}</p>
-          <div className="space-y-4">
-            {watchlist.map(item => <WatchlistItem key={item.product.id} {...item} />)}
-          </div>
-        </Card>
-      </div>
-
-      <Card>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center mb-2">
-            <AlertTriangle className="w-5 h-5 me-2 text-yellow-500" />
-            {t('autopilot_recommendations_title')}
-        </h3>
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
-            <p className="text-sm text-yellow-800 dark:text-yellow-300">
-                <span className="font-bold">{t('autopilot_priority_alert_prefix')}</span> {t('autopilot_priority_alert_suffix', { count: watchlist.length })}
-            </p>
-        </div>
-        <div className="mt-4 flex flex-col sm:flex-row gap-4">
-            <button 
-                onClick={handleFixAll}
-                disabled={isLoading}
-                className="flex-1 bg-purple-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
-                {isLoading ? <Loader2 className="animate-spin me-2" /> : null}
-                {isLoading ? t('autopilot_optimizing_button') : t('autopilot_fix_all_button')}
-            </button>
-            <button className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold py-3 px-4 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">{t('autopilot_review_changes_button')}</button>
-        </div>
+        )}
       </Card>
     </div>
   );
