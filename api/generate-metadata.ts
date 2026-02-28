@@ -29,7 +29,11 @@ type OutputShape = {
 
 const normalizeOutput = (parsed: any, details: { title?: string; description?: string }, images: VisionImageInput[]): OutputShape => {
   let title = String(parsed?.title || details.title || 'Handmade Jewelry Listing').trim().slice(0, 140);
-  const description = String(parsed?.description || details.description || '').trim();
+  const description = String(parsed?.description || details.description || '')
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/[#*_`>-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
   const tags = Array.isArray(parsed?.tags)
     ? [...new Set(parsed.tags.map((t: any) => String(t || '').trim()).filter(Boolean))].map((t) => t.slice(0, 20)).slice(0, 13)
     : [];
@@ -74,7 +78,9 @@ Rules:
 - title must start with primary keyword and include product type + style/material + gift/use-case if relevant
 - title must NOT include price, shipping, discount terms, emoji, excessive repetition, or clickbait
 - avoid generic titles like "Handmade Jewelry Listing"
-- tags up to 13, each <= 20 chars, unique, no punctuation spam
+- description must be plain text only (NO markdown, NO headings, NO bullets, NO asterisks), 450-900 chars
+- description should match the uploaded product images and avoid unrelated product types
+- tags exactly 13 if possible, each <= 20 chars, unique, lowercase-friendly, no punctuation spam
 - imageAltTexts one per image, each <= 140 chars
 - suggestedBasics keys: categoryHint, price, quantity, who_made, when_made, is_supply
 - who_made in ["i_did","collective","someone_else"]
