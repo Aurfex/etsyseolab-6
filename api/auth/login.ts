@@ -18,15 +18,19 @@ function base64URLEncode(buffer: Buffer) {
     .replace(/=+$/, '');
 }
 
-export default function handler(_req: VercelRequest, res: VercelResponse) {
+export default function handler(req: VercelRequest, res: VercelResponse) {
   const codeVerifier = generateCodeVerifier();
   const codeChallenge = generateCodeChallenge(codeVerifier);
   const state = crypto.randomBytes(16).toString('hex');
 
-  // Store verifier and state in cookies (secure, httpOnly)
+  const host = String(req.headers.host || '').toLowerCase();
+  const isLocalhost = host.includes('localhost') || host.startsWith('127.0.0.1');
+  const secureAttr = isLocalhost ? '' : ' Secure;';
+
+  // Store verifier and state in cookies (httpOnly; secure on non-local hosts)
   res.setHeader('Set-Cookie', [
-    `etsy_code_verifier=${codeVerifier}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=300`,
-    `etsy_oauth_state=${state}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=300`
+    `etsy_code_verifier=${codeVerifier}; Path=/; HttpOnly;${secureAttr} SameSite=Lax; Max-Age=300`,
+    `etsy_oauth_state=${state}; Path=/; HttpOnly;${secureAttr} SameSite=Lax; Max-Age=300`
   ]);
 
   const scopes = process.env.ETSY_SCOPES || 'listings_r listings_w listings_d';
