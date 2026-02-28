@@ -24,7 +24,6 @@ const SidebarNavigation: React.FC = () => {
             { id: 'optimizer', label: t('nav_optimizer'), icon: SearchCheck, authRequired: true },
             { id: 'add_product', label: t('nav_add_product'), icon: PlusSquare, authRequired: true },
             { id: 'pricing', label: 'Pricing Calculator', icon: Calculator, authRequired: true },
-            { id: 'automation', label: t('nav_automation'), icon: Zap, authRequired: true },
             { id: 'autopilot', label: t('nav_autopilot'), icon: Bot, authRequired: true },
             { id: 'competitor', label: t('nav_competitor'), icon: Radar, authRequired: true },
             { id: 'reviews', label: t('nav_reviews'), icon: MessageSquareDashed, authRequired: true },

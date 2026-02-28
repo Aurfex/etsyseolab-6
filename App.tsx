@@ -6,7 +6,6 @@ import { Page } from './types';
 import MainLayout from './components/MainLayout';
 import DashboardPage from './pages/DashboardPage';
 import OptimizerPage from './pages/OptimizerPage';
-import AutomationPage from './pages/AutomationPage';
 import AutopilotPage from './pages/AutopilotPage';
 import CompetitorRadarPage from './pages/CompetitorRadarPage';
 import SettingsPage from './pages/SettingsPage';
@@ -67,8 +66,6 @@ const App: React.FC = () => {
     switch (page) {
       case 'optimizer':
         return <OptimizerPage />;
-      case 'automation':
-        return <AutomationPage />;
       case 'autopilot':
         return <AutopilotPage />;
       case 'competitor':
