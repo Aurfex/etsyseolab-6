@@ -183,18 +183,26 @@ const pickVariationProps = async (shopId: string | number, listingId: string | n
   if (!taxonomyId) throw new Error('Could not resolve taxonomy_id for listing.');
 
   let raw: any[] = [];
-  try {
-    const propsResp = await axios.get(
-      `https://openapi.etsy.com/v3/application/taxonomy/nodes/${taxonomyId}/properties`,
-      { headers }
-    );
-    raw = Array.isArray(propsResp.data?.results) ? propsResp.data.results : [];
-  } catch {
-    const propsResp2 = await axios.get(
-      `https://openapi.etsy.com/v3/application/shops/${shopId}/taxonomy/nodes/${taxonomyId}/properties`,
-      { headers }
-    );
-    raw = Array.isArray(propsResp2.data?.results) ? propsResp2.data.results : [];
+  const taxonomyUrls = [
+    `https://openapi.etsy.com/v3/application/seller-taxonomy/nodes/${taxonomyId}/properties`,
+    `https://openapi.etsy.com/v3/application/taxonomy/nodes/${taxonomyId}/properties`,
+    `https://openapi.etsy.com/v3/application/shops/${shopId}/taxonomy/nodes/${taxonomyId}/properties`,
+  ];
+
+  let lastErr: any = null;
+  for (const url of taxonomyUrls) {
+    try {
+      const propsResp = await axios.get(url, { headers });
+      raw = Array.isArray(propsResp.data?.results) ? propsResp.data.results : [];
+      if (raw.length > 0) break;
+    } catch (e: any) {
+      lastErr = e;
+    }
+  }
+
+  if (!raw.length && lastErr) {
+    const msg = lastErr?.response?.data?.error || lastErr?.message || 'taxonomy properties lookup failed';
+    throw new Error(`Taxonomy property discovery failed: ${msg}`);
   }
 
   const usable = raw.filter((p: any) => {
@@ -393,7 +401,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           console.error('⚠️ Inventory error details:', JSON.stringify(invError.response.data, null, 2));
         }
         const invData = invError?.response?.data;
-        inventoryWarning = invData?.error || invData?.error_description || invData?.detail || (typeof invData === 'string' ? invData : null) || invError?.message || 'Inventory update failed';
+        const invUrl = invError?.config?.url ? ` @ ${invError.config.url}` : '';
+        inventoryWarning = (invData?.error || invData?.error_description || invData?.detail || (typeof invData === 'string' ? invData : null) || invError?.message || 'Inventory update failed') + invUrl;
       }
     }
 
