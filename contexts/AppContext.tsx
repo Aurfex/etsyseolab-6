@@ -742,7 +742,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
             // Step 3: Push variation pricing matrix to Etsy inventory (if provided)
             if (pricingRows.length > 0) {
-                await updateListing(listing_id, {
+                const inventorySync = await updateListing(listing_id, {
                     price: inferredBasePrice > 0 ? inferredBasePrice : undefined,
                     pricingRows: pricingRows.map((r: any) => ({
                         size: String(r.size),
@@ -750,6 +750,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                         price: Number(r.price),
                     })),
                 });
+
+                const warning = (inventorySync as any)?.warning;
+                if (warning) {
+                    throw new Error(`Listing created, but variation pricing sync failed: ${warning}`);
+                }
             }
 
             addLog({type: 'product_created', tKey: 'log_product_creation_success', subtitle: productData.title, status: 'Success' });
