@@ -295,4 +295,24 @@ export interface NewProductData {
     // Step 3: Metadata
     description: string;
     tags: string[];
+
+    // Step 4: Variants + pricing import + required Etsy fields
+    ring_sizes?: string[];
+    ring_materials?: string[];
+    pricing_rows?: Array<{ size: string; material: string; price: number; quantity?: number; sku?: string }>;
+
+    item_type?: 'physical' | 'digital';
+    production_type?: 'made_to_order' | 'finished';
+
+    shipping_profile_id?: string;
+    return_policy_id?: string;
+    processing_profile_id?: string;
+    shop_section_id?: string;
+
+    materials_list?: string[];
+
+    personalization_enabled?: boolean;
+    personalization_instructions?: string;
+    personalization_buyer_limit?: number;
+    personalization_optional?: boolean;
 }

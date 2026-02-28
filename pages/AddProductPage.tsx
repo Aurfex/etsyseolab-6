@@ -18,6 +18,7 @@ const AddProductPage: React.FC = () => {
     const steps = [
         'Analyze + Basics',
         'AI SEO',
+        'Variants + Pricing CSV',
         'Review & Publish',
     ];
 
@@ -49,7 +50,8 @@ const AddProductPage: React.FC = () => {
                 
                 {currentStep === 1 && <Step2 onNext={() => setCurrentStep(2)} />}
                 {currentStep === 2 && <Step3 onNext={() => setCurrentStep(3)} onPrev={() => setCurrentStep(1)} />}
-                {currentStep === 3 && <Step4 onPrev={() => setCurrentStep(2)} />}
+                {currentStep === 3 && <StepPricing onNext={() => setCurrentStep(4)} onPrev={() => setCurrentStep(2)} />}
+                {currentStep === 4 && <Step4 onPrev={() => setCurrentStep(3)} />}
 
             </Card>
         </div>
@@ -566,7 +568,171 @@ const Step3: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNext, onP
     );
 };
 
-// Step 4: Preview
+// Step 4: Variants + Pricing CSV + Etsy Required Fields
+const StepPricing: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNext, onPrev }) => {
+    const { newProductData, updateNewProductData, showToast } = useAppContext();
+    const [csvStatus, setCsvStatus] = useState<string>('');
+
+    const sizes = newProductData.ring_sizes || ['6', '7', '8', '9', '10', '11', '12'];
+    const materials = newProductData.ring_materials || ['sterling silver', '14k gold', 'platinum'];
+
+    const parseCsv = (text: string) => {
+        const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+        if (lines.length < 2) throw new Error('CSV is empty.');
+        const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+        const idx = {
+            size: headers.indexOf('size'),
+            material: headers.indexOf('material'),
+            price: headers.indexOf('price'),
+            quantity: headers.indexOf('quantity'),
+            sku: headers.indexOf('sku'),
+        };
+        if (idx.size === -1 || idx.material === -1 || idx.price === -1) {
+            throw new Error('CSV must include size, material, price columns.');
+        }
+
+        const rows = lines.slice(1).map((line) => {
+            const c = line.split(',').map(v => v.trim());
+            return {
+                size: c[idx.size] || '',
+                material: c[idx.material] || '',
+                price: Number(c[idx.price] || 0),
+                quantity: idx.quantity >= 0 ? Number(c[idx.quantity] || 0) : undefined,
+                sku: idx.sku >= 0 ? c[idx.sku] || '' : undefined,
+            };
+        }).filter(r => r.size && r.material);
+
+        return rows;
+    };
+
+    const handleCsvUpload = async (file: File) => {
+        const text = await file.text();
+        const rows = parseCsv(text);
+        const expected = new Set(sizes.flatMap(s => materials.map(m => `${s}__${m.toLowerCase()}`)));
+        const got = new Set(rows.map(r => `${r.size}__${String(r.material).toLowerCase()}`));
+        const missing = [...expected].filter(k => !got.has(k));
+        const invalid = rows.filter(r => !Number.isFinite(r.price) || r.price <= 0);
+
+        if (missing.length > 0) {
+            throw new Error(`CSV is missing ${missing.length} size/material combinations.`);
+        }
+        if (invalid.length > 0) {
+            throw new Error(`CSV contains ${invalid.length} invalid price rows.`);
+        }
+
+        updateNewProductData({ pricing_rows: rows });
+        setCsvStatus(`Loaded ${rows.length} pricing rows.`);
+    };
+
+    const onFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+        const f = e.target.files?.[0];
+        if (!f) return;
+        try {
+            await handleCsvUpload(f);
+            showToast({ tKey: 'toast_metadata_generated', type: 'success' });
+        } catch (err: any) {
+            setCsvStatus(err.message || 'CSV parse failed');
+            showToast({ tKey: 'toast_generic_error_with_message', options: { message: err.message }, type: 'error' });
+        }
+    };
+
+    const handleField = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        const { name, value, type } = e.target;
+        let v: any = value;
+        if (type === 'number') v = Number(value || 0);
+        if (type === 'checkbox') v = (e.target as HTMLInputElement).checked;
+        updateNewProductData({ [name]: v } as Partial<NewProductData>);
+    };
+
+    const handleNext = () => {
+        if (!newProductData.pricing_rows || newProductData.pricing_rows.length === 0) {
+            showToast({ tKey: 'add_product_validation_error', type: 'error' });
+            return;
+        }
+        onNext();
+    };
+
+    return (
+        <div className="space-y-6">
+            <div>
+                <h3 className="text-lg font-bold">Variants + Pricing CSV</h3>
+                <p className="text-sm text-gray-500">Upload your generated pricing CSV for 7 sizes × 3 materials, then fill key Etsy fields.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700">
+                    <div className="font-semibold mb-1">Sizes</div>
+                    <div>{sizes.join(', ')}</div>
+                </div>
+                <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700">
+                    <div className="font-semibold mb-1">Materials</div>
+                    <div>{materials.join(', ')}</div>
+                </div>
+            </div>
+
+            <div className="p-4 rounded-lg border border-dashed border-indigo-300 dark:border-indigo-700 bg-indigo-50/50 dark:bg-indigo-900/20">
+                <label className="block text-sm font-medium mb-2">Upload pricing CSV</label>
+                <input type="file" accept=".csv,text/csv" onChange={onFileChange} className="block w-full text-sm" />
+                <p className="text-xs text-gray-500 mt-2">Required columns: size, material, price (optional: quantity, sku)</p>
+                {csvStatus && <p className="text-xs mt-2 text-indigo-700 dark:text-indigo-300">{csvStatus}</p>}
+                <p className="text-xs mt-1 text-gray-600 dark:text-gray-400">Rows loaded: {newProductData.pricing_rows?.length || 0}</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label className="block text-sm font-medium">Item type</label>
+                    <select name="item_type" value={newProductData.item_type || 'physical'} onChange={handleField} className="mt-1 block w-full input-field">
+                        <option value="physical">Physical</option>
+                        <option value="digital">Digital</option>
+                    </select>
+                </div>
+                <div>
+                    <label className="block text-sm font-medium">Production type</label>
+                    <select name="production_type" value={newProductData.production_type || 'made_to_order'} onChange={handleField} className="mt-1 block w-full input-field">
+                        <option value="made_to_order">Made to order</option>
+                        <option value="finished">Finished product</option>
+                    </select>
+                </div>
+                <div>
+                    <label className="block text-sm font-medium">Shipping profile ID</label>
+                    <input name="shipping_profile_id" value={newProductData.shipping_profile_id || ''} onChange={handleField} className="mt-1 block w-full input-field" />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium">Return policy ID</label>
+                    <input name="return_policy_id" value={newProductData.return_policy_id || ''} onChange={handleField} className="mt-1 block w-full input-field" />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium">Processing profile ID</label>
+                    <input name="processing_profile_id" value={newProductData.processing_profile_id || ''} onChange={handleField} className="mt-1 block w-full input-field" />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium">Shop section ID (optional)</label>
+                    <input name="shop_section_id" value={newProductData.shop_section_id || ''} onChange={handleField} className="mt-1 block w-full input-field" />
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="personalization_enabled" checked={Boolean(newProductData.personalization_enabled)} onChange={handleField} /> Personalization enabled</label>
+                <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="personalization_optional" checked={Boolean(newProductData.personalization_optional)} onChange={handleField} /> Personalization optional</label>
+                <div className="md:col-span-2">
+                    <label className="block text-sm font-medium">Personalization instructions (max 256)</label>
+                    <textarea name="personalization_instructions" maxLength={256} value={newProductData.personalization_instructions || ''} onChange={handleField} className="mt-1 block w-full input-field" rows={2} />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium">Buyer character limit (1-1024)</label>
+                    <input type="number" min={1} max={1024} name="personalization_buyer_limit" value={newProductData.personalization_buyer_limit || 256} onChange={handleField} className="mt-1 block w-full input-field" />
+                </div>
+            </div>
+
+            <div className="flex justify-between">
+                <button onClick={onPrev} className="btn-secondary flex items-center"><ArrowLeft className="w-4 h-4 me-2"/>Previous Step</button>
+                <button onClick={handleNext} className="btn-primary">Validate & Continue</button>
+            </div>
+        </div>
+    );
+};
+
+// Step 5: Preview
 const Step4: React.FC<{onPrev: () => void}> = ({ onPrev }) => {
     const { t } = useTranslation();
     const { newProductData, publishNewProduct, etsyCategories } = useAppContext();
@@ -598,6 +764,7 @@ const Step4: React.FC<{onPrev: () => void}> = ({ onPrev }) => {
                     <p><strong className="text-gray-500">{t('add_product_price_label')}:</strong> ${newProductData.price}</p>
                     <p><strong className="text-gray-500">{t('add_product_quantity_label')}:</strong> {newProductData.quantity}</p>
                     <p><strong className="text-gray-500">{t('add_product_category_label')}:</strong> {categoryName}</p>
+                    <p><strong className="text-gray-500">Pricing rows:</strong> {newProductData.pricing_rows?.length || 0}</p>
                 </div>
                  <div>
                     <strong className="text-gray-500 text-sm">{t('add_product_description_label')}:</strong>

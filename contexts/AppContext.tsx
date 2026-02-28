@@ -116,7 +116,21 @@ const defaultNewProductData: Partial<NewProductData> = {
     images: [],
     imageAltTexts: [],
     description: '',
-    tags: []
+    tags: [],
+    ring_sizes: ['6', '7', '8', '9', '10', '11', '12'],
+    ring_materials: ['sterling silver', '14k gold', 'platinum'],
+    pricing_rows: [],
+    item_type: 'physical',
+    production_type: 'made_to_order',
+    shipping_profile_id: '',
+    return_policy_id: '',
+    processing_profile_id: '',
+    shop_section_id: '',
+    materials_list: [],
+    personalization_enabled: false,
+    personalization_instructions: '',
+    personalization_buyer_limit: 256,
+    personalization_optional: true,
 };
 
 
