@@ -248,7 +248,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (invError?.response?.data) {
           console.error('⚠️ Inventory error details:', JSON.stringify(invError.response.data, null, 2));
         }
-        inventoryWarning = invError?.response?.data?.error || invError?.message || 'Inventory update failed';
+        const invData = invError?.response?.data;
+        inventoryWarning = invData?.error || invData?.error_description || invData?.detail || (typeof invData === 'string' ? invData : null) || invError?.message || 'Inventory update failed';
       }
     }
 

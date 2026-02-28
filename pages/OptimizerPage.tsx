@@ -293,7 +293,7 @@ const OptimizerPage: React.FC = () => {
             Back to Products
         </button>
         
-        {optimizedData && (
+        {(optimizedData || (priceToSave !== null && priceToSave > 0) || pricingRows.length > 0) && (
              <button 
                 onClick={handleSaveToEtsy}
                 disabled={isSaving}
@@ -456,7 +456,7 @@ const OptimizerPage: React.FC = () => {
         </div>
 
         <div className="p-6 min-h-[200px]">
-            {!optimizedData && !isLoading && (
+            {!optimizedData && !isLoading && activeTab !== 'prices' && (
                 <div className="flex flex-col items-center justify-center text-gray-400 py-8">
                     <Sparkles className="w-12 h-12 mb-3 text-gray-300 dark:text-gray-600" />
                     <p>Click "Optimize Now" to generate content.</p>
@@ -583,62 +583,64 @@ const OptimizerPage: React.FC = () => {
                         </div>
                     )}
 
-                    {activeTab === 'prices' && (
-                      <div className="animate-fadeIn space-y-4">
-                        <label className="text-sm font-medium text-gray-900 dark:text-white block">Pricing Import (dXb-pricing CSV/XLSX)</label>
-                        <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900">
-                          <Upload className="w-4 h-4" />
-                          <span className="text-sm">Upload pricing file</span>
-                          <input
-                            type="file"
-                            accept=".csv,.xlsx,.xls"
-                            className="hidden"
-                            onChange={(e) => {
-                              const f = e.target.files?.[0];
-                              if (f) handlePricingFileUpload(f);
-                            }}
-                          />
-                        </label>
 
-                        <div>
-                          <label className="text-xs text-gray-500">Price to save on Etsy (base listing price)</label>
-                          <input
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            value={priceToSave ?? ''}
-                            onChange={(e) => setPriceToSave(e.target.value ? Number(e.target.value) : null)}
-                            className="mt-1 w-full bg-gray-50 dark:bg-gray-900 p-3 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 outline-none"
-                            placeholder="e.g. 249.99"
-                          />
-                          <p className="text-xs text-gray-500 mt-2">This tab sends only Size, Material, and Final Price (CAD) rows to Etsy inventory variations, and can also save a base listing price.</p>
-                        </div>
-
-                        {pricingRows.length > 0 && (
-                          <div className="max-h-56 overflow-auto border rounded-lg border-gray-200 dark:border-gray-700">
-                            <table className="w-full text-xs">
-                              <thead className="bg-gray-100 dark:bg-gray-800 sticky top-0">
-                                <tr>
-                                  <th className="text-left p-2">Size</th>
-                                  <th className="text-left p-2">Material</th>
-                                  <th className="text-left p-2">Price</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {pricingRows.slice(0, 80).map((r, i) => (
-                                  <tr key={`${r.size}-${r.material}-${i}`} className="border-t border-gray-100 dark:border-gray-800">
-                                    <td className="p-2">{r.size}</td>
-                                    <td className="p-2">{r.material}</td>
-                                    <td className="p-2">${r.price.toFixed(2)}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        )}
-                      </div>
-                    )}
                 </>
+            )}
+
+            {activeTab === 'prices' && !isLoading && (
+              <div className="animate-fadeIn space-y-4">
+                <label className="text-sm font-medium text-gray-900 dark:text-white block">Pricing Import (dXb-pricing CSV/XLSX)</label>
+                <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900">
+                  <Upload className="w-4 h-4" />
+                  <span className="text-sm">Upload pricing file</span>
+                  <input
+                    type="file"
+                    accept=".csv,.xlsx,.xls"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) handlePricingFileUpload(f);
+                    }}
+                  />
+                </label>
+
+                <div>
+                  <label className="text-xs text-gray-500">Price to save on Etsy (base listing price)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={priceToSave ?? ''}
+                    onChange={(e) => setPriceToSave(e.target.value ? Number(e.target.value) : null)}
+                    className="mt-1 w-full bg-gray-50 dark:bg-gray-900 p-3 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 outline-none"
+                    placeholder="e.g. 249.99"
+                  />
+                  <p className="text-xs text-gray-500 mt-2">This tab sends only Size, Material, and Final Price (CAD) rows to Etsy inventory variations, and can also save a base listing price.</p>
+                </div>
+
+                {pricingRows.length > 0 && (
+                  <div className="max-h-56 overflow-auto border rounded-lg border-gray-200 dark:border-gray-700">
+                    <table className="w-full text-xs">
+                      <thead className="bg-gray-100 dark:bg-gray-800 sticky top-0">
+                        <tr>
+                          <th className="text-left p-2">Size</th>
+                          <th className="text-left p-2">Material</th>
+                          <th className="text-left p-2">Price</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pricingRows.slice(0, 80).map((r, i) => (
+                          <tr key={`${r.size}-${r.material}-${i}`} className="border-t border-gray-100 dark:border-gray-800">
+                            <td className="p-2">{r.size}</td>
+                            <td className="p-2">{r.material}</td>
+                            <td className="p-2">${r.price.toFixed(2)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
             )}
         </div>
       </Card>
