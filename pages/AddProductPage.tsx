@@ -331,7 +331,7 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
     };
 
     const handleNext = () => {
-        if (!newProductData.images?.length || !newProductData.title || !newProductData.taxonomy_id || !newProductData.price || !newProductData.quantity) {
+        if (!newProductData.images?.length || !newProductData.title || !newProductData.taxonomy_id || !newProductData.quantity) {
             showToast({ tKey: 'add_product_validation_error', type: 'error' });
             return;
         }
@@ -390,10 +390,6 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
                         <option value="">{t('add_product_select_category')}</option>
                         {etsyCategories.map(cat => <option key={cat.id} value={cat.id}>{cat.path}</option>)}
                     </select>
-                </div>
-                <div>
-                    <label htmlFor="price" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_price_label')}</label>
-                    <input type="number" name="price" id="price" value={newProductData.price || ''} min="0" step="0.01" onChange={handleChange} className="mt-1 block w-full input-field" />
                 </div>
                 <div>
                     <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_quantity_label')}</label>
@@ -749,8 +745,7 @@ const Step4: React.FC<{onPrev: () => void}> = ({ onPrev }) => {
             </div>
             <div className="space-y-4 bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg">
                 <h4 className="text-xl font-bold text-gray-900 dark:text-white">{newProductData.title}</h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    <p><strong className="text-gray-500">{t('add_product_price_label')}:</strong> ${newProductData.price}</p>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                     <p><strong className="text-gray-500">{t('add_product_quantity_label')}:</strong> {newProductData.quantity}</p>
                     <p><strong className="text-gray-500">{t('add_product_category_label')}:</strong> {categoryName}</p>
                     <p><strong className="text-gray-500">Pricing rows:</strong> {newProductData.pricing_rows?.length || 0}</p>
@@ -775,6 +770,35 @@ const Step4: React.FC<{onPrev: () => void}> = ({ onPrev }) => {
                         ))}
                     </div>
                 </div>
+                {newProductData.pricing_rows && newProductData.pricing_rows.length > 0 && (
+                    <div>
+                        <strong className="text-gray-500 text-sm">Variant pricing preview:</strong>
+                        <div className="mt-2 max-h-56 overflow-auto border rounded-lg border-gray-200 dark:border-gray-700">
+                            <table className="w-full text-xs">
+                                <thead className="bg-gray-100 dark:bg-gray-800 sticky top-0">
+                                    <tr>
+                                        <th className="text-left p-2">Size</th>
+                                        <th className="text-left p-2">Material</th>
+                                        <th className="text-left p-2">Price</th>
+                                        <th className="text-left p-2">Qty</th>
+                                        <th className="text-left p-2">SKU</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {newProductData.pricing_rows.slice(0, 120).map((r, i) => (
+                                        <tr key={`${r.size}-${r.material}-${i}`} className="border-t border-gray-100 dark:border-gray-800">
+                                            <td className="p-2">{r.size}</td>
+                                            <td className="p-2">{r.material}</td>
+                                            <td className="p-2">${Number(r.price || 0).toFixed(2)}</td>
+                                            <td className="p-2">{r.quantity ?? '-'}</td>
+                                            <td className="p-2">{r.sku || '-'}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
             </div>
             <div className="flex justify-between">
                 <button onClick={onPrev} className="btn-secondary flex items-center"><ArrowLeft className="w-4 h-4 me-2"/>{t('add_product_prev_step')}</button>
