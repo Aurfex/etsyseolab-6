@@ -579,25 +579,31 @@ const StepPricing: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNex
     const parseCsv = (text: string) => {
         const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
         if (lines.length < 2) throw new Error('CSV is empty.');
-        const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+
+        const delimiter = (lines[0].match(/;/g)?.length || 0) > (lines[0].match(/,/g)?.length || 0) ? ';' : ',';
+        const normalizeHeader = (h: string) => h.replace(/^"|"$/g, '').trim().toLowerCase().replace(/[_\-]+/g, ' ').replace(/\s+/g, ' ');
+        const headers = lines[0].split(delimiter).map(normalizeHeader);
+
+        const findIndex = (aliases: string[]) => headers.findIndex(h => aliases.includes(h));
         const idx = {
-            size: headers.indexOf('size'),
-            material: headers.indexOf('material'),
-            price: headers.indexOf('price'),
-            quantity: headers.indexOf('quantity'),
-            sku: headers.indexOf('sku'),
+            size: findIndex(['size', 'ring size', 'ringsize', 'size us', 'us size']),
+            material: findIndex(['material', 'metal', 'variant material']),
+            price: findIndex(['price', 'base price', 'unit price', 'final price']),
+            quantity: findIndex(['quantity', 'qty', 'stock']),
+            sku: findIndex(['sku', 'code', 'item sku']),
         };
+
         if (idx.size === -1 || idx.material === -1 || idx.price === -1) {
-            throw new Error('CSV must include size, material, price columns.');
+            throw new Error('CSV must include size/material/price columns (aliases supported: ring size, metal, base price).');
         }
 
         const rows = lines.slice(1).map((line) => {
-            const c = line.split(',').map(v => v.trim());
+            const c = line.split(delimiter).map(v => v.replace(/^"|"$/g, '').trim());
             return {
                 size: c[idx.size] || '',
                 material: c[idx.material] || '',
-                price: Number(c[idx.price] || 0),
-                quantity: idx.quantity >= 0 ? Number(c[idx.quantity] || 0) : undefined,
+                price: Number(String(c[idx.price] || '0').replace(/[^0-9.\-]/g, '')),
+                quantity: idx.quantity >= 0 ? Number(String(c[idx.quantity] || '0').replace(/[^0-9.\-]/g, '')) : undefined,
                 sku: idx.sku >= 0 ? c[idx.sku] || '' : undefined,
             };
         }).filter(r => r.size && r.material);
