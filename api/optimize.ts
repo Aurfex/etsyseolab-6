@@ -10,6 +10,8 @@ type CompetitorInsights = {
     yourScore: number;
     avgTopScore: number;
     topCompetitorTitle: string;
+    topKeywords: string[];
+    commonTitleStarts: string[];
     recommendations: string[];
 };
 
@@ -28,6 +30,32 @@ const calcScore = (title: string, description: string, tags: string[]) => {
     return Math.max(20, Math.min(99, Math.round(score)));
 };
 
+const STOPWORDS = new Set([
+    'the', 'and', 'for', 'with', 'ring', 'rings', 'jewelry', 'jewellery', 'gift', 'women', 'mens', 'men', 'of', 'in', 'to', 'a', 'an'
+]);
+
+const tokenize = (text: string): string[] =>
+    String(text || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .split(/\s+/)
+        .map((w) => w.trim())
+        .filter((w) => w.length >= 3 && !STOPWORDS.has(w));
+
+const extractTopKeywords = (titles: string[], limit = 12): string[] => {
+    const freq = new Map<string, number>();
+    for (const t of titles) {
+        for (const w of tokenize(t)) freq.set(w, (freq.get(w) || 0) + 1);
+    }
+    return [...freq.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, limit)
+        .map(([k]) => k);
+};
+
+const getTitleStart = (title: string): string =>
+    String(title || '').trim().split(/\s+/).slice(0, 2).join(' ').toLowerCase();
+
 async function getCompetitorInsights(product: Product, token: string): Promise<CompetitorInsights | null> {
     const apiKey = process.env.ETSY_CLIENT_ID;
     const secret = process.env.ETSY_CLIENT_SECRET;
@@ -40,7 +68,12 @@ async function getCompetitorInsights(product: Product, token: string): Promise<C
         'Content-Type': 'application/json'
     };
 
-    const keywordSeed = (product.title || '').split(/\s+/).filter(Boolean).slice(0, 5).join(' ');
+    const keywordSeed = [product.title || '', ...(product.tags || [])]
+        .join(' ')
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 8)
+        .join(' ');
     if (!keywordSeed) return null;
 
     const { data } = await axios.get(
@@ -65,6 +98,21 @@ async function getCompetitorInsights(product: Product, token: string): Promise<C
     const top5 = ranked.slice(0, 5);
     const avgTopScore = top5.length ? Math.round(top5.reduce((acc, i) => acc + i.score, 0) / top5.length) : yourScore;
 
+    const competitorTitles = competitors.map((c) => c.title).filter(Boolean);
+    const topKeywords = extractTopKeywords(competitorTitles, 12);
+
+    const startFreq = new Map<string, number>();
+    for (const t of competitorTitles) {
+        const s = getTitleStart(t);
+        if (!s) continue;
+        startFreq.set(s, (startFreq.get(s) || 0) + 1);
+    }
+    const commonTitleStarts = [...startFreq.entries()]
+        .filter(([, v]) => v >= 2)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6)
+        .map(([k]) => k);
+
     const recommendations: string[] = [];
     if ((product.title || '').length < 90) recommendations.push('Title is short. Aim for 90-140 chars with strong keywords.');
     if ((product.tags || []).length < 10) recommendations.push('Use 10-13 relevant tags (<=20 chars each).');
@@ -78,6 +126,8 @@ async function getCompetitorInsights(product: Product, token: string): Promise<C
         yourScore,
         avgTopScore,
         topCompetitorTitle: ranked[0]?.title || '',
+        topKeywords,
+        commonTitleStarts,
         recommendations,
     };
 }
@@ -131,16 +181,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         const competitorContext = competitorInsights
-            ? `\nCOMPETITOR INSIGHTS:\n- Current rank: ${competitorInsights.yourRank}/${competitorInsights.totalCompared}\n- Current score: ${competitorInsights.yourScore}\n- Top average score: ${competitorInsights.avgTopScore}\n- Keyword seed: ${competitorInsights.keywordSeed}\n- Top competitor title: ${competitorInsights.topCompetitorTitle}\n- Recommendations:\n${competitorInsights.recommendations.map((r, i) => `  ${i + 1}. ${r}`).join('\n')}\n\nOptimization priority: improve relative ranking vs competitors while staying natural and high-converting.\n`
+            ? `\nCOMPETITOR INSIGHTS:\n- Current rank: ${competitorInsights.yourRank}/${competitorInsights.totalCompared}\n- Current score: ${competitorInsights.yourScore}\n- Top average score: ${competitorInsights.avgTopScore}\n- Keyword seed: ${competitorInsights.keywordSeed}\n- Top competitor title: ${competitorInsights.topCompetitorTitle}\n- Top competitor keywords: ${competitorInsights.topKeywords.join(', ')}\n- Overused title starts to avoid: ${competitorInsights.commonTitleStarts.join(' | ') || 'none'}\n- Recommendations:\n${competitorInsights.recommendations.map((r, i) => `  ${i + 1}. ${r}`).join('\n')}\n\nOptimization priority: improve relative ranking vs competitors while staying natural and high-converting.\n`
             : '';
 
         const optimizeTitle = async (originalTitle: string): Promise<string> => {
-            const prompt = `Transform "${originalTitle}" into a highly optimized Etsy product title for a jewelry shop named 'dxbJewellery'. It should be long, descriptive, and include keywords like 'Handmade', material type, style (e.g., 'Minimalist'), and benefits (e.g., 'Hypoallergenic'). Target audience is women looking for jewelry gifts. Example transformation: "Gold Hoop Earrings" becomes "Handmade 14k Gold Hoop Earrings – Minimalist Jewelry for Women – Hypoallergenic – Lightweight Dangle Earrings".${competitorContext}\nSTRICT CONSTRAINT: final title must be 90-140 characters. Return ONLY the title.`;
+            const avoidStarts = competitorInsights?.commonTitleStarts || [];
+            const prompt = `Rewrite this Etsy title for better SEO and conversion, but keep it natural and product-specific.\n\nOriginal title: "${originalTitle}"\n\nRules:\n1) 90-140 chars.\n2) Do NOT always use the same formula. Avoid repetitive openings and robotic templates.\n3) Include material/stone/style/use-case only if truly relevant to this specific item.\n4) Use high-intent Etsy keywords from competitor context, but keep it unique and readable.\n5) Do not force the word "Handmade" unless strongly relevant from source context.\n6) Avoid these overused starts: ${avoidStarts.join(' | ') || 'none'}.\n7) No keyword stuffing, no emojis, no quotes.\n\n${competitorContext}\nReturn ONLY one final title.`;
             try {
                 const response = await openai.chat.completions.create({
                     model: model,
                     messages: [{ role: "user", content: prompt }],
-                    temperature: 0.7,
+                    temperature: 0.85,
                 });
                 const generated = response.choices[0].message.content?.trim().replace(/^"|"$/g, '') || originalTitle;
                 return generated.length > 140 ? generated.slice(0, 140) : generated;
