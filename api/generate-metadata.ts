@@ -108,6 +108,7 @@ Seller notes:
           body: JSON.stringify({
             model: process.env.OPENAI_MODEL || 'gpt-4o',
             temperature: 0.2,
+            response_format: { type: 'json_object' },
             messages: [
               {
                 role: 'user',
@@ -127,10 +128,11 @@ Seller notes:
         const end = txt.lastIndexOf('}');
         const jsonText = start >= 0 && end > start ? txt.slice(start, end + 1) : '{}';
         const parsed = JSON.parse(jsonText);
-        return res.status(200).json(normalizeOutput(parsed, details, images));
+        return res.status(200).json({ ...normalizeOutput(parsed, details, images), provider: 'openai' });
       } catch (err: any) {
         openAiError = err?.message || 'OpenAI analyze failed';
-        console.error('OpenAI analyze failed, falling back:', openAiError);
+        console.error('OpenAI analyze failed:', openAiError);
+        return res.status(502).json({ error: `OpenAI analyze failed: ${openAiError}` });
       }
     }
 
