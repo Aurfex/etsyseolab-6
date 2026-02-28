@@ -25,12 +25,17 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
 
   const host = String(req.headers.host || '').toLowerCase();
   const isLocalhost = host.includes('localhost') || host.startsWith('127.0.0.1');
-  const secureAttr = isLocalhost ? '' : ' Secure;';
+  const cookieAttrs = isLocalhost
+    ? 'Path=/; HttpOnly; SameSite=Lax; Max-Age=300'
+    : 'Path=/; HttpOnly; Secure; SameSite=None; Max-Age=300';
 
-  // Store verifier and state in cookies (httpOnly; secure on non-local hosts)
+  // Prevent any intermediary caching on OAuth start endpoint
+  res.setHeader('Cache-Control', 'no-store');
+
+  // Store verifier and state in cookies
   res.setHeader('Set-Cookie', [
-    `etsy_code_verifier=${codeVerifier}; Path=/; HttpOnly;${secureAttr} SameSite=Lax; Max-Age=300`,
-    `etsy_oauth_state=${state}; Path=/; HttpOnly;${secureAttr} SameSite=Lax; Max-Age=300`
+    `etsy_code_verifier=${codeVerifier}; ${cookieAttrs}`,
+    `etsy_oauth_state=${state}; ${cookieAttrs}`
   ]);
 
   const scopes = process.env.ETSY_SCOPES || 'listings_r listings_w listings_d';

@@ -13,12 +13,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'No code provided' });
   }
 
-  // Retrieve code verifier and state from cookies
-  const cookies = req.headers.cookie;
-  if (!cookies) return res.status(400).json({ error: 'No cookies found' });
+  // Prevent any intermediary caching on OAuth callback endpoint
+  res.setHeader('Cache-Control', 'no-store');
 
-  const codeVerifier = cookies.split(';').find(c => c.trim().startsWith('etsy_code_verifier='))?.split('=')[1];
-  const storedState = cookies.split(';').find(c => c.trim().startsWith('etsy_oauth_state='))?.split('=')[1];
+  // Retrieve code verifier and state from cookies
+  const rawCookieHeader = req.headers.cookie || '';
+  const cookies = Object.fromEntries(
+    rawCookieHeader
+      .split(';')
+      .map(p => p.trim())
+      .filter(Boolean)
+      .map(p => {
+        const i = p.indexOf('=');
+        return i === -1 ? [p, ''] : [p.slice(0, i), p.slice(i + 1)];
+      })
+  );
+
+  const codeVerifier = cookies.etsy_code_verifier;
+  const storedState = cookies.etsy_oauth_state;
+
+  if (!rawCookieHeader || !codeVerifier || !storedState) {
+    return res.status(400).json({
+      error: 'No cookies found',
+      hint: 'Start login from the same domain as callback (use https://etsyseolab-6.vercel.app).'
+    });
+  }
 
   if (state !== storedState) {
     return res.status(400).json({ error: 'Invalid state parameter' });
@@ -28,10 +47,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Missing code verifier in cookies' });
   }
 
-  // Clear cookies
+  // Clear cookies (mirror modern attributes to ensure deletion in all browsers)
   res.setHeader('Set-Cookie', [
-    'etsy_code_verifier=; Path=/; Max-Age=0',
-    'etsy_oauth_state=; Path=/; Max-Age=0'
+    'etsy_code_verifier=; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=0',
+    'etsy_oauth_state=; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=0',
+    'etsy_code_verifier=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0',
+    'etsy_oauth_state=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0'
   ]);
 
   try {
