@@ -7,7 +7,7 @@ import { MOCK_FAQS, MOCK_SUGGESTED_QUESTIONS } from '../utils/mockFaqs';
 import { MOCK_LOYALTY_DATA } from '../utils/mockLoyalty';
 import { MOCK_STORIES } from '../utils/mockStories';
 import { generateSeoMetadata as apiGenerateSeoMetadata } from '../services/aiMetadataService';
-import { createListing, uploadListingImage } from '../services/etsyApiService';
+import { createListing, uploadListingImage, updateListing } from '../services/etsyApiService';
 import { MOCK_ETSY_CATEGORIES } from '../utils/mockEtsyData';
 
 
@@ -717,10 +717,21 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const publishNewProduct = useCallback(async (productData: NewProductData) => {
         addLog({type: 'product_created', tKey: 'log_product_creation_started', subtitle: productData.title, status: 'Processing' });
         try {
-            // Step 1: Create the listing with text data to get a listing ID.
-            const { listing_id } = await createListing(productData);
+            const pricingRows = Array.isArray(productData.pricing_rows) ? productData.pricing_rows : [];
+            const preferredPriceRow = pricingRows.find((r: any) => String(r.size) === '7' && /gold/i.test(String(r.material || ''))) || pricingRows[0];
+            const inferredBasePrice = preferredPriceRow?.price && Number(preferredPriceRow.price) > 0
+                ? Number(preferredPriceRow.price)
+                : Number(productData.price || 0);
 
-            // Step 2: Sequentially upload images to the new listing ID.
+            const createPayload: NewProductData = {
+                ...productData,
+                price: inferredBasePrice > 0 ? inferredBasePrice : 1,
+            };
+
+            // Step 1: Create listing shell
+            const { listing_id } = await createListing(createPayload);
+
+            // Step 2: Upload images
             if (productData.images && productData.images.length > 0) {
                  for (let i = 0; i < productData.images.length; i++) {
                     const imageFile = productData.images[i];
@@ -729,11 +740,21 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 }
             }
 
+            // Step 3: Push variation pricing matrix to Etsy inventory (if provided)
+            if (pricingRows.length > 0) {
+                await updateListing(listing_id, {
+                    price: inferredBasePrice > 0 ? inferredBasePrice : undefined,
+                    pricingRows: pricingRows.map((r: any) => ({
+                        size: String(r.size),
+                        material: String(r.material),
+                        price: Number(r.price),
+                    })),
+                });
+            }
+
             addLog({type: 'product_created', tKey: 'log_product_creation_success', subtitle: productData.title, status: 'Success' });
             showToast({tKey: 'toast_product_published', type: 'success'});
-            // Reset form on success
             setNewProductData(defaultNewProductData);
-            // Switch page after successful submission
             setPage('dashboard');
 
         } catch (e: any) {
