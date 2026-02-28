@@ -1,8 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { Bot, AlertTriangle, Loader2, Search, Wrench } from 'lucide-react';
+import { Bot, AlertTriangle, Loader2, Search, Wrench, Save } from 'lucide-react';
 import { useAppContext } from '../contexts/AppContext';
 import { Product } from '../types';
 import { useTranslation } from '../contexts/LanguageContext';
+import { updateListing } from '../services/etsyApiService';
 
 const Card: React.FC<{children: React.ReactNode, className?: string}> = ({ children, className }) => (
   <div className={`bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card dark:shadow-card-dark ${className}`}>
@@ -56,12 +57,14 @@ const scanProduct = (p: Product): Issue[] => {
 };
 
 const AutopilotPage: React.FC = () => {
-  const { products, settings, updateSettings, runFullOptimization } = useAppContext();
+  const { products, settings, updateSettings, runFullOptimization, showToast } = useAppContext();
   const { t } = useTranslation();
 
   const [issues, setIssues] = useState<Issue[]>([]);
   const [isScanning, setIsScanning] = useState(false);
   const [fixingIssueId, setFixingIssueId] = useState<string | null>(null);
+  const [savingProductId, setSavingProductId] = useState<string | null>(null);
+  const [fixPreview, setFixPreview] = useState<Record<string, { old: Pick<Product, 'title' | 'description' | 'tags'>; next: Pick<Product, 'title' | 'description' | 'tags'> }>>({});
 
   const stats = useMemo(() => ({
     totalProducts: products.length,
@@ -84,11 +87,49 @@ const AutopilotPage: React.FC = () => {
     if (!product) return;
     setFixingIssueId(issue.id);
     try {
-      await runFullOptimization(product);
-      const rescanned = products.flatMap(scanProduct).filter(i => i.productId !== issue.productId);
-      setIssues(rescanned);
+      const before = {
+        title: product.title,
+        description: product.description,
+        tags: Array.isArray(product.tags) ? product.tags : [],
+      };
+      const optimized = await runFullOptimization(product);
+      const after = {
+        title: optimized.title || before.title,
+        description: optimized.description || before.description,
+        tags: optimized.tags?.length ? optimized.tags : before.tags,
+      };
+
+      setFixPreview(prev => ({ ...prev, [product.id]: { old: before, next: after } }));
+      setIssues(prev => prev.filter(i => i.productId !== issue.productId));
+      showToast({ tKey: 'toast_metadata_generated', type: 'success' });
     } finally {
       setFixingIssueId(null);
+    }
+  };
+
+  const saveFixToEtsy = async (productId: string) => {
+    const product = products.find(p => p.id === productId);
+    const preview = fixPreview[productId];
+    if (!product || !preview) return;
+
+    const listingId = (product.listing_id || product.id) as string;
+    setSavingProductId(productId);
+    try {
+      await updateListing(listingId, {
+        title: preview.next.title,
+        description: preview.next.description,
+        tags: preview.next.tags,
+      } as any);
+      showToast({ tKey: 'toast_product_published', type: 'success' });
+      setFixPreview(prev => {
+        const copy = { ...prev };
+        delete copy[productId];
+        return copy;
+      });
+    } catch (e: any) {
+      showToast({ tKey: 'toast_generic_error_with_message', options: { message: e.message }, type: 'error' });
+    } finally {
+      setSavingProductId(null);
     }
   };
 
@@ -131,6 +172,34 @@ const AutopilotPage: React.FC = () => {
           </button>
         </div>
       </Card>
+
+      {Object.keys(fixPreview).length > 0 && (
+        <Card>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Fix Preview (before saving to Etsy)</h3>
+          <div className="space-y-4">
+            {Object.entries(fixPreview).map(([productId, preview]) => {
+              const p = products.find(x => x.id === productId);
+              return (
+                <div key={productId} className="p-3 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <p className="font-semibold text-gray-900 dark:text-white">{p?.title || productId}</p>
+                  <p className="text-xs text-gray-500 mt-1">Title (new): {preview.next.title}</p>
+                  <p className="text-xs text-gray-500">Tags (new): {preview.next.tags.join(', ')}</p>
+                  <div className="mt-2 flex gap-2">
+                    <button
+                      onClick={() => saveFixToEtsy(productId)}
+                      disabled={savingProductId === productId}
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-600 text-white text-sm disabled:opacity-60"
+                    >
+                      {savingProductId === productId ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                      {savingProductId === productId ? 'Saving...' : 'Save to Etsy'}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
 
       <Card>
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center">
