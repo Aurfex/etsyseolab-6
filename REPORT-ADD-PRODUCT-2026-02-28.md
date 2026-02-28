@@ -76,7 +76,30 @@
 ### Commit for this update
 - `8417d20` – Add Variants + Pricing CSV step to Add Product flow with Etsy required fields.
 
+## Final Resolution (end of session)
+The Add Product flow is now confirmed end-to-end working, including Etsy variations.
+
+### Final fixes completed after this report's initial draft
+- Added strict validation / defaults for Etsy create listing requirements:
+  - `when_made` enum update to `2020_2026`
+  - `shipping_profile_id` required path + default prefill for user shop
+  - `readiness_state_id` discovery for shop-specific valid value
+- Added client-side image compression before upload to prevent Vercel `FUNCTION_PAYLOAD_TOO_LARGE`.
+- Ensured publish flow calls inventory sync after listing creation and image upload.
+- Reworked variation rebuild logic to avoid deprecated property IDs and use valid Etsy property discovery.
+- Fixed taxonomy/listing endpoint path issues causing inventory `404 Resource not found`.
+
+### Confirmed final working result
+- Etsy listing creation: ✅
+- Image upload: ✅
+- Variation creation in Etsy (Size + Material): ✅
+- 21 pricing rows applied from CSV matrix: ✅
+- User confirmation received: success (`yessssss...`).
+
+### Stable final commit
+- `db30aee` on `main`
+
 ## Recommended Next Step (if continuing)
 1. Add “accept only if score improved” guard for re-score action.
 2. Add visible provider badge in UI (`OpenAI` / `Fallback`) for easier debugging.
-3. Wire `pricing_rows` into actual Etsy variation/inventory API call (currently collected in UI state and ready for backend mapping).
+3. Add optional dry-run validator panel that checks Etsy-required fields before submit.
