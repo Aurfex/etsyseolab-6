@@ -14,10 +14,10 @@ const AddProductPage: React.FC = () => {
     const { t } = useTranslation();
     const [currentStep, setCurrentStep] = useState(1);
     const steps = [
-        t('add_product_step_1'),
-        t('add_product_step_2'),
-        t('add_product_step_3'),
-        t('add_product_step_4'),
+        'Images',
+        'Basic Info',
+        'AI SEO',
+        'Review & Publish',
     ];
 
     return (
@@ -46,8 +46,8 @@ const AddProductPage: React.FC = () => {
                     </nav>
                 </div>
                 
-                {currentStep === 1 && <Step1 onNext={() => setCurrentStep(2)} />}
-                {currentStep === 2 && <Step2 onNext={() => setCurrentStep(3)} onPrev={() => setCurrentStep(1)} />}
+                {currentStep === 1 && <Step2 onNext={() => setCurrentStep(2)} />}
+                {currentStep === 2 && <Step1 onNext={() => setCurrentStep(3)} onPrev={() => setCurrentStep(1)} />}
                 {currentStep === 3 && <Step3 onNext={() => setCurrentStep(4)} onPrev={() => setCurrentStep(2)} />}
                 {currentStep === 4 && <Step4 onPrev={() => setCurrentStep(3)} />}
 
@@ -57,7 +57,7 @@ const AddProductPage: React.FC = () => {
 };
 
 // Step 1: Basic Info
-const Step1: React.FC<{onNext: () => void}> = ({ onNext }) => {
+const Step1: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, onPrev }) => {
     const { t } = useTranslation();
     const { newProductData, updateNewProductData, etsyCategories, showToast } = useAppContext();
 
@@ -126,7 +126,10 @@ const Step1: React.FC<{onNext: () => void}> = ({ onNext }) => {
                     </div>
                 </div>
             </div>
-            <div className="flex justify-end">
+            <div className="flex justify-between">
+                {onPrev ? (
+                    <button onClick={onPrev} className="btn-secondary flex items-center"><ArrowLeft className="w-4 h-4 me-2"/>{t('add_product_prev_step')}</button>
+                ) : <span />}
                 <button onClick={handleNext} className="btn-primary">{t('add_product_next_step')}</button>
             </div>
         </div>
@@ -134,7 +137,7 @@ const Step1: React.FC<{onNext: () => void}> = ({ onNext }) => {
 };
 
 // Step 2: Images
-const Step2: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNext, onPrev }) => {
+const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, onPrev }) => {
     const { t } = useTranslation();
     const { newProductData, updateNewProductData, showToast } = useAppContext();
     const [isDragging, setIsDragging] = useState(false);
@@ -240,7 +243,9 @@ const Step2: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNext, onP
                 </div>
             )}
             <div className="flex justify-between">
-                <button onClick={onPrev} className="btn-secondary flex items-center"><ArrowLeft className="w-4 h-4 me-2"/>{t('add_product_prev_step')}</button>
+                {onPrev ? (
+                    <button onClick={onPrev} className="btn-secondary flex items-center"><ArrowLeft className="w-4 h-4 me-2"/>{t('add_product_prev_step')}</button>
+                ) : <span />}
                 <button onClick={handleNext} className="btn-primary">{t('add_product_next_step')}</button>
             </div>
         </div>
@@ -257,7 +262,10 @@ const Step3: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNext, onP
     const handleGenerate = async () => {
         setIsGenerating(true);
         try {
-            await generateSeoMetadata({ title: newProductData.title || '', description: newProductData.description || '' });
+            await generateSeoMetadata(
+                { title: newProductData.title || '', description: newProductData.description || '' },
+                newProductData.images || []
+            );
         } catch(e) {
             console.error(e);
         } finally {
@@ -296,10 +304,11 @@ const Step3: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNext, onP
                 <div>
                     <h3 className="text-lg font-bold">{t('add_product_ai_seo_title')}</h3>
                     <p className="text-sm text-gray-500">{t('add_product_ai_seo_subtitle')}</p>
+                    <p className="text-xs text-purple-600 mt-1">First upload images in step 2, then AI will generate title, description, tags, and alt texts from the images.</p>
                 </div>
-                 <button onClick={handleGenerate} disabled={isGenerating} className="btn-primary flex items-center gap-2">
+                 <button onClick={handleGenerate} disabled={isGenerating || !(newProductData.images && newProductData.images.length)} className="btn-primary flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
                     {isGenerating ? <Loader2 className="w-5 h-5 animate-spin"/> : <Sparkles className="w-5 h-5"/>}
-                    {isGenerating ? t('add_product_generating_button') : t('add_product_generate_button')}
+                    {isGenerating ? t('add_product_generating_button') : 'Generate from uploaded images'}
                  </button>
             </div>
              <div>

@@ -78,7 +78,7 @@ interface AppContextType {
   // Add Product
   newProductData: Partial<NewProductData>;
   updateNewProductData: (data: Partial<NewProductData>) => void;
-  generateSeoMetadata: (details: Pick<NewProductData, 'title' | 'description'>) => Promise<Pick<NewProductData, 'title' | 'description' | 'tags'>>;
+  generateSeoMetadata: (details: Pick<NewProductData, 'title' | 'description'>, files?: File[]) => Promise<Pick<NewProductData, 'title' | 'description' | 'tags'> & { imageAltTexts?: string[] }>;
   publishNewProduct: (productData: NewProductData) => Promise<void>;
   etsyCategories: EtsyCategory[];
 }
@@ -685,9 +685,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setNewProductData(prev => ({ ...prev, ...data }));
     }, []);
 
-    const generateSeoMetadata = useCallback(async (details: Pick<NewProductData, 'title' | 'description'>): Promise<Pick<NewProductData, 'title' | 'description' | 'tags'>> => {
+    const generateSeoMetadata = useCallback(async (
+        details: Pick<NewProductData, 'title' | 'description'>,
+        files: File[] = []
+    ): Promise<Pick<NewProductData, 'title' | 'description' | 'tags'> & { imageAltTexts?: string[] }> => {
         try {
-            const result = await apiGenerateSeoMetadata(details);
+            const result = await apiGenerateSeoMetadata(details, files);
             updateNewProductData(result);
             showToast({tKey: 'toast_metadata_generated', type: 'success'});
             return result;
