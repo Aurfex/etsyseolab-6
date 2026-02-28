@@ -141,6 +141,7 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
     const { newProductData, updateNewProductData, showToast, etsyCategories, generateSeoMetadata } = useAppContext();
     const [isDragging, setIsDragging] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [isImprovingSeo, setIsImprovingSeo] = useState(false);
     const [seoInsight, setSeoInsight] = useState<{ yourScore: number; yourRank: number; totalCompared: number; avgTopScore: number; topCompetitorTitle: string | null; recommendations: string[] } | null>(null);
 
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -267,6 +268,41 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
         updateNewProductData({ imageAltTexts: updatedAlts });
     };
 
+    const handleImproveSeo = async () => {
+        setIsImprovingSeo(true);
+        try {
+            const improved = await generateSeoMetadata(
+                { title: newProductData.title || '', description: newProductData.description || '' },
+                newProductData.images || []
+            );
+
+            const nextTitle = improved.title || newProductData.title || '';
+            const nextDescription = improved.description || newProductData.description || '';
+            const nextTags = improved.tags || newProductData.tags || [];
+
+            updateNewProductData({
+                title: nextTitle,
+                description: nextDescription,
+                tags: nextTags,
+                imageAltTexts: improved.imageAltTexts && improved.imageAltTexts.length
+                    ? improved.imageAltTexts
+                    : newProductData.imageAltTexts,
+            });
+
+            const compare = await compareSeoWithCompetitors({
+                title: nextTitle,
+                description: nextDescription,
+                tags: nextTags,
+            });
+            setSeoInsight(compare);
+            showToast({ tKey: 'toast_metadata_generated', type: 'success' });
+        } catch (e: any) {
+            showToast({ tKey: 'toast_generic_error_with_message', options: { message: e.message }, type: 'error' });
+        } finally {
+            setIsImprovingSeo(false);
+        }
+    };
+
     const handleNext = () => {
         if (!newProductData.images?.length || !newProductData.title || !newProductData.taxonomy_id || !newProductData.price || !newProductData.quantity) {
             showToast({ tKey: 'add_product_validation_error', type: 'error' });
@@ -364,19 +400,37 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
 
             {seoInsight && (
                 <div className="rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50/60 dark:bg-purple-900/20 p-4 space-y-2">
-                    <div className="flex items-center justify-between">
-                        <h4 className="font-semibold text-purple-800 dark:text-purple-200">Etsy SEO Score</h4>
-                        <span className="text-sm font-bold text-purple-700 dark:text-purple-300">{seoInsight.yourScore}/100</span>
-                    </div>
-                    <p className="text-sm text-gray-700 dark:text-gray-300">Rank: #{seoInsight.yourRank} از {seoInsight.totalCompared} | میانگین رقبا: {seoInsight.avgTopScore}</p>
-                    {seoInsight.topCompetitorTitle && (
-                        <p className="text-xs text-gray-600 dark:text-gray-400">Top competitor: {seoInsight.topCompetitorTitle}</p>
-                    )}
-                    {seoInsight.recommendations?.length > 0 && (
-                        <ul className="text-xs list-disc ps-5 text-gray-700 dark:text-gray-300 space-y-1">
-                            {seoInsight.recommendations.slice(0, 3).map((r, i) => <li key={i}>{r}</li>)}
-                        </ul>
-                    )}
+                    {(() => {
+                        const englishOnly = (seoInsight.recommendations || []).filter(r => !(/[\u0600-\u06FF]/.test(String(r))));
+                        return (
+                            <>
+                                <div className="flex items-center justify-between">
+                                    <h4 className="font-semibold text-purple-800 dark:text-purple-200">Etsy SEO Score</h4>
+                                    <span className="text-sm font-bold text-purple-700 dark:text-purple-300">{seoInsight.yourScore}/100</span>
+                                </div>
+                                <p className="text-sm text-gray-700 dark:text-gray-300">Rank: #{seoInsight.yourRank} of {seoInsight.totalCompared} | Top avg: {seoInsight.avgTopScore}</p>
+                                {seoInsight.topCompetitorTitle && (
+                                    <p className="text-xs text-gray-600 dark:text-gray-400">Top competitor: {seoInsight.topCompetitorTitle}</p>
+                                )}
+                                {englishOnly.length > 0 && (
+                                    <ul className="text-xs list-disc ps-5 text-gray-700 dark:text-gray-300 space-y-1">
+                                        {englishOnly.slice(0, 3).map((r, i) => <li key={i}>{r}</li>)}
+                                    </ul>
+                                )}
+                                <div className="pt-1">
+                                    <button
+                                        type="button"
+                                        onClick={handleImproveSeo}
+                                        disabled={isImprovingSeo}
+                                        className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                                    >
+                                        {isImprovingSeo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                                        {isImprovingSeo ? 'Improving SEO...' : 'Apply Suggestions & Re-score'}
+                                    </button>
+                                </div>
+                            </>
+                        );
+                    })()}
                 </div>
             )}
 
