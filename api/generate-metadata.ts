@@ -9,211 +9,163 @@ const verifyAuth = (req: VercelRequest): { authorized: boolean; error?: string }
   return { authorized: true };
 };
 
-type VisionImageInput = {
-  mimeType: string;
-  data: string;
+type VisionImageInput = { mimeType: string; data: string };
+
+type OutputShape = {
+  title: string;
+  description: string;
+  tags: string[];
+  imageAltTexts?: string[];
+  suggestedBasics: {
+    categoryHint: string;
+    price: number;
+    quantity: number;
+    who_made: 'i_did' | 'collective' | 'someone_else';
+    when_made: 'made_to_order' | '2020_2024' | '2010_2019' | 'before_2010';
+    is_supply: boolean;
+  };
+  warning?: string;
+};
+
+const normalizeOutput = (parsed: any, details: { title?: string; description?: string }, images: VisionImageInput[]): OutputShape => {
+  const title = String(parsed?.title || details.title || 'Handmade Jewelry Listing').trim().slice(0, 140);
+  const description = String(parsed?.description || details.description || '').trim();
+  const tags = Array.isArray(parsed?.tags)
+    ? [...new Set(parsed.tags.map((t: any) => String(t || '').trim()).filter(Boolean))].map((t) => t.slice(0, 20)).slice(0, 13)
+    : [];
+
+  const imageAltTexts = Array.isArray(parsed?.imageAltTexts)
+    ? parsed.imageAltTexts.map((a: any) => String(a || '').trim().slice(0, 140))
+    : images.map((_, i) => `${title} image ${i + 1}`.slice(0, 140));
+
+  const suggested = parsed?.suggestedBasics || {};
+  const suggestedBasics = {
+    categoryHint: String(suggested.categoryHint || 'Jewelry').trim(),
+    price: Number.isFinite(Number(suggested.price)) ? Number(suggested.price) : 29.99,
+    quantity: Number.isFinite(Number(suggested.quantity)) ? Math.max(1, Math.floor(Number(suggested.quantity))) : 1,
+    who_made: ['i_did', 'collective', 'someone_else'].includes(String(suggested.who_made)) ? String(suggested.who_made) as any : 'i_did',
+    when_made: ['made_to_order', '2020_2024', '2010_2019', 'before_2010'].includes(String(suggested.when_made)) ? String(suggested.when_made) as any : 'made_to_order',
+    is_supply: Boolean(suggested.is_supply),
+  };
+
+  return { title, description, tags, imageAltTexts, suggestedBasics };
 };
 
 export default async function endpoint(req: VercelRequest, res: VercelResponse) {
   const authCheck = verifyAuth(req);
-  if (!authCheck.authorized) {
-    return res.status(401).json({ error: authCheck.error });
-  }
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
+  if (!authCheck.authorized) return res.status(401).json({ error: authCheck.error });
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
   try {
     const body = (req.body || {}) as { details?: { title?: string; description?: string }; images?: VisionImageInput[] };
     const details = body?.details || {};
     const images = Array.isArray(body?.images) ? body.images.slice(0, 5) : [];
 
-    const apiKey = process.env.API_KEY;
-
-    // Soft fallback when AI key is missing on Vercel
-    if (!apiKey) {
-      const rawTitle = String(details.title || '').trim();
-      const safeTitle = (rawTitle || 'Handmade Jewelry Listing').slice(0, 140);
-      const baseWords = safeTitle
-        .toLowerCase()
-        .replace(/[^a-z0-9\s]/g, ' ')
-        .split(/\s+/)
-        .filter(Boolean)
-        .slice(0, 8);
-      const tags = [...new Set([
-        ...baseWords,
-        'handmade',
-        'gift for her',
-        'etsy shop',
-      ])].map(t => t.slice(0, 20)).slice(0, 13);
-
-      const imageAltTexts = (images || []).map((_, i) => `${safeTitle} product image ${i + 1}`.slice(0, 140));
-
-      return res.status(200).json({
-        title: safeTitle,
-        description: String(details.description || `Handmade item crafted with care. Perfect as a gift or daily accessory.\n\n- Quality materials\n- Thoughtful design\n- Ready for your Etsy audience`).trim(),
-        tags,
-        imageAltTexts,
-        suggestedBasics: {
-          categoryHint: 'Jewelry',
-          price: 29.99,
-          quantity: 1,
-          who_made: 'i_did',
-          when_made: 'made_to_order',
-          is_supply: false,
-        },
-        warning: 'AI key missing; fallback metadata used.',
-      });
-    }
-
-    const ai = new GoogleGenAI({ apiKey });
-    const model = 'gemini-2.5-flash';
-
-    const imageAwarePrompt = `You are an Etsy SEO + listing setup expert.
-Generate optimized metadata and practical listing defaults using provided images and optional seller notes.
-
+    const prompt = `You are an Etsy SEO + listing setup expert.
+Return STRICT JSON with keys: title, description, tags, imageAltTexts, suggestedBasics.
 Rules:
-- Return STRICT JSON with keys: title, description, tags, imageAltTexts, suggestedBasics
-- title: <= 140 chars
-- tags: array up to 13 unique tags, each <= 20 chars
-- imageAltTexts: one alt text per image, each <= 140 chars
-- description: persuasive, natural, include materials/style/use-cases inferred from images
-- suggestedBasics must include: categoryHint, price, quantity, who_made, when_made, is_supply
-- categoryHint should be a short taxonomy-like text (example: "Jewelry > Rings > Statement Rings")
+- title <= 140 chars
+- tags up to 13, each <= 20 chars, unique
+- imageAltTexts one per image, each <= 140 chars
+- suggestedBasics keys: categoryHint, price, quantity, who_made, when_made, is_supply
 - who_made in ["i_did","collective","someone_else"]
 - when_made in ["made_to_order","2020_2024","2010_2019","before_2010"]
-- is_supply boolean
-- Avoid fake claims. If unsure, stay generic and safe.
-
+- avoid fake claims
 Seller notes:
-- current title idea: ${String(details.title || '').trim() || 'N/A'}
-- current description idea: ${String(details.description || '').trim() || 'N/A'}`;
+- title: ${String(details.title || '').trim() || 'N/A'}
+- description: ${String(details.description || '').trim() || 'N/A'}`;
 
-    const textOnlyPrompt = `Create Etsy SEO metadata from seller notes.
-Rules:
-- Return STRICT JSON with keys: title, description, tags, suggestedBasics
-- title <= 140 chars
-- tags: max 13, each <= 20 chars, no duplicates
-- suggestedBasics must include: categoryHint, price, quantity, who_made, when_made, is_supply
-
-Seller notes:
-- title: ${String(details.title || '').trim()}
-- description: ${String(details.description || '').trim()}`;
-
-    const basicsSchema = {
-      type: Type.OBJECT,
-      properties: {
-        categoryHint: { type: Type.STRING },
-        price: { type: Type.NUMBER },
-        quantity: { type: Type.NUMBER },
-        who_made: { type: Type.STRING },
-        when_made: { type: Type.STRING },
-        is_supply: { type: Type.BOOLEAN },
-      },
-      required: ['categoryHint', 'price', 'quantity', 'who_made', 'when_made', 'is_supply'],
-    };
-
-    const responseSchema: any = images.length
-      ? {
-          type: Type.OBJECT,
-          properties: {
-            title: { type: Type.STRING },
-            description: { type: Type.STRING },
-            tags: { type: Type.ARRAY, items: { type: Type.STRING } },
-            imageAltTexts: { type: Type.ARRAY, items: { type: Type.STRING } },
-            suggestedBasics: basicsSchema,
+    // Prefer OpenAI when available (user preference)
+    const openAiKey = process.env.OPENAI_API_KEY;
+    if (openAiKey) {
+      const content: any[] = [{ type: 'text', text: prompt }];
+      for (const img of images) {
+        content.push({
+          type: 'image_url',
+          image_url: {
+            url: `data:${img.mimeType || 'image/jpeg'};base64,${img.data}`,
           },
-          required: ['title', 'description', 'tags', 'imageAltTexts', 'suggestedBasics'],
-        }
-      : {
-          type: Type.OBJECT,
-          properties: {
-            title: { type: Type.STRING },
-            description: { type: Type.STRING },
-            tags: { type: Type.ARRAY, items: { type: Type.STRING } },
-            suggestedBasics: basicsSchema,
-          },
-          required: ['title', 'description', 'tags', 'suggestedBasics'],
-        };
+        });
+      }
 
-    const contents: any = images.length
-      ? [
-          {
-            role: 'user',
-            parts: [
-              { text: imageAwarePrompt },
-              ...images.map((img) => ({
-                inlineData: {
-                  mimeType: img.mimeType || 'image/jpeg',
-                  data: img.data,
-                },
-              })),
-            ],
-          },
-        ]
-      : textOnlyPrompt;
-
-    let response: GenerateContentResponse;
-    try {
-      response = await ai.models.generateContent({
-        model,
-        contents,
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema,
+      const oaiResp = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${openAiKey}`,
+          'Content-Type': 'application/json',
         },
-      });
-    } catch (primaryErr: any) {
-      console.error('Primary image-aware generation failed, falling back to text-only:', primaryErr?.message || primaryErr);
-      response = await ai.models.generateContent({
-        model,
-        contents: textOnlyPrompt,
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              title: { type: Type.STRING },
-              description: { type: Type.STRING },
-              tags: { type: Type.ARRAY, items: { type: Type.STRING } },
-              suggestedBasics: basicsSchema,
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          temperature: 0.3,
+          response_format: { type: 'json_object' },
+          messages: [
+            {
+              role: 'user',
+              content,
             },
-            required: ['title', 'description', 'tags', 'suggestedBasics'],
-          },
-        },
+          ],
+        }),
       });
+
+      const oaiData: any = await oaiResp.json().catch(() => ({}));
+      if (!oaiResp.ok) {
+        throw new Error(oaiData?.error?.message || `OpenAI request failed (${oaiResp.status})`);
+      }
+
+      const txt = oaiData?.choices?.[0]?.message?.content || '{}';
+      const parsed = JSON.parse(txt);
+      return res.status(200).json(normalizeOutput(parsed, details, images));
     }
 
-    const parsed = JSON.parse(response.text || '{}');
+    // Secondary path: Gemini (legacy compatibility)
+    const geminiKey = process.env.API_KEY;
+    if (geminiKey) {
+      const ai = new GoogleGenAI({ apiKey: geminiKey });
+      const model = 'gemini-2.5-flash';
 
-    const title = String(parsed.title || details.title || '').trim().slice(0, 140);
-    const description = String(parsed.description || details.description || '').trim();
-    const tags = Array.isArray(parsed.tags)
-      ? [...new Set(parsed.tags.map((t: any) => String(t || '').trim()).filter(Boolean))]
-          .map((t) => t.slice(0, 20))
-          .slice(0, 13)
-      : [];
+      const basicsSchema = {
+        type: Type.OBJECT,
+        properties: {
+          categoryHint: { type: Type.STRING },
+          price: { type: Type.NUMBER },
+          quantity: { type: Type.NUMBER },
+          who_made: { type: Type.STRING },
+          when_made: { type: Type.STRING },
+          is_supply: { type: Type.BOOLEAN },
+        },
+        required: ['categoryHint', 'price', 'quantity', 'who_made', 'when_made', 'is_supply'],
+      };
 
-    const imageAltTexts = Array.isArray(parsed.imageAltTexts)
-      ? parsed.imageAltTexts.map((a: any) => String(a || '').trim().slice(0, 140))
-      : undefined;
+      const responseSchema: any = {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING },
+          description: { type: Type.STRING },
+          tags: { type: Type.ARRAY, items: { type: Type.STRING } },
+          imageAltTexts: { type: Type.ARRAY, items: { type: Type.STRING } },
+          suggestedBasics: basicsSchema,
+        },
+        required: ['title', 'description', 'tags', 'suggestedBasics'],
+      };
 
-    const suggested = parsed?.suggestedBasics || {};
-    const suggestedBasics = {
-      categoryHint: String(suggested.categoryHint || '').trim(),
-      price: Number.isFinite(Number(suggested.price)) ? Number(suggested.price) : 29.99,
-      quantity: Number.isFinite(Number(suggested.quantity)) ? Math.max(1, Math.floor(Number(suggested.quantity))) : 1,
-      who_made: ['i_did', 'collective', 'someone_else'].includes(String(suggested.who_made))
-        ? String(suggested.who_made)
-        : 'i_did',
-      when_made: ['made_to_order', '2020_2024', '2010_2019', 'before_2010'].includes(String(suggested.when_made))
-        ? String(suggested.when_made)
-        : 'made_to_order',
-      is_supply: Boolean(suggested.is_supply),
-    };
+      const contents: any = images.length
+        ? [{ role: 'user', parts: [{ text: prompt }, ...images.map((img) => ({ inlineData: { mimeType: img.mimeType || 'image/jpeg', data: img.data } }))] }]
+        : prompt;
 
-    return res.status(200).json({ title, description, tags, imageAltTexts, suggestedBasics });
+      const response: GenerateContentResponse = await ai.models.generateContent({
+        model,
+        contents,
+        config: { responseMimeType: 'application/json', responseSchema },
+      });
+      const parsed = JSON.parse(response.text || '{}');
+      return res.status(200).json(normalizeOutput(parsed, details, images));
+    }
+
+    // Last resort fallback when no AI key present
+    return res.status(200).json({
+      ...normalizeOutput({}, details, images),
+      warning: 'No AI key configured (OPENAI_API_KEY/API_KEY). Fallback metadata used.',
+    });
   } catch (error: any) {
     console.error('Error in metadata generation endpoint:', error?.message || error, error?.stack || '');
     return res.status(500).json({ error: error?.message || 'An unexpected error occurred while generating metadata.' });
