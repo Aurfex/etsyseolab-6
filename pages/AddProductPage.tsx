@@ -3,6 +3,7 @@ import { PlusSquare, Info, UploadCloud, Sparkles, Eye, Send, ArrowLeft, Loader2,
 import { useAppContext } from '../contexts/AppContext';
 import { useTranslation } from '../contexts/LanguageContext';
 import { NewProductData } from '../types';
+import { compareSeoWithCompetitors } from '../services/etsyApiService';
 
 const Card: React.FC<{children: React.ReactNode, className?: string}> = ({ children, className }) => (
   <div className={`bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card dark:shadow-card-dark ${className}`}>
@@ -140,6 +141,7 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
     const { newProductData, updateNewProductData, showToast, etsyCategories, generateSeoMetadata } = useAppContext();
     const [isDragging, setIsDragging] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [seoInsight, setSeoInsight] = useState<{ yourScore: number; yourRank: number; totalCompared: number; avgTopScore: number; topCompetitorTitle: string | null; recommendations: string[] } | null>(null);
 
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
@@ -189,10 +191,14 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
             const suggestedSupply = typeof suggestion.is_supply === 'boolean' ? suggestion.is_supply : false;
             const finalIsSupply = looksLikeFinishedJewelry ? false : suggestedSupply;
 
+            const nextTitle = result.title || newProductData.title || '';
+            const nextDescription = result.description || newProductData.description || '';
+            const nextTags = result.tags || newProductData.tags || [];
+
             updateNewProductData({
-                title: result.title || newProductData.title || '',
-                description: result.description || newProductData.description || '',
-                tags: result.tags || newProductData.tags || [],
+                title: nextTitle,
+                description: nextDescription,
+                tags: nextTags,
                 imageAltTexts: result.imageAltTexts && result.imageAltTexts.length
                     ? result.imageAltTexts
                     : newProductData.imageAltTexts,
@@ -203,6 +209,17 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
                 when_made: (suggestion.when_made as any) || newProductData.when_made || 'made_to_order',
                 is_supply: finalIsSupply,
             });
+
+            try {
+                const compare = await compareSeoWithCompetitors({
+                    title: nextTitle,
+                    description: nextDescription,
+                    tags: nextTags,
+                });
+                setSeoInsight(compare);
+            } catch {
+                setSeoInsight(null);
+            }
 
             showToast({ tKey: 'toast_metadata_generated', type: 'success' });
         } catch (e: any) {
@@ -344,6 +361,24 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
                     </div>
                 </div>
             </div>
+
+            {seoInsight && (
+                <div className="rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50/60 dark:bg-purple-900/20 p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                        <h4 className="font-semibold text-purple-800 dark:text-purple-200">Etsy SEO Score</h4>
+                        <span className="text-sm font-bold text-purple-700 dark:text-purple-300">{seoInsight.yourScore}/100</span>
+                    </div>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">Rank: #{seoInsight.yourRank} از {seoInsight.totalCompared} | میانگین رقبا: {seoInsight.avgTopScore}</p>
+                    {seoInsight.topCompetitorTitle && (
+                        <p className="text-xs text-gray-600 dark:text-gray-400">Top competitor: {seoInsight.topCompetitorTitle}</p>
+                    )}
+                    {seoInsight.recommendations?.length > 0 && (
+                        <ul className="text-xs list-disc ps-5 text-gray-700 dark:text-gray-300 space-y-1">
+                            {seoInsight.recommendations.slice(0, 3).map((r, i) => <li key={i}>{r}</li>)}
+                        </ul>
+                    )}
+                </div>
+            )}
 
             <div className="flex justify-between">
                 {onPrev ? (<button onClick={onPrev} className="btn-secondary flex items-center"><ArrowLeft className="w-4 h-4 me-2"/>{t('add_product_prev_step')}</button>) : <span />}
