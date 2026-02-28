@@ -128,7 +128,9 @@ export async function uploadListingImage(listingId: string | number, file: File,
   formData.append('rank', String(index + 1));
   formData.append('image', safeFile, safeFile.name);
 
-  const response = await fetch('/api/etsy-upload-image', {
+  formData.append('action', 'upload_image');
+
+  const response = await fetch('/api/etsy-proxy', {
       method: 'POST',
       headers: {
           'Authorization': `Bearer ${token}`,
