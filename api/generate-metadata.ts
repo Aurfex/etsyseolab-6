@@ -106,9 +106,8 @@ Seller notes:
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            temperature: 0.3,
-            response_format: { type: 'json_object' },
+            model: process.env.OPENAI_MODEL || 'gpt-4o',
+            temperature: 0.2,
             messages: [
               {
                 role: 'user',
@@ -123,8 +122,11 @@ Seller notes:
           throw new Error(oaiData?.error?.message || `OpenAI request failed (${oaiResp.status})`);
         }
 
-        const txt = oaiData?.choices?.[0]?.message?.content || '{}';
-        const parsed = JSON.parse(txt);
+        const txt = String(oaiData?.choices?.[0]?.message?.content || '{}');
+        const start = txt.indexOf('{');
+        const end = txt.lastIndexOf('}');
+        const jsonText = start >= 0 && end > start ? txt.slice(start, end + 1) : '{}';
+        const parsed = JSON.parse(jsonText);
         return res.status(200).json(normalizeOutput(parsed, details, images));
       } catch (err: any) {
         openAiError = err?.message || 'OpenAI analyze failed';
