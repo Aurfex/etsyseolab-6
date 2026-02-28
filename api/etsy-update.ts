@@ -148,16 +148,55 @@ const buildInventoryFromPricingRows = (
 };
 
 const pickVariationProps = async (shopId: string | number, listingId: string | number, headers: any) => {
+  // Prefer listing-level inventory properties if present (most accurate)
+  try {
+    const invResp = await axios.get(`https://openapi.etsy.com/v3/application/listings/${listingId}/inventory`, { headers });
+    const products = Array.isArray(invResp.data?.products) ? invResp.data.products : [];
+    const discovered: Array<{ id: number; name: string; scaleId?: number | null }> = [];
+
+    for (const p of products) {
+      const pvs = Array.isArray(p?.property_values) ? p.property_values : [];
+      for (const pv of pvs) {
+        const id = Number(pv?.property_id);
+        if (!Number.isFinite(id) || id <= 0) continue;
+        if (discovered.some((d) => d.id === id)) continue;
+        discovered.push({
+          id,
+          name: String(pv?.property_name || `Property ${id}`),
+          scaleId: pv?.scale_id ? Number(pv.scale_id) : null,
+        });
+      }
+    }
+
+    if (discovered.length >= 2) {
+      const size = discovered.find((p) => /size/i.test(p.name)) || discovered[0];
+      const material = discovered.find((p) => p.id !== size.id && /material|metal|finish|color/i.test(p.name)) || discovered.find((p) => p.id !== size.id) || discovered[1];
+      return { size, material };
+    }
+  } catch {
+    // fallback below
+  }
+
+  // Fallback: taxonomy properties endpoint (shop-specific path may vary)
   const listingResp = await axios.get(`https://openapi.etsy.com/v3/application/shops/${shopId}/listings/${listingId}`, { headers });
   const taxonomyId = Number(listingResp.data?.taxonomy_id || 0);
   if (!taxonomyId) throw new Error('Could not resolve taxonomy_id for listing.');
 
-  const propsResp = await axios.get(
-    `https://openapi.etsy.com/v3/application/shops/${shopId}/taxonomy/nodes/${taxonomyId}/properties`,
-    { headers }
-  );
+  let raw: any[] = [];
+  try {
+    const propsResp = await axios.get(
+      `https://openapi.etsy.com/v3/application/taxonomy/nodes/${taxonomyId}/properties`,
+      { headers }
+    );
+    raw = Array.isArray(propsResp.data?.results) ? propsResp.data.results : [];
+  } catch {
+    const propsResp2 = await axios.get(
+      `https://openapi.etsy.com/v3/application/shops/${shopId}/taxonomy/nodes/${taxonomyId}/properties`,
+      { headers }
+    );
+    raw = Array.isArray(propsResp2.data?.results) ? propsResp2.data.results : [];
+  }
 
-  const raw = Array.isArray(propsResp.data?.results) ? propsResp.data.results : [];
   const usable = raw.filter((p: any) => {
     const deprecated = Boolean(p?.is_deprecated);
     const variation = Boolean(p?.supports_variations ?? p?.is_variation ?? true);
@@ -174,13 +213,9 @@ const pickVariationProps = async (shopId: string | number, listingId: string | n
   const material = usable.find((p: any) => /material|metal|finish|color/i.test(String(p.name || '')) && Number(p.property_id) !== Number(size?.property_id));
 
   if (size && material) return { size: mk(size), material: mk(material) };
+  if (usable.length >= 2) return { size: mk(usable[0]), material: mk(usable[1]) };
 
-  // fallback to first two non-deprecated variation props
-  if (usable.length >= 2) {
-    return { size: mk(usable[0]), material: mk(usable[1]) };
-  }
-
-  throw new Error('No valid variation properties available for this taxonomy.');
+  throw new Error('No valid variation properties available for this listing/taxonomy.');
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
