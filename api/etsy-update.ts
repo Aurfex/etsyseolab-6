@@ -108,6 +108,41 @@ const matchesRow = (product: any, row: PricingRow) => {
   return hasSize && hasMaterial;
 };
 
+const buildInventoryFromPricingRows = (rows: PricingRow[], baseProduct?: any) => {
+  const sizePropertyId = 100;
+  const materialPropertyId = 507;
+
+  const readiness = Number(baseProduct?.offerings?.[0]?.readiness_state_id || 1);
+  const quantityDefault = Number(baseProduct?.offerings?.[0]?.quantity || 999);
+  const enabledDefault = baseProduct?.offerings?.[0]?.is_enabled !== false;
+
+  return rows.map((r, i) => ({
+    sku: '',
+    property_values: [
+      {
+        property_id: sizePropertyId,
+        property_name: 'Size',
+        value_ids: [],
+        values: [String(r.size)],
+      },
+      {
+        property_id: materialPropertyId,
+        property_name: 'Material',
+        value_ids: [],
+        values: [String(r.material)],
+      },
+    ],
+    offerings: [
+      {
+        quantity: quantityDefault,
+        is_enabled: enabledDefault,
+        readiness_state_id: readiness,
+        price: Number(r.price.toFixed(2)),
+      },
+    ],
+  }));
+};
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
@@ -242,7 +277,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         } else {
           const sampleInventory = products.slice(0, 3).map((p: any) => getAllVariationValues(p));
           const sampleCsv = pricingRows.slice(0, 3).map((r) => ({ size: r.size, material: r.material }));
-          console.log('ℹ️ No variation rows matched current Etsy inventory.', { sampleInventory, sampleCsv });
+          console.log('ℹ️ No variation rows matched current Etsy inventory. Rebuilding inventory from pricing rows...', { sampleInventory, sampleCsv });
+
+          const rebuiltProducts = buildInventoryFromPricingRows(pricingRows, products[0]);
+          const rebuiltBody = {
+            products: rebuiltProducts.map(sanitizeProductForPut),
+            price_on_property: [100, 507],
+            quantity_on_property: [100, 507],
+            sku_on_property: [],
+          };
+
+          await axios.put(
+            `https://openapi.etsy.com/v3/application/listings/${listing_id}/inventory`,
+            rebuiltBody,
+            { headers }
+          );
+
+          inventoryMatched = pricingRows.length;
         }
       } catch (invError: any) {
         console.error('⚠️ Inventory update failed (keeping base patch success if applied):', invError.message);
