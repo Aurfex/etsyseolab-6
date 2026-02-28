@@ -56,10 +56,27 @@
 - Earlier fallback output (`"Handmade Jewelry Listing"`, warning about missing AI key) was observed when hitting older deployments/cached routes.
 - Current path is deployed on production-ready build above; verify with hard refresh and latest deployment URL if stale behavior appears.
 
+## Latest Update (Variants + CSV Step)
+- Added a **new step between AI SEO and Review**:
+  - `Variants + Pricing CSV`
+- Prefilled variant presets for ring workflow:
+  - Sizes: `6, 7, 8, 9, 10, 11, 12`
+  - Materials: `sterling silver, 14k gold, platinum`
+- Added CSV upload/parser for pricing matrix import:
+  - Required columns: `size, material, price`
+  - Optional columns: `quantity, sku`
+  - Validates missing size/material combinations and invalid prices.
+- Added Etsy-required fields in the same step:
+  - `item_type`, `production_type`
+  - `shipping_profile_id`, `return_policy_id`, `processing_profile_id`, `shop_section_id`
+  - personalization controls (`enabled`, `optional`, `instructions`, `buyer_limit`)
+- Added validation gate: cannot continue to final step without imported pricing rows.
+- Preview step now shows imported pricing row count.
+
+### Commit for this update
+- `8417d20` – Add Variants + Pricing CSV step to Add Product flow with Etsy required fields.
+
 ## Recommended Next Step (if continuing)
-1. Add a strict post-check gate before accepting AI result:
-   - title length target >= 90
-   - tags count >= 10 (max 13)
-   - reject markdown-like description patterns
-2. Add “accept only if score improved” guard for re-score action.
-3. Add visible provider badge in UI (`OpenAI` / `Fallback`) for easier debugging.
+1. Add “accept only if score improved” guard for re-score action.
+2. Add visible provider badge in UI (`OpenAI` / `Fallback`) for easier debugging.
+3. Wire `pricing_rows` into actual Etsy variation/inventory API call (currently collected in UI state and ready for backend mapping).
