@@ -1,5 +1,20 @@
 import { NewProductData } from '../types';
 
+const sanitizeFileName = (name: string, index: number): string => {
+  const extMatch = String(name || '').toLowerCase().match(/\.(jpg|jpeg|png|webp|gif)$/);
+  const ext = extMatch ? extMatch[0] : '.jpg';
+  const base = String(name || `image-${index + 1}`)
+    .replace(/\.[^.]+$/, '')
+    .normalize('NFKD')
+    .replace(/[^a-zA-Z0-9\s-_]/g, '')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_]+/g, '-')
+    .replace(/-+/g, '-')
+    .slice(0, 60) || `image-${index + 1}`;
+  return `${String(index + 1).padStart(2, '0')}-${base}${ext}`;
+};
+
 // Helper to get the auth token from sessionStorage
 const getAuthToken = (): string | null => {
     const authData = sessionStorage.getItem('auth');
@@ -18,6 +33,8 @@ export async function createListing(data: NewProductData): Promise<{ listing_id:
   const token = getAuthToken();
   if (!token) throw new Error("Authentication required.");
 
+  const { images, imageAltTexts, ...listingPayload } = data;
+
   const response = await fetch('/api/etsy-proxy', {
       method: 'POST',
       headers: {
@@ -26,7 +43,7 @@ export async function createListing(data: NewProductData): Promise<{ listing_id:
       },
       body: JSON.stringify({
           action: 'create_listing',
-          payload: data,
+          payload: listingPayload,
       })
   });
 
@@ -97,21 +114,23 @@ export async function compareSeoWithCompetitors(input: { listing_id?: string | n
   return response.json();
 }
 
-export async function uploadListingImage(listingId: string | number, file: File): Promise<{ success: boolean }> {
-  console.log(`Uploading image ${file.name} for listing ID ${listingId} via proxy.`);
-
+export async function uploadListingImage(listingId: string | number, file: File, altText: string, index = 0): Promise<{ success: boolean }> {
   const token = getAuthToken();
   if (!token) throw new Error("Authentication required.");
 
-  const formData = new FormData();
-  formData.append('action', 'upload_image');
-  formData.append('listing_id', String(listingId));
-  formData.append('image', file, file.name);
+  const safeName = sanitizeFileName(file.name, index);
+  const safeFile = new File([file], safeName, { type: file.type || 'image/jpeg' });
+  console.log(`Uploading image ${safeFile.name} for listing ID ${listingId} via proxy.`);
 
-  const response = await fetch('/api/etsy-proxy', {
+  const formData = new FormData();
+  formData.append('listing_id', String(listingId));
+  formData.append('alt_text', String(altText || '').trim());
+  formData.append('rank', String(index + 1));
+  formData.append('image', safeFile, safeFile.name);
+
+  const response = await fetch('/api/etsy-upload-image', {
       method: 'POST',
       headers: {
-          // Content-Type is set automatically by the browser for FormData
           'Authorization': `Bearer ${token}`,
       },
       body: formData
