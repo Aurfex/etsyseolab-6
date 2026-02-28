@@ -218,6 +218,33 @@ const pickVariationProps = async (shopId: string | number, listingId: string | n
   throw new Error('No valid variation properties available for this listing/taxonomy.');
 };
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+const getInventoryWithRetry = async (listingId: string | number, headers: any) => {
+  let lastErr: any = null;
+  for (let i = 0; i < 5; i++) {
+    try {
+      return await axios.get(`https://openapi.etsy.com/v3/application/listings/${listingId}/inventory`, { headers });
+    } catch (e: any) {
+      lastErr = e;
+      const status = e?.response?.status;
+      if (status !== 404) throw e;
+      await sleep(600 * (i + 1));
+    }
+  }
+  throw lastErr;
+};
+
+const putInventoryWithFallback = async (listingId: string | number, shopId: string | number, body: any, headers: any) => {
+  try {
+    return await axios.put(`https://openapi.etsy.com/v3/application/listings/${listingId}/inventory`, body, { headers });
+  } catch (e: any) {
+    if (e?.response?.status !== 404) throw e;
+    // Some Etsy routes are shop-scoped in certain environments
+    return await axios.put(`https://openapi.etsy.com/v3/application/shops/${shopId}/listings/${listingId}/inventory`, body, { headers });
+  }
+};
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
@@ -310,10 +337,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (didInventory) {
       try {
         console.log(`📥 Loading inventory for listing ${listing_id}...`);
-        const inventoryResp = await axios.get(
-          `https://openapi.etsy.com/v3/application/listings/${listing_id}/inventory`,
-          { headers }
-        );
+        const inventoryResp = await getInventoryWithRetry(listing_id, headers);
 
         const inventory = inventoryResp.data || {};
         const products = Array.isArray(inventory.products) ? inventory.products : [];
@@ -344,11 +368,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           };
 
           console.log(`📤 Sending inventory update (${inventoryMatched} matched variation rows)...`);
-          await axios.put(
-            `https://openapi.etsy.com/v3/application/listings/${listing_id}/inventory`,
-            inventoryBody,
-            { headers }
-          );
+          await putInventoryWithFallback(listing_id, shopId, inventoryBody, headers);
         } else {
           const sampleInventory = products.slice(0, 3).map((p: any) => getAllVariationValues(p));
           const sampleCsv = pricingRows.slice(0, 3).map((r) => ({ size: r.size, material: r.material }));
@@ -363,11 +383,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             sku_on_property: [],
           };
 
-          await axios.put(
-            `https://openapi.etsy.com/v3/application/listings/${listing_id}/inventory`,
-            rebuiltBody,
-            { headers }
-          );
+          await putInventoryWithFallback(listing_id, shopId, rebuiltBody, headers);
 
           inventoryMatched = pricingRows.length;
         }
