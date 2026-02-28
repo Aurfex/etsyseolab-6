@@ -277,6 +277,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         tags,
       };
 
+      // Etsy requires readiness_state_id for physical listings.
+      // Default to 1 (ready_to_ship) if not provided by client.
+      const readinessRaw = Number(payload.readiness_state_id);
+      createBody.readiness_state_id = Number.isFinite(readinessRaw) && readinessRaw > 0 ? Math.floor(readinessRaw) : 1;
+
       const optionalFields = ['shipping_profile_id', 'return_policy_id', 'shop_section_id'];
       for (const f of optionalFields) {
         if (payload[f] !== undefined && payload[f] !== null && String(payload[f]).trim() !== '') {
