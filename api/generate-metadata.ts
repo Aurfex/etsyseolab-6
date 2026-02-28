@@ -30,8 +30,41 @@ export default async function endpoint(req: VercelRequest, res: VercelResponse) 
     const images = Array.isArray(body?.images) ? body.images.slice(0, 5) : [];
 
     const apiKey = process.env.API_KEY;
+
+    // Soft fallback when AI key is missing on Vercel
     if (!apiKey) {
-      return res.status(500).json({ error: 'Server is not configured with an API key.' });
+      const rawTitle = String(details.title || '').trim();
+      const safeTitle = (rawTitle || 'Handmade Jewelry Listing').slice(0, 140);
+      const baseWords = safeTitle
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 8);
+      const tags = [...new Set([
+        ...baseWords,
+        'handmade',
+        'gift for her',
+        'etsy shop',
+      ])].map(t => t.slice(0, 20)).slice(0, 13);
+
+      const imageAltTexts = (images || []).map((_, i) => `${safeTitle} product image ${i + 1}`.slice(0, 140));
+
+      return res.status(200).json({
+        title: safeTitle,
+        description: String(details.description || `Handmade item crafted with care. Perfect as a gift or daily accessory.\n\n- Quality materials\n- Thoughtful design\n- Ready for your Etsy audience`).trim(),
+        tags,
+        imageAltTexts,
+        suggestedBasics: {
+          categoryHint: 'Jewelry',
+          price: 29.99,
+          quantity: 1,
+          who_made: 'i_did',
+          when_made: 'made_to_order',
+          is_supply: false,
+        },
+        warning: 'AI key missing; fallback metadata used.',
+      });
     }
 
     const ai = new GoogleGenAI({ apiKey });
