@@ -178,7 +178,7 @@ const pickVariationProps = async (shopId: string | number, listingId: string | n
   }
 
   // Fallback: taxonomy properties endpoint (shop-specific path may vary)
-  const listingResp = await axios.get(`https://openapi.etsy.com/v3/application/shops/${shopId}/listings/${listingId}`, { headers });
+  const listingResp = await axios.get(`https://openapi.etsy.com/v3/application/listings/${listingId}`, { headers });
   const taxonomyId = Number(listingResp.data?.taxonomy_id || 0);
   if (!taxonomyId) throw new Error('Could not resolve taxonomy_id for listing.');
 
