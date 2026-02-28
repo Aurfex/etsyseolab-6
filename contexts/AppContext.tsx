@@ -122,7 +122,7 @@ const defaultNewProductData: Partial<NewProductData> = {
     pricing_rows: [],
     item_type: 'physical',
     production_type: 'made_to_order',
-    shipping_profile_id: '',
+    shipping_profile_id: '137599901150',
     return_policy_id: '',
     processing_profile_id: '',
     shop_section_id: '',
