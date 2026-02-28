@@ -35,6 +35,7 @@ const normalizeOfferingPrice = (p: any): number => {
 const sanitizeOfferingForPut = (o: any) => ({
   quantity: o?.quantity,
   is_enabled: o?.is_enabled,
+  readiness_state_id: o?.readiness_state_id,
   price: normalizeOfferingPrice(o?.price),
 });
 
