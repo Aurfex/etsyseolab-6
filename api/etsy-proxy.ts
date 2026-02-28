@@ -38,6 +38,47 @@ const getShopId = async (headers: Record<string, string>) => {
   return shopId;
 };
 
+const getDefaultReadinessStateId = async (headers: Record<string, string>, shopId: string | number): Promise<number | null> => {
+  // 1) Try dedicated readiness endpoint (if available in this shop/API version)
+  try {
+    const rsResp = await axios.get(`https://openapi.etsy.com/v3/application/shops/${shopId}/listings/readiness_states`, { headers });
+    const rows = rsResp.data?.results || rsResp.data?.readiness_states || rsResp.data || [];
+    const first = Array.isArray(rows) ? rows[0] : null;
+    const id = Number(first?.readiness_state_id ?? first?.id);
+    if (Number.isFinite(id) && id > 0) return Math.floor(id);
+  } catch {
+    // ignore and fallback
+  }
+
+  // 2) Fallback: inspect one existing listing inventory offering readiness_state_id
+  try {
+    const listingsResp = await axios.get(`https://openapi.etsy.com/v3/application/shops/${shopId}/listings?limit=25`, { headers });
+    const listingIds: Array<string | number> = (listingsResp.data?.results || [])
+      .map((l: any) => l?.listing_id)
+      .filter(Boolean);
+
+    for (const lid of listingIds) {
+      try {
+        const invResp = await axios.get(`https://openapi.etsy.com/v3/application/listings/${lid}/inventory`, { headers });
+        const products = Array.isArray(invResp.data?.products) ? invResp.data.products : [];
+        for (const p of products) {
+          const offerings = Array.isArray(p?.offerings) ? p.offerings : [];
+          for (const o of offerings) {
+            const id = Number(o?.readiness_state_id);
+            if (Number.isFinite(id) && id > 0) return Math.floor(id);
+          }
+        }
+      } catch {
+        // continue with next listing
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  return null;
+};
+
 const sanitizeTags = (tags: any): string[] => {
   if (!Array.isArray(tags)) return [];
   const cleaned = tags
@@ -278,15 +319,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       };
 
       // Etsy requires readiness_state_id for physical listings.
-      // Default to 1 (ready_to_ship) if not provided by client.
+      // Use client value if provided, otherwise discover a valid shop-specific one.
       const readinessRaw = Number(payload.readiness_state_id);
-      createBody.readiness_state_id = Number.isFinite(readinessRaw) && readinessRaw > 0 ? Math.floor(readinessRaw) : 1;
+      if (Number.isFinite(readinessRaw) && readinessRaw > 0) {
+        createBody.readiness_state_id = Math.floor(readinessRaw);
+      } else {
+        const discoveredReadiness = await getDefaultReadinessStateId(headers, shopId);
+        if (Number.isFinite(Number(discoveredReadiness)) && Number(discoveredReadiness) > 0) {
+          createBody.readiness_state_id = Number(discoveredReadiness);
+        }
+      }
 
       const optionalFields = ['shipping_profile_id', 'return_policy_id', 'shop_section_id'];
       for (const f of optionalFields) {
         if (payload[f] !== undefined && payload[f] !== null && String(payload[f]).trim() !== '') {
           createBody[f] = payload[f];
         }
+      }
+
+      if (!createBody.readiness_state_id) {
+        return res.status(400).json({
+          error: 'Could not determine a valid readiness_state_id for this shop. Please set readiness_state_id explicitly in payload.',
+        });
       }
 
       const createResp = await axios.post(
