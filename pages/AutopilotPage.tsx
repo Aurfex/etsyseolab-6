@@ -64,13 +64,24 @@ const AutopilotPage: React.FC = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [fixingIssueId, setFixingIssueId] = useState<string | null>(null);
   const [savingProductId, setSavingProductId] = useState<string | null>(null);
+  const [filterType, setFilterType] = useState<'all' | Issue['type']>('all');
   const [fixPreview, setFixPreview] = useState<Record<string, { old: Pick<Product, 'title' | 'description' | 'tags'>; next: Pick<Product, 'title' | 'description' | 'tags'> }>>({});
 
   const stats = useMemo(() => ({
     totalProducts: products.length,
     totalIssues: issues.length,
     high: issues.filter(i => i.severity === 'high').length,
+    byType: {
+      title: issues.filter(i => i.type === 'title').length,
+      tags: issues.filter(i => i.type === 'tags').length,
+      description: issues.filter(i => i.type === 'description').length,
+      seo: issues.filter(i => i.type === 'seo').length,
+    }
   }), [products.length, issues]);
+
+  const visibleIssues = useMemo(() => (
+    filterType === 'all' ? issues : issues.filter(i => i.type === filterType)
+  ), [issues, filterType]);
 
   const runScan = async () => {
     setIsScanning(true);
@@ -159,6 +170,7 @@ const AutopilotPage: React.FC = () => {
           <div>
             <p className="font-semibold text-green-800 dark:text-green-300">{settings.autopilot.enabled ? 'Enabled' : 'Disabled'}</p>
             <p className="text-sm text-green-700 dark:text-green-400">Products: {stats.totalProducts} | Issues found: {stats.totalIssues} (High: {stats.high})</p>
+            <p className="text-xs text-green-700 dark:text-green-400 mt-1">Title: {stats.byType.title} | Tags: {stats.byType.tags} | Description: {stats.byType.description} | SEO: {stats.byType.seo}</p>
           </div>
           <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
             <input type="checkbox" id="autopilot-toggle" checked={settings.autopilot.enabled} onChange={handleAutopilotToggle} className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
@@ -205,11 +217,26 @@ const AutopilotPage: React.FC = () => {
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center">
           <AlertTriangle className="w-5 h-5 me-2 text-yellow-500" /> Detected Issues
         </h3>
+
+        <div className="mb-3 flex flex-wrap gap-2 text-xs">
+          {(['all', 'title', 'tags', 'description', 'seo'] as const).map((k) => (
+            <button
+              key={k}
+              onClick={() => setFilterType(k)}
+              className={`px-2 py-1 rounded border ${filterType === k ? 'bg-purple-600 text-white border-purple-600' : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700'}`}
+            >
+              {k === 'all' ? 'All' : k}
+            </button>
+          ))}
+        </div>
+
         {issues.length === 0 ? (
           <p className="text-sm text-gray-500">No issues yet. Run Scan Shop.</p>
+        ) : visibleIssues.length === 0 ? (
+          <p className="text-sm text-gray-500">No issues in this filter.</p>
         ) : (
           <div className="space-y-3">
-            {issues.map(issue => (
+            {visibleIssues.map(issue => (
               <div key={issue.id} className="p-3 rounded-lg border border-gray-200 dark:border-gray-700">
                 <div className="flex items-start justify-between gap-3">
                   <div>
