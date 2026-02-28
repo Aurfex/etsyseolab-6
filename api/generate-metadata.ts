@@ -1,15 +1,10 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenAI, GenerateContentResponse, Type } from '@google/genai';
 
-const verifyAuth = (req: Request): { authorized: boolean; error?: Response } => {
-  const authHeader = req.headers.get('Authorization');
+const verifyAuth = (req: VercelRequest): { authorized: boolean; error?: string } => {
+  const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return {
-      authorized: false,
-      error: new Response(JSON.stringify({ error: 'Unauthorized: Missing or invalid token.' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      }),
-    };
+    return { authorized: false, error: 'Unauthorized: Missing or invalid token.' };
   }
   return { authorized: true };
 };
@@ -19,24 +14,24 @@ type VisionImageInput = {
   data: string;
 };
 
-export default async function endpoint(req: Request): Promise<Response> {
-  const headers = { 'Content-Type': 'application/json' };
-
+export default async function endpoint(req: VercelRequest, res: VercelResponse) {
   const authCheck = verifyAuth(req);
-  if (!authCheck.authorized) return authCheck.error!;
+  if (!authCheck.authorized) {
+    return res.status(401).json({ error: authCheck.error });
+  }
 
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method Not Allowed' }), { status: 405, headers });
+    return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   try {
-    const body = (await req.json()) as { details?: { title?: string; description?: string }; images?: VisionImageInput[] };
+    const body = (req.body || {}) as { details?: { title?: string; description?: string }; images?: VisionImageInput[] };
     const details = body?.details || {};
     const images = Array.isArray(body?.images) ? body.images.slice(0, 5) : [];
 
     const apiKey = process.env.API_KEY;
     if (!apiKey) {
-      return new Response(JSON.stringify({ error: 'Server is not configured with an API key.' }), { status: 500, headers });
+      return res.status(500).json({ error: 'Server is not configured with an API key.' });
     }
 
     const ai = new GoogleGenAI({ apiKey });
@@ -140,7 +135,9 @@ Seller notes:
     const title = String(parsed.title || details.title || '').trim().slice(0, 140);
     const description = String(parsed.description || details.description || '').trim();
     const tags = Array.isArray(parsed.tags)
-      ? [...new Set(parsed.tags.map((t: any) => String(t || '').trim()).filter(Boolean))].map((t) => t.slice(0, 20)).slice(0, 13)
+      ? [...new Set(parsed.tags.map((t: any) => String(t || '').trim()).filter(Boolean))]
+          .map((t) => t.slice(0, 20))
+          .slice(0, 13)
       : [];
 
     const imageAltTexts = Array.isArray(parsed.imageAltTexts)
@@ -152,17 +149,18 @@ Seller notes:
       categoryHint: String(suggested.categoryHint || '').trim(),
       price: Number.isFinite(Number(suggested.price)) ? Number(suggested.price) : 29.99,
       quantity: Number.isFinite(Number(suggested.quantity)) ? Math.max(1, Math.floor(Number(suggested.quantity))) : 1,
-      who_made: ['i_did', 'collective', 'someone_else'].includes(String(suggested.who_made)) ? String(suggested.who_made) : 'i_did',
-      when_made: ['made_to_order', '2020_2024', '2010_2019', 'before_2010'].includes(String(suggested.when_made)) ? String(suggested.when_made) : 'made_to_order',
+      who_made: ['i_did', 'collective', 'someone_else'].includes(String(suggested.who_made))
+        ? String(suggested.who_made)
+        : 'i_did',
+      when_made: ['made_to_order', '2020_2024', '2010_2019', 'before_2010'].includes(String(suggested.when_made))
+        ? String(suggested.when_made)
+        : 'made_to_order',
       is_supply: Boolean(suggested.is_supply),
     };
 
-    return new Response(JSON.stringify({ title, description, tags, imageAltTexts, suggestedBasics }), { status: 200, headers });
+    return res.status(200).json({ title, description, tags, imageAltTexts, suggestedBasics });
   } catch (error) {
     console.error('Error in metadata generation endpoint:', error);
-    return new Response(JSON.stringify({ error: 'An unexpected error occurred while generating metadata.' }), {
-      status: 500,
-      headers,
-    });
+    return res.status(500).json({ error: 'An unexpected error occurred while generating metadata.' });
   }
 }
