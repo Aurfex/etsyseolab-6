@@ -4,6 +4,7 @@ import { useAppContext } from '../contexts/AppContext';
 import { useTranslation } from '../contexts/LanguageContext';
 import { NewProductData } from '../types';
 import { compareSeoWithCompetitors } from '../services/etsyApiService';
+import { runFullOptimization } from '../services/optimizationService';
 
 const Card: React.FC<{children: React.ReactNode, className?: string}> = ({ children, className }) => (
   <div className={`bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card dark:shadow-card-dark ${className}`}>
@@ -168,6 +169,18 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
         return byScore[0]?.score > 0 ? byScore[0].id : null;
     };
 
+    const buildOptimizerInput = (title: string, description: string, tags: string[]) => ({
+        id: 'draft-add-product',
+        title,
+        description,
+        tags,
+        imageFilename: (newProductData.images?.[0] as File | undefined)?.name || 'draft-image.jpg',
+        imageUrl: '',
+        seoScore: 0,
+        quantity: Number(newProductData.quantity || 1),
+        price: Number(newProductData.price || 0),
+    });
+
     const handleAnalyze = async () => {
         if (!newProductData.images?.length) {
             showToast({ tKey: 'add_product_validation_error', type: 'error' });
@@ -192,9 +205,22 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
             const suggestedSupply = typeof suggestion.is_supply === 'boolean' ? suggestion.is_supply : false;
             const finalIsSupply = looksLikeFinishedJewelry ? false : suggestedSupply;
 
-            const nextTitle = result.title || newProductData.title || '';
-            const nextDescription = result.description || newProductData.description || '';
-            const nextTags = result.tags || newProductData.tags || [];
+            const aiTitle = result.title || newProductData.title || '';
+            const aiDescription = result.description || newProductData.description || '';
+            const aiTags = result.tags || newProductData.tags || [];
+
+            let nextTitle = aiTitle;
+            let nextDescription = aiDescription;
+            let nextTags = aiTags;
+
+            try {
+                const optimized = await runFullOptimization(buildOptimizerInput(aiTitle, aiDescription, aiTags));
+                nextTitle = optimized.title || aiTitle;
+                nextDescription = optimized.description || aiDescription;
+                nextTags = optimized.tags?.length ? optimized.tags : aiTags;
+            } catch {
+                // Keep AI analyze output if optimizer service fails
+            }
 
             updateNewProductData({
                 title: nextTitle,
@@ -271,22 +297,20 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
     const handleImproveSeo = async () => {
         setIsImprovingSeo(true);
         try {
-            const improved = await generateSeoMetadata(
-                { title: newProductData.title || '', description: newProductData.description || '' },
-                newProductData.images || []
-            );
+            const optimized = await runFullOptimization(buildOptimizerInput(
+                newProductData.title || '',
+                newProductData.description || '',
+                newProductData.tags || []
+            ));
 
-            const nextTitle = improved.title || newProductData.title || '';
-            const nextDescription = improved.description || newProductData.description || '';
-            const nextTags = improved.tags || newProductData.tags || [];
+            const nextTitle = optimized.title || newProductData.title || '';
+            const nextDescription = optimized.description || newProductData.description || '';
+            const nextTags = optimized.tags?.length ? optimized.tags : (newProductData.tags || []);
 
             updateNewProductData({
                 title: nextTitle,
                 description: nextDescription,
                 tags: nextTags,
-                imageAltTexts: improved.imageAltTexts && improved.imageAltTexts.length
-                    ? improved.imageAltTexts
-                    : newProductData.imageAltTexts,
             });
 
             const compare = await compareSeoWithCompetitors({
