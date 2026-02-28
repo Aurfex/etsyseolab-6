@@ -86,44 +86,50 @@ Seller notes:
 
     // Prefer OpenAI when available (user preference)
     const openAiKey = process.env.OPENAI_API_KEY;
+    let openAiError: string | null = null;
     if (openAiKey) {
-      const content: any[] = [{ type: 'text', text: prompt }];
-      for (const img of images) {
-        content.push({
-          type: 'image_url',
-          image_url: {
-            url: `data:${img.mimeType || 'image/jpeg'};base64,${img.data}`,
-          },
-        });
-      }
-
-      const oaiResp = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${openAiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          temperature: 0.3,
-          response_format: { type: 'json_object' },
-          messages: [
-            {
-              role: 'user',
-              content,
+      try {
+        const content: any[] = [{ type: 'text', text: prompt }];
+        for (const img of images) {
+          content.push({
+            type: 'image_url',
+            image_url: {
+              url: `data:${img.mimeType || 'image/jpeg'};base64,${img.data}`,
             },
-          ],
-        }),
-      });
+          });
+        }
 
-      const oaiData: any = await oaiResp.json().catch(() => ({}));
-      if (!oaiResp.ok) {
-        throw new Error(oaiData?.error?.message || `OpenAI request failed (${oaiResp.status})`);
+        const oaiResp = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${openAiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            temperature: 0.3,
+            response_format: { type: 'json_object' },
+            messages: [
+              {
+                role: 'user',
+                content,
+              },
+            ],
+          }),
+        });
+
+        const oaiData: any = await oaiResp.json().catch(() => ({}));
+        if (!oaiResp.ok) {
+          throw new Error(oaiData?.error?.message || `OpenAI request failed (${oaiResp.status})`);
+        }
+
+        const txt = oaiData?.choices?.[0]?.message?.content || '{}';
+        const parsed = JSON.parse(txt);
+        return res.status(200).json(normalizeOutput(parsed, details, images));
+      } catch (err: any) {
+        openAiError = err?.message || 'OpenAI analyze failed';
+        console.error('OpenAI analyze failed, falling back:', openAiError);
       }
-
-      const txt = oaiData?.choices?.[0]?.message?.content || '{}';
-      const parsed = JSON.parse(txt);
-      return res.status(200).json(normalizeOutput(parsed, details, images));
     }
 
     // Secondary path: Gemini (legacy compatibility)
@@ -167,13 +173,17 @@ Seller notes:
         config: { responseMimeType: 'application/json', responseSchema },
       });
       const parsed = JSON.parse(response.text || '{}');
-      return res.status(200).json(normalizeOutput(parsed, details, images));
+      const normalized = normalizeOutput(parsed, details, images);
+      if (openAiError) normalized.warning = `OpenAI fallback: ${openAiError}`;
+      return res.status(200).json(normalized);
     }
 
     // Last resort fallback when no AI key present
     return res.status(200).json({
       ...normalizeOutput({}, details, images),
-      warning: 'No AI key configured (OPENAI_API_KEY/API_KEY). Fallback metadata used.',
+      warning: openAiError
+        ? `OpenAI fallback: ${openAiError}`
+        : 'No AI key configured (OPENAI_API_KEY/API_KEY). Fallback metadata used.',
     });
   } catch (error: any) {
     console.error('Error in metadata generation endpoint:', error?.message || error, error?.stack || '');
