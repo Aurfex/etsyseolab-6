@@ -634,6 +634,12 @@ const StepPricing: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNex
             showToast({ tKey: 'add_product_validation_error', type: 'error' });
             return;
         }
+
+        if ((newProductData.item_type || 'physical') === 'physical' && !String(newProductData.shipping_profile_id || '').trim()) {
+            showToast({ tKey: 'toast_generic_error_with_message', options: { message: 'shipping_profile_id is required for physical listings.' }, type: 'error' });
+            return;
+        }
+
         onNext();
     };
 
