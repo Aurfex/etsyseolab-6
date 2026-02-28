@@ -121,14 +121,36 @@ Seller notes:
         ]
       : textOnlyPrompt;
 
-    const response: GenerateContentResponse = await ai.models.generateContent({
-      model,
-      contents,
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema,
-      },
-    });
+    let response: GenerateContentResponse;
+    try {
+      response = await ai.models.generateContent({
+        model,
+        contents,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema,
+        },
+      });
+    } catch (primaryErr: any) {
+      console.error('Primary image-aware generation failed, falling back to text-only:', primaryErr?.message || primaryErr);
+      response = await ai.models.generateContent({
+        model,
+        contents: textOnlyPrompt,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              title: { type: Type.STRING },
+              description: { type: Type.STRING },
+              tags: { type: Type.ARRAY, items: { type: Type.STRING } },
+              suggestedBasics: basicsSchema,
+            },
+            required: ['title', 'description', 'tags', 'suggestedBasics'],
+          },
+        },
+      });
+    }
 
     const parsed = JSON.parse(response.text || '{}');
 
@@ -159,8 +181,8 @@ Seller notes:
     };
 
     return res.status(200).json({ title, description, tags, imageAltTexts, suggestedBasics });
-  } catch (error) {
-    console.error('Error in metadata generation endpoint:', error);
-    return res.status(500).json({ error: 'An unexpected error occurred while generating metadata.' });
+  } catch (error: any) {
+    console.error('Error in metadata generation endpoint:', error?.message || error, error?.stack || '');
+    return res.status(500).json({ error: error?.message || 'An unexpected error occurred while generating metadata.' });
   }
 }
