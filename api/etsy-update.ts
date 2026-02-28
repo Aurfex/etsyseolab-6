@@ -108,28 +108,32 @@ const matchesRow = (product: any, row: PricingRow) => {
   return hasSize && hasMaterial;
 };
 
-const buildInventoryFromPricingRows = (rows: PricingRow[], baseProduct?: any) => {
-  const sizePropertyId = 100;
-  const materialPropertyId = 507;
-
+const buildInventoryFromPricingRows = (
+  rows: PricingRow[],
+  baseProduct: any,
+  sizeProp: { id: number; name: string; scaleId?: number | null },
+  materialProp: { id: number; name: string; scaleId?: number | null }
+) => {
   const readiness = Number(baseProduct?.offerings?.[0]?.readiness_state_id || 1);
   const quantityDefault = Number(baseProduct?.offerings?.[0]?.quantity || 999);
   const enabledDefault = baseProduct?.offerings?.[0]?.is_enabled !== false;
 
-  return rows.map((r, i) => ({
+  return rows.map((r) => ({
     sku: '',
     property_values: [
       {
-        property_id: sizePropertyId,
-        property_name: 'Size',
+        property_id: sizeProp.id,
+        property_name: sizeProp.name,
         value_ids: [],
         values: [String(r.size)],
+        scale_id: sizeProp.scaleId ?? undefined,
       },
       {
-        property_id: materialPropertyId,
-        property_name: 'Material',
+        property_id: materialProp.id,
+        property_name: materialProp.name,
         value_ids: [],
         values: [String(r.material)],
+        scale_id: materialProp.scaleId ?? undefined,
       },
     ],
     offerings: [
@@ -141,6 +145,42 @@ const buildInventoryFromPricingRows = (rows: PricingRow[], baseProduct?: any) =>
       },
     ],
   }));
+};
+
+const pickVariationProps = async (shopId: string | number, listingId: string | number, headers: any) => {
+  const listingResp = await axios.get(`https://openapi.etsy.com/v3/application/shops/${shopId}/listings/${listingId}`, { headers });
+  const taxonomyId = Number(listingResp.data?.taxonomy_id || 0);
+  if (!taxonomyId) throw new Error('Could not resolve taxonomy_id for listing.');
+
+  const propsResp = await axios.get(
+    `https://openapi.etsy.com/v3/application/shops/${shopId}/taxonomy/nodes/${taxonomyId}/properties`,
+    { headers }
+  );
+
+  const raw = Array.isArray(propsResp.data?.results) ? propsResp.data.results : [];
+  const usable = raw.filter((p: any) => {
+    const deprecated = Boolean(p?.is_deprecated);
+    const variation = Boolean(p?.supports_variations ?? p?.is_variation ?? true);
+    return !deprecated && variation;
+  });
+
+  const mk = (p: any) => ({
+    id: Number(p.property_id),
+    name: String(p.name || `Property ${p.property_id}`),
+    scaleId: Array.isArray(p.scales) && p.scales[0] ? Number(p.scales[0].scale_id) : null,
+  });
+
+  const size = usable.find((p: any) => /size/i.test(String(p.name || '')));
+  const material = usable.find((p: any) => /material|metal|finish|color/i.test(String(p.name || '')) && Number(p.property_id) !== Number(size?.property_id));
+
+  if (size && material) return { size: mk(size), material: mk(material) };
+
+  // fallback to first two non-deprecated variation props
+  if (usable.length >= 2) {
+    return { size: mk(usable[0]), material: mk(usable[1]) };
+  }
+
+  throw new Error('No valid variation properties available for this taxonomy.');
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -279,11 +319,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           const sampleCsv = pricingRows.slice(0, 3).map((r) => ({ size: r.size, material: r.material }));
           console.log('ℹ️ No variation rows matched current Etsy inventory. Rebuilding inventory from pricing rows...', { sampleInventory, sampleCsv });
 
-          const rebuiltProducts = buildInventoryFromPricingRows(pricingRows, products[0]);
+          const props = await pickVariationProps(shopId, listing_id, headers);
+          const rebuiltProducts = buildInventoryFromPricingRows(pricingRows, products[0], props.size, props.material);
           const rebuiltBody = {
             products: rebuiltProducts.map(sanitizeProductForPut),
-            price_on_property: [100, 507],
-            quantity_on_property: [100, 507],
+            price_on_property: [props.size.id, props.material.id],
+            quantity_on_property: [props.size.id, props.material.id],
             sku_on_property: [],
           };
 
