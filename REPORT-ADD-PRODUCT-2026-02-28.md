@@ -97,7 +97,14 @@ The Add Product flow is now confirmed end-to-end working, including Etsy variati
 - User confirmation received: success (`yessssss...`).
 
 ### Stable final commit
-- `db30aee` on `main`
+- `db30aee` on `main` (Add Product + Etsy variation matrix flow)
+
+## Post-final UX fix (Pricing Calculator)
+- Resolved input UX bug where typing multi-digit values required re-clicking the field after each character.
+- Root cause: immediate numeric coercion on each keystroke.
+- Fix: introduced draft text input state and commit-on-blur behavior for calculator fields.
+- Result: uninterrupted typing (e.g., entering `234` in one go) with stable focus.
+- Commit: `6eb9daa` on `main`.
 
 ## Recommended Next Step (if continuing)
 1. Add “accept only if score improved” guard for re-score action.
