@@ -114,6 +114,7 @@ const defaultNewProductData: Partial<NewProductData> = {
     when_made: '2020_2024',
     is_supply: false,
     images: [],
+    imageAltTexts: [],
     description: '',
     tags: []
 };
@@ -704,8 +705,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
             // Step 2: Sequentially upload images to the new listing ID.
             if (productData.images && productData.images.length > 0) {
-                 for (const imageFile of productData.images) {
-                    await uploadListingImage(listing_id, imageFile);
+                 for (let i = 0; i < productData.images.length; i++) {
+                    const imageFile = productData.images[i];
+                    const alt = (productData.imageAltTexts?.[i] || `${productData.title} image ${i + 1}`).trim();
+                    await uploadListingImage(listing_id, imageFile, alt, i);
                 }
             }
 

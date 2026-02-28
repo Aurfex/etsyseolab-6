@@ -142,11 +142,21 @@ const Step2: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNext, onP
     const handleFileChange = (files: FileList | null) => {
         if (!files) return;
         const newFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
-        if (newProductData.images && (newProductData.images.length + newFiles.length > 10)) {
-            showToast({tKey: 'add_product_image_rules', type: 'error'}); // Simplified toast
+        const currentImages = newProductData.images || [];
+        const currentAlts = newProductData.imageAltTexts || [];
+
+        if (currentImages.length + newFiles.length > 20) {
+            showToast({tKey: 'add_product_image_rules', type: 'error'});
             return;
         }
-        updateNewProductData({ images: [...(newProductData.images || []), ...newFiles] });
+
+        const baseTitle = (newProductData.title || 'Product').trim();
+        const appendedAlts = newFiles.map((_, idx) => `${baseTitle} image ${currentImages.length + idx + 1}`);
+
+        updateNewProductData({
+            images: [...currentImages, ...newFiles],
+            imageAltTexts: [...currentAlts, ...appendedAlts],
+        });
     };
 
     const handleDrop = (e: DragEvent<HTMLDivElement>) => {
@@ -158,13 +168,27 @@ const Step2: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNext, onP
 
     const removeImage = (index: number) => {
         const updatedImages = [...(newProductData.images || [])];
+        const updatedAlts = [...(newProductData.imageAltTexts || [])];
         updatedImages.splice(index, 1);
-        updateNewProductData({ images: updatedImages });
+        updatedAlts.splice(index, 1);
+        updateNewProductData({ images: updatedImages, imageAltTexts: updatedAlts });
+    };
+
+    const updateImageAlt = (index: number, value: string) => {
+        const updatedAlts = [...(newProductData.imageAltTexts || [])];
+        updatedAlts[index] = value;
+        updateNewProductData({ imageAltTexts: updatedAlts });
     };
     
     const handleNext = () => {
         if (!newProductData.images || newProductData.images.length === 0) {
             showToast({tKey: 'add_product_validation_error', type: 'error'});
+            return;
+        }
+        const alts = newProductData.imageAltTexts || [];
+        const hasMissingAlt = (newProductData.images || []).some((_, i) => !String(alts[i] || '').trim());
+        if (hasMissingAlt) {
+            showToast({ tKey: 'add_product_validation_error', type: 'error' });
             return;
         }
         onNext();
@@ -195,14 +219,22 @@ const Step2: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNext, onP
                 </div>
             </div>
             {newProductData.images && newProductData.images.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {newProductData.images.map((file, index) => (
-                        <div key={index} className="relative group">
+                        <div key={index} className="relative group border border-gray-200 dark:border-gray-700 rounded-md p-2">
                             <img src={URL.createObjectURL(file)} alt={`preview ${index}`} className="h-24 w-24 object-cover rounded-md" />
-                            <button onClick={() => removeImage(index)} className="absolute top-0 right-0 p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onClick={() => removeImage(index)} className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
                                 <X className="w-3 h-3" />
                             </button>
-                             {index === 0 && <span className="absolute bottom-0 left-0 text-xs bg-black/50 text-white px-1.5 py-0.5 rounded-tr-md rounded-bl-md">Primary</span>}
+                             {index === 0 && <span className="absolute bottom-10 left-2 text-xs bg-black/50 text-white px-1.5 py-0.5 rounded">Primary</span>}
+                            <input
+                                type="text"
+                                value={(newProductData.imageAltTexts || [])[index] || ''}
+                                onChange={(e) => updateImageAlt(index, e.target.value)}
+                                placeholder="Image alt text (required)"
+                                className="mt-2 block w-full input-field text-xs"
+                                maxLength={140}
+                            />
                         </div>
                     ))}
                 </div>

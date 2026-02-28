@@ -290,6 +290,7 @@ export interface NewProductData {
 
     // Step 2: Images
     images: File[];
+    imageAltTexts?: string[];
     
     // Step 3: Metadata
     description: string;
