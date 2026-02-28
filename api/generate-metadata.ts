@@ -21,7 +21,7 @@ type OutputShape = {
     price: number;
     quantity: number;
     who_made: 'i_did' | 'collective' | 'someone_else';
-    when_made: 'made_to_order' | '2020_2024' | '2010_2019' | 'before_2010';
+    when_made: 'made_to_order' | '2020_2026' | '2010_2019' | 'before_2010';
     is_supply: boolean;
   };
   warning?: string;
@@ -54,7 +54,7 @@ const normalizeOutput = (parsed: any, details: { title?: string; description?: s
     price: Number.isFinite(Number(suggested.price)) ? Number(suggested.price) : 29.99,
     quantity: Number.isFinite(Number(suggested.quantity)) ? Math.max(1, Math.floor(Number(suggested.quantity))) : 1,
     who_made: ['i_did', 'collective', 'someone_else'].includes(String(suggested.who_made)) ? String(suggested.who_made) as any : 'i_did',
-    when_made: ['made_to_order', '2020_2024', '2010_2019', 'before_2010'].includes(String(suggested.when_made)) ? String(suggested.when_made) as any : 'made_to_order',
+    when_made: ['made_to_order', '2020_2026', '2010_2019', 'before_2010'].includes(String(suggested.when_made)) ? String(suggested.when_made) as any : 'made_to_order',
     is_supply: Boolean(suggested.is_supply),
   };
 
@@ -84,7 +84,7 @@ Rules:
 - imageAltTexts one per image, each <= 140 chars
 - suggestedBasics keys: categoryHint, price, quantity, who_made, when_made, is_supply
 - who_made in ["i_did","collective","someone_else"]
-- when_made in ["made_to_order","2020_2024","2010_2019","before_2010"]
+- when_made in ["made_to_order","2020_2026","2010_2019","before_2010"]
 - avoid fake claims
 Seller notes:
 - title: ${String(details.title || '').trim() || 'N/A'}

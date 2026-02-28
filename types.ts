@@ -285,7 +285,7 @@ export interface NewProductData {
     price: number;
     quantity: number;
     who_made: 'i_did' | 'collective' | 'someone_else';
-    when_made: 'made_to_order' | '2020_2024' | '2010_2019' | 'before_2010';
+    when_made: 'made_to_order' | '2020_2026' | '2010_2019' | 'before_2010';
     is_supply: boolean;
 
     // Step 2: Images

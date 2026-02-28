@@ -111,7 +111,7 @@ const defaultNewProductData: Partial<NewProductData> = {
     price: 0,
     quantity: 1,
     who_made: 'i_did',
-    when_made: '2020_2024',
+    when_made: '2020_2026',
     is_supply: false,
     images: [],
     imageAltTexts: [],

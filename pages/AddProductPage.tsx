@@ -116,7 +116,7 @@ const Step1: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
                     <label htmlFor="when_made" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_when_made_label')}</label>
                     <select name="when_made" id="when_made" value={newProductData.when_made} onChange={handleChange} className="mt-1 block w-full input-field">
                         <option value="made_to_order">{t('add_product_when_made_to_order')}</option>
-                        <option value="2020_2024">{t('add_product_when_made_2020_2024')}</option>
+                        <option value="2020_2026">{t('add_product_when_made_2020_2026')}</option>
                         <option value="2010_2019">{t('add_product_when_made_2010_2019')}</option>
                         <option value="before_2010">{t('add_product_when_made_before_2010')}</option>
                     </select>
@@ -407,7 +407,7 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
                     <label htmlFor="when_made" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_when_made_label')}</label>
                     <select name="when_made" id="when_made" value={newProductData.when_made} onChange={handleChange} className="mt-1 block w-full input-field">
                         <option value="made_to_order">{t('add_product_when_made_to_order')}</option>
-                        <option value="2020_2024">{t('add_product_when_made_2020_2024')}</option>
+                        <option value="2020_2026">{t('add_product_when_made_2020_2026')}</option>
                         <option value="2010_2019">{t('add_product_when_made_2010_2019')}</option>
                         <option value="before_2010">{t('add_product_when_made_before_2010')}</option>
                     </select>
