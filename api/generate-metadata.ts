@@ -28,11 +28,17 @@ type OutputShape = {
 };
 
 const normalizeOutput = (parsed: any, details: { title?: string; description?: string }, images: VisionImageInput[]): OutputShape => {
-  const title = String(parsed?.title || details.title || 'Handmade Jewelry Listing').trim().slice(0, 140);
+  let title = String(parsed?.title || details.title || 'Handmade Jewelry Listing').trim().slice(0, 140);
   const description = String(parsed?.description || details.description || '').trim();
   const tags = Array.isArray(parsed?.tags)
     ? [...new Set(parsed.tags.map((t: any) => String(t || '').trim()).filter(Boolean))].map((t) => t.slice(0, 20)).slice(0, 13)
     : [];
+
+  if (!title || /^handmade jewelry listing$/i.test(title)) {
+    const seed = Array.isArray(parsed?.tags) ? parsed.tags.slice(0, 3).join(' ') : '';
+    const hint = String(parsed?.suggestedBasics?.categoryHint || 'Handmade Gift').trim();
+    title = `${seed || 'Handmade'} ${hint} - Unique Etsy Item`.replace(/\s+/g, ' ').trim().slice(0, 140);
+  }
 
   const imageAltTexts = Array.isArray(parsed?.imageAltTexts)
     ? parsed.imageAltTexts.map((a: any) => String(a || '').trim().slice(0, 140))
@@ -64,8 +70,11 @@ export default async function endpoint(req: VercelRequest, res: VercelResponse) 
     const prompt = `You are an Etsy SEO + listing setup expert.
 Return STRICT JSON with keys: title, description, tags, imageAltTexts, suggestedBasics.
 Rules:
-- title <= 140 chars
-- tags up to 13, each <= 20 chars, unique
+- title <= 140 chars (target 90-140)
+- title must start with primary keyword and include product type + style/material + gift/use-case if relevant
+- title must NOT include price, shipping, discount terms, emoji, excessive repetition, or clickbait
+- avoid generic titles like "Handmade Jewelry Listing"
+- tags up to 13, each <= 20 chars, unique, no punctuation spam
 - imageAltTexts one per image, each <= 140 chars
 - suggestedBasics keys: categoryHint, price, quantity, who_made, when_made, is_supply
 - who_made in ["i_did","collective","someone_else"]
