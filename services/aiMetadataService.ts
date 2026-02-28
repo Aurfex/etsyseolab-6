@@ -28,7 +28,7 @@ const fileToBase64 = (file: File): Promise<string> => new Promise((resolve, reje
 export const generateSeoMetadata = async (
   details: Pick<NewProductData, 'title' | 'description'>,
   files: File[] = []
-): Promise<Pick<NewProductData, 'title' | 'description' | 'tags'> & { imageAltTexts?: string[] }> => {
+): Promise<Pick<NewProductData, 'title' | 'description' | 'tags'> & { imageAltTexts?: string[]; suggestedBasics?: { categoryHint?: string; price?: number; quantity?: number; who_made?: string; when_made?: string; is_supply?: boolean } }> => {
   const token = sessionStorage.getItem('auth') ? JSON.parse(sessionStorage.getItem('auth')!).token : null;
   if (!token) {
     throw new Error('Authentication token not found.');

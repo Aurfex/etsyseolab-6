@@ -42,16 +42,21 @@ export default async function endpoint(req: Request): Promise<Response> {
     const ai = new GoogleGenAI({ apiKey });
     const model = 'gemini-2.5-flash';
 
-    const imageAwarePrompt = `You are an Etsy SEO expert.
-Generate optimized metadata for an Etsy listing using provided images and optional seller notes.
+    const imageAwarePrompt = `You are an Etsy SEO + listing setup expert.
+Generate optimized metadata and practical listing defaults using provided images and optional seller notes.
 
 Rules:
-- Return STRICT JSON with keys: title, description, tags, imageAltTexts
+- Return STRICT JSON with keys: title, description, tags, imageAltTexts, suggestedBasics
 - title: <= 140 chars
 - tags: array up to 13 unique tags, each <= 20 chars
-- imageAltTexts: provide one alt text per image, each <= 140 chars
+- imageAltTexts: one alt text per image, each <= 140 chars
 - description: persuasive, natural, include materials/style/use-cases inferred from images
-- Avoid fluff and avoid fake claims. If unsure, stay generic and safe.
+- suggestedBasics must include: categoryHint, price, quantity, who_made, when_made, is_supply
+- categoryHint should be a short taxonomy-like text (example: "Jewelry > Rings > Statement Rings")
+- who_made in ["i_did","collective","someone_else"]
+- when_made in ["made_to_order","2020_2024","2010_2019","before_2010"]
+- is_supply boolean
+- Avoid fake claims. If unsure, stay generic and safe.
 
 Seller notes:
 - current title idea: ${String(details.title || '').trim() || 'N/A'}
@@ -59,13 +64,27 @@ Seller notes:
 
     const textOnlyPrompt = `Create Etsy SEO metadata from seller notes.
 Rules:
-- Return STRICT JSON with keys: title, description, tags
+- Return STRICT JSON with keys: title, description, tags, suggestedBasics
 - title <= 140 chars
 - tags: max 13, each <= 20 chars, no duplicates
+- suggestedBasics must include: categoryHint, price, quantity, who_made, when_made, is_supply
 
 Seller notes:
 - title: ${String(details.title || '').trim()}
 - description: ${String(details.description || '').trim()}`;
+
+    const basicsSchema = {
+      type: Type.OBJECT,
+      properties: {
+        categoryHint: { type: Type.STRING },
+        price: { type: Type.NUMBER },
+        quantity: { type: Type.NUMBER },
+        who_made: { type: Type.STRING },
+        when_made: { type: Type.STRING },
+        is_supply: { type: Type.BOOLEAN },
+      },
+      required: ['categoryHint', 'price', 'quantity', 'who_made', 'when_made', 'is_supply'],
+    };
 
     const responseSchema: any = images.length
       ? {
@@ -75,8 +94,9 @@ Seller notes:
             description: { type: Type.STRING },
             tags: { type: Type.ARRAY, items: { type: Type.STRING } },
             imageAltTexts: { type: Type.ARRAY, items: { type: Type.STRING } },
+            suggestedBasics: basicsSchema,
           },
-          required: ['title', 'description', 'tags', 'imageAltTexts'],
+          required: ['title', 'description', 'tags', 'imageAltTexts', 'suggestedBasics'],
         }
       : {
           type: Type.OBJECT,
@@ -84,8 +104,9 @@ Seller notes:
             title: { type: Type.STRING },
             description: { type: Type.STRING },
             tags: { type: Type.ARRAY, items: { type: Type.STRING } },
+            suggestedBasics: basicsSchema,
           },
-          required: ['title', 'description', 'tags'],
+          required: ['title', 'description', 'tags', 'suggestedBasics'],
         };
 
     const contents: any = images.length
@@ -126,7 +147,17 @@ Seller notes:
       ? parsed.imageAltTexts.map((a: any) => String(a || '').trim().slice(0, 140))
       : undefined;
 
-    return new Response(JSON.stringify({ title, description, tags, imageAltTexts }), { status: 200, headers });
+    const suggested = parsed?.suggestedBasics || {};
+    const suggestedBasics = {
+      categoryHint: String(suggested.categoryHint || '').trim(),
+      price: Number.isFinite(Number(suggested.price)) ? Number(suggested.price) : 29.99,
+      quantity: Number.isFinite(Number(suggested.quantity)) ? Math.max(1, Math.floor(Number(suggested.quantity))) : 1,
+      who_made: ['i_did', 'collective', 'someone_else'].includes(String(suggested.who_made)) ? String(suggested.who_made) : 'i_did',
+      when_made: ['made_to_order', '2020_2024', '2010_2019', 'before_2010'].includes(String(suggested.when_made)) ? String(suggested.when_made) : 'made_to_order',
+      is_supply: Boolean(suggested.is_supply),
+    };
+
+    return new Response(JSON.stringify({ title, description, tags, imageAltTexts, suggestedBasics }), { status: 200, headers });
   } catch (error) {
     console.error('Error in metadata generation endpoint:', error);
     return new Response(JSON.stringify({ error: 'An unexpected error occurred while generating metadata.' }), {

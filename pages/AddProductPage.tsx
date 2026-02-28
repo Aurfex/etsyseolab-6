@@ -14,8 +14,7 @@ const AddProductPage: React.FC = () => {
     const { t } = useTranslation();
     const [currentStep, setCurrentStep] = useState(1);
     const steps = [
-        'Images',
-        'Basic Info',
+        'Analyze + Basics',
         'AI SEO',
         'Review & Publish',
     ];
@@ -47,9 +46,8 @@ const AddProductPage: React.FC = () => {
                 </div>
                 
                 {currentStep === 1 && <Step2 onNext={() => setCurrentStep(2)} />}
-                {currentStep === 2 && <Step1 onNext={() => setCurrentStep(3)} onPrev={() => setCurrentStep(1)} />}
-                {currentStep === 3 && <Step3 onNext={() => setCurrentStep(4)} onPrev={() => setCurrentStep(2)} />}
-                {currentStep === 4 && <Step4 onPrev={() => setCurrentStep(3)} />}
+                {currentStep === 2 && <Step3 onNext={() => setCurrentStep(3)} onPrev={() => setCurrentStep(1)} />}
+                {currentStep === 3 && <Step4 onPrev={() => setCurrentStep(2)} />}
 
             </Card>
         </div>
@@ -136,11 +134,78 @@ const Step1: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
     );
 };
 
-// Step 2: Images
+// Step 1: Image Analyze + Basic Info
 const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, onPrev }) => {
     const { t } = useTranslation();
-    const { newProductData, updateNewProductData, showToast } = useAppContext();
+    const { newProductData, updateNewProductData, showToast, etsyCategories, generateSeoMetadata } = useAppContext();
     const [isDragging, setIsDragging] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+    const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value, type } = e.target;
+        let finalValue: string | number | boolean = value;
+        if (type === 'number') finalValue = parseFloat(value);
+        if (name === 'is_supply') finalValue = value === 'true';
+        updateNewProductData({ [name]: finalValue });
+    };
+
+    const inferTaxonomyFromHint = (hint: string, title: string, tags: string[]) => {
+        const hay = `${hint} ${title} ${(tags || []).join(' ')}`.toLowerCase();
+        const byScore = etsyCategories
+            .map(cat => {
+                const p = (cat.path || '').toLowerCase();
+                let score = 0;
+                const parts = p.split('>').map(s => s.trim());
+                for (const part of parts) if (part && hay.includes(part)) score += 3;
+                const tokens = p.split(/[^a-z0-9]+/).filter(Boolean);
+                for (const tk of tokens) if (tk.length > 2 && hay.includes(tk)) score += 1;
+                return { id: cat.id, score };
+            })
+            .sort((a, b) => b.score - a.score);
+        return byScore[0]?.score > 0 ? byScore[0].id : null;
+    };
+
+    const handleAnalyze = async () => {
+        if (!newProductData.images?.length) {
+            showToast({ tKey: 'add_product_validation_error', type: 'error' });
+            return;
+        }
+        setIsAnalyzing(true);
+        try {
+            const result = await generateSeoMetadata(
+                { title: newProductData.title || '', description: newProductData.description || '' },
+                newProductData.images || []
+            );
+
+            const suggestion = result.suggestedBasics || {};
+            const taxonomyId = inferTaxonomyFromHint(
+                String(suggestion.categoryHint || ''),
+                result.title || '',
+                result.tags || []
+            );
+
+            updateNewProductData({
+                title: result.title || newProductData.title || '',
+                description: result.description || newProductData.description || '',
+                tags: result.tags || newProductData.tags || [],
+                imageAltTexts: result.imageAltTexts && result.imageAltTexts.length
+                    ? result.imageAltTexts
+                    : newProductData.imageAltTexts,
+                taxonomy_id: taxonomyId || newProductData.taxonomy_id || null,
+                price: Number(suggestion.price || newProductData.price || 29.99),
+                quantity: Number(suggestion.quantity || newProductData.quantity || 1),
+                who_made: (suggestion.who_made as any) || newProductData.who_made || 'i_did',
+                when_made: (suggestion.when_made as any) || newProductData.when_made || 'made_to_order',
+                is_supply: typeof suggestion.is_supply === 'boolean' ? suggestion.is_supply : (newProductData.is_supply || false),
+            });
+
+            showToast({ tKey: 'toast_metadata_generated', type: 'success' });
+        } catch (e: any) {
+            showToast({ tKey: 'toast_generic_error_with_message', options: { message: e.message }, type: 'error' });
+        } finally {
+            setIsAnalyzing(false);
+        }
+    };
 
     const handleFileChange = (files: FileList | null) => {
         if (!files) return;
@@ -156,10 +221,7 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
         const baseTitle = (newProductData.title || 'Product').trim();
         const appendedAlts = newFiles.map((_, idx) => `${baseTitle} image ${currentImages.length + idx + 1}`);
 
-        updateNewProductData({
-            images: [...currentImages, ...newFiles],
-            imageAltTexts: [...currentAlts, ...appendedAlts],
-        });
+        updateNewProductData({ images: [...currentImages, ...newFiles], imageAltTexts: [...currentAlts, ...appendedAlts] });
     };
 
     const handleDrop = (e: DragEvent<HTMLDivElement>) => {
@@ -182,70 +244,100 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
         updatedAlts[index] = value;
         updateNewProductData({ imageAltTexts: updatedAlts });
     };
-    
+
     const handleNext = () => {
-        if (!newProductData.images || newProductData.images.length === 0) {
-            showToast({tKey: 'add_product_validation_error', type: 'error'});
-            return;
-        }
-        const alts = newProductData.imageAltTexts || [];
-        const hasMissingAlt = (newProductData.images || []).some((_, i) => !String(alts[i] || '').trim());
-        if (hasMissingAlt) {
+        if (!newProductData.images?.length || !newProductData.title || !newProductData.taxonomy_id || !newProductData.price || !newProductData.quantity) {
             showToast({ tKey: 'add_product_validation_error', type: 'error' });
             return;
         }
         onNext();
-    }
+    };
 
     return (
         <div className="space-y-6">
-            <div>
-                <h3 className="text-lg font-bold">{t('add_product_image_upload_title')}</h3>
-                <p className="text-sm text-gray-500">{t('add_product_image_upload_subtitle')}</p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h3 className="text-lg font-bold">Upload Images + Analyze</h3>
+                    <p className="text-sm text-gray-500">Upload photos, then click Analyze to auto-fill listing basics.</p>
+                </div>
+                <button onClick={handleAnalyze} disabled={isAnalyzing || !(newProductData.images && newProductData.images.length)} className="btn-primary flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                    {isAnalyzing ? <Loader2 className="w-4 h-4 animate-spin"/> : <Sparkles className="w-4 h-4"/>}
+                    Analyze
+                </button>
             </div>
-            <div 
-                onDragEnter={() => setIsDragging(true)} 
-                onDragLeave={() => setIsDragging(false)}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={handleDrop}
-                className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md ${isDragging ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' : 'border-gray-300 dark:border-gray-600'}`}
-            >
+
+            <div onDragEnter={() => setIsDragging(true)} onDragLeave={() => setIsDragging(false)} onDragOver={(e) => e.preventDefault()} onDrop={handleDrop}
+                className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md ${isDragging ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' : 'border-gray-300 dark:border-gray-600'}`}>
                 <div className="space-y-1 text-center">
                     <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
-                    <div className="flex text-sm text-gray-600 dark:text-gray-400">
-                        <label htmlFor="file-upload" className="relative cursor-pointer bg-white dark:bg-gray-800 rounded-md font-medium text-purple-600 hover:text-purple-500 focus-within:outline-none">
-                            <span>{t('add_product_image_upload_cta')}</span>
-                            <input id="file-upload" name="file-upload" type="file" multiple accept="image/png, image/jpeg" className="sr-only" onChange={(e) => handleFileChange(e.target.files)} />
-                        </label>
-                    </div>
+                    <label htmlFor="file-upload" className="relative cursor-pointer bg-white dark:bg-gray-800 rounded-md font-medium text-purple-600 hover:text-purple-500 focus-within:outline-none">
+                        <span>{t('add_product_image_upload_cta')}</span>
+                        <input id="file-upload" name="file-upload" type="file" multiple accept="image/png, image/jpeg" className="sr-only" onChange={(e) => handleFileChange(e.target.files)} />
+                    </label>
                     <p className="text-xs text-gray-500">{t('add_product_image_rules')}</p>
                 </div>
             </div>
+
             {newProductData.images && newProductData.images.length > 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {newProductData.images.map((file, index) => (
                         <div key={index} className="relative group border border-gray-200 dark:border-gray-700 rounded-md p-2">
                             <img src={URL.createObjectURL(file)} alt={`preview ${index}`} className="h-24 w-24 object-cover rounded-md" />
-                            <button onClick={() => removeImage(index)} className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                                <X className="w-3 h-3" />
-                            </button>
-                             {index === 0 && <span className="absolute bottom-10 left-2 text-xs bg-black/50 text-white px-1.5 py-0.5 rounded">Primary</span>}
-                            <input
-                                type="text"
-                                value={(newProductData.imageAltTexts || [])[index] || ''}
-                                onChange={(e) => updateImageAlt(index, e.target.value)}
-                                placeholder="Image alt text (required)"
-                                className="mt-2 block w-full input-field text-xs"
-                                maxLength={140}
-                            />
+                            <button onClick={() => removeImage(index)} className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3" /></button>
+                            <input type="text" value={(newProductData.imageAltTexts || [])[index] || ''} onChange={(e) => updateImageAlt(index, e.target.value)} placeholder="Image alt text (required)" className="mt-2 block w-full input-field text-xs" maxLength={140} />
                         </div>
                     ))}
                 </div>
             )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                <div>
+                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_title_label')}</label>
+                    <input type="text" name="title" id="title" value={newProductData.title || ''} onChange={handleChange} className="mt-1 block w-full input-field" />
+                </div>
+                <div>
+                    <label htmlFor="taxonomy_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_category_label')}</label>
+                    <select name="taxonomy_id" id="taxonomy_id" value={newProductData.taxonomy_id || ''} onChange={handleChange} className="mt-1 block w-full input-field">
+                        <option value="">{t('add_product_select_category')}</option>
+                        {etsyCategories.map(cat => <option key={cat.id} value={cat.id}>{cat.path}</option>)}
+                    </select>
+                </div>
+                <div>
+                    <label htmlFor="price" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_price_label')}</label>
+                    <input type="number" name="price" id="price" value={newProductData.price || ''} min="0" step="0.01" onChange={handleChange} className="mt-1 block w-full input-field" />
+                </div>
+                <div>
+                    <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_quantity_label')}</label>
+                    <input type="number" name="quantity" id="quantity" value={newProductData.quantity || ''} min="1" step="1" onChange={handleChange} className="mt-1 block w-full input-field" />
+                </div>
+                <div>
+                    <label htmlFor="who_made" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_who_made_label')}</label>
+                    <select name="who_made" id="who_made" value={newProductData.who_made} onChange={handleChange} className="mt-1 block w-full input-field">
+                        <option value="i_did">{t('add_product_who_made_i_did')}</option>
+                        <option value="collective">{t('add_product_who_made_collective')}</option>
+                        <option value="someone_else">{t('add_product_who_made_someone_else')}</option>
+                    </select>
+                </div>
+                <div>
+                    <label htmlFor="when_made" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_when_made_label')}</label>
+                    <select name="when_made" id="when_made" value={newProductData.when_made} onChange={handleChange} className="mt-1 block w-full input-field">
+                        <option value="made_to_order">{t('add_product_when_made_to_order')}</option>
+                        <option value="2020_2024">{t('add_product_when_made_2020_2024')}</option>
+                        <option value="2010_2019">{t('add_product_when_made_2010_2019')}</option>
+                        <option value="before_2010">{t('add_product_when_made_before_2010')}</option>
+                    </select>
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_is_supply_label')}</label>
+                    <div className="mt-2 flex gap-4">
+                        <label className="flex items-center"><input type="radio" name="is_supply" value="false" checked={newProductData.is_supply === false} onChange={handleChange} className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300" /> <span className="ml-2">{t('add_product_no')}</span></label>
+                        <label className="flex items-center"><input type="radio" name="is_supply" value="true" checked={newProductData.is_supply === true} onChange={handleChange} className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300" /> <span className="ml-2">{t('add_product_yes')}</span></label>
+                    </div>
+                </div>
+            </div>
+
             <div className="flex justify-between">
-                {onPrev ? (
-                    <button onClick={onPrev} className="btn-secondary flex items-center"><ArrowLeft className="w-4 h-4 me-2"/>{t('add_product_prev_step')}</button>
-                ) : <span />}
+                {onPrev ? (<button onClick={onPrev} className="btn-secondary flex items-center"><ArrowLeft className="w-4 h-4 me-2"/>{t('add_product_prev_step')}</button>) : <span />}
                 <button onClick={handleNext} className="btn-primary">{t('add_product_next_step')}</button>
             </div>
         </div>
@@ -304,7 +396,7 @@ const Step3: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNext, onP
                 <div>
                     <h3 className="text-lg font-bold">{t('add_product_ai_seo_title')}</h3>
                     <p className="text-sm text-gray-500">{t('add_product_ai_seo_subtitle')}</p>
-                    <p className="text-xs text-purple-600 mt-1">First upload images in step 2, then AI will generate title, description, tags, and alt texts from the images.</p>
+                    <p className="text-xs text-purple-600 mt-1">Images are analyzed in step 1. Here you can regenerate/refine SEO text if needed.</p>
                 </div>
                  <button onClick={handleGenerate} disabled={isGenerating || !(newProductData.images && newProductData.images.length)} className="btn-primary flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
                     {isGenerating ? <Loader2 className="w-5 h-5 animate-spin"/> : <Sparkles className="w-5 h-5"/>}
