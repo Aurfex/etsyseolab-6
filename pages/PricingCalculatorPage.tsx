@@ -17,6 +17,25 @@ const RING_SIZES: RingSize[] = [
 
 const BASE = 54.4;
 
+type FieldInputProps = {
+  label: string;
+  value: number;
+  onChange: (v: string) => void;
+};
+
+const FieldInput: React.FC<FieldInputProps> = ({ label, value, onChange }) => (
+  <div>
+    <label className="text-xs text-gray-500">{label}</label>
+    <input
+      type="number"
+      step="0.01"
+      className="mt-1 w-full p-2 rounded border bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700"
+      value={Number.isFinite(value) ? value : 0}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  </div>
+);
+
 const PricingCalculatorPage: React.FC = () => {
   const [inputs, setInputs] = useState({
     goldPricePerGram: 85,
@@ -129,18 +148,6 @@ const PricingCalculatorPage: React.FC = () => {
 
   const setTaxPreset = (rate: number) => setInputs((p) => ({ ...p, taxRate: rate }));
 
-  const Input = ({ k, label }: { k: keyof typeof inputs; label: string }) => (
-    <div>
-      <label className="text-xs text-gray-500">{label}</label>
-      <input
-        type="number"
-        step="0.01"
-        className="mt-1 w-full p-2 rounded border bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700"
-        value={inputs[k]}
-        onChange={(e) => setNum(k, e.target.value)}
-      />
-    </div>
-  );
 
   return (
     <div className="space-y-6">
@@ -155,27 +162,27 @@ const PricingCalculatorPage: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 space-y-4 max-h-[75vh] overflow-auto">
-          <Input k="goldPricePerGram" label="Gold Price / g" />
-          <Input k="platinumPricePerGram" label="Platinum Price / g" />
-          <Input k="silverFixedPrice" label="Silver Fixed Price / Ring" />
-          <Input k="baseWeightSize7" label="Base Weight Size 7 (g)" />
+          <FieldInput label="Gold Price / g" value={inputs.goldPricePerGram} onChange={(v) => setNum('goldPricePerGram', v)} />
+          <FieldInput label="Platinum Price / g" value={inputs.platinumPricePerGram} onChange={(v) => setNum('platinumPricePerGram', v)} />
+          <FieldInput label="Silver Fixed Price / Ring" value={inputs.silverFixedPrice} onChange={(v) => setNum('silverFixedPrice', v)} />
+          <FieldInput label="Base Weight Size 7 (g)" value={inputs.baseWeightSize7} onChange={(v) => setNum('baseWeightSize7', v)} />
 
           <hr className="border-gray-200 dark:border-gray-700" />
-          <Input k="designCost" label="Design" />
-          <Input k="printing3DCost" label="3D Printing" />
-          <Input k="castingCost" label="Casting" />
-          <Input k="finishingCost" label="Soldering, Cleaning & Polishing" />
-          <Input k="platingCost" label="Plating" />
-          <Input k="stoneSettingCost" label="Stone Setting" />
-          <Input k="engravingCost" label="Laser Engraving" />
-          <Input k="stonePrice" label="Stone Price" />
-          <Input k="findingCost" label="Finding" />
-          <Input k="toolsCost" label="Tools" />
-          <Input k="packagingCost" label="Packaging" />
-          <Input k="shippingCost" label="Post (Shipping)" />
+          <FieldInput label="Design" value={inputs.designCost} onChange={(v) => setNum('designCost', v)} />
+          <FieldInput label="3D Printing" value={inputs.printing3DCost} onChange={(v) => setNum('printing3DCost', v)} />
+          <FieldInput label="Casting" value={inputs.castingCost} onChange={(v) => setNum('castingCost', v)} />
+          <FieldInput label="Soldering, Cleaning & Polishing" value={inputs.finishingCost} onChange={(v) => setNum('finishingCost', v)} />
+          <FieldInput label="Plating" value={inputs.platingCost} onChange={(v) => setNum('platingCost', v)} />
+          <FieldInput label="Stone Setting" value={inputs.stoneSettingCost} onChange={(v) => setNum('stoneSettingCost', v)} />
+          <FieldInput label="Laser Engraving" value={inputs.engravingCost} onChange={(v) => setNum('engravingCost', v)} />
+          <FieldInput label="Stone Price" value={inputs.stonePrice} onChange={(v) => setNum('stonePrice', v)} />
+          <FieldInput label="Finding" value={inputs.findingCost} onChange={(v) => setNum('findingCost', v)} />
+          <FieldInput label="Tools" value={inputs.toolsCost} onChange={(v) => setNum('toolsCost', v)} />
+          <FieldInput label="Packaging" value={inputs.packagingCost} onChange={(v) => setNum('packagingCost', v)} />
+          <FieldInput label="Post (Shipping)" value={inputs.shippingCost} onChange={(v) => setNum('shippingCost', v)} />
 
           <hr className="border-gray-200 dark:border-gray-700" />
-          <Input k="profitMargin" label="Profit Margin (e.g. 0.30)" />
+          <FieldInput label="Profit Margin (e.g. 0.30)" value={inputs.profitMargin} onChange={(v) => setNum('profitMargin', v)} />
 
           <div>
             <label className="text-xs text-gray-500">Tax Rate</label>
