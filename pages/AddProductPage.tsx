@@ -184,6 +184,11 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
                 result.tags || []
             );
 
+            const productSignals = `${result.title || ''} ${String(suggestion.categoryHint || '')} ${(result.tags || []).join(' ')}`.toLowerCase();
+            const looksLikeFinishedJewelry = /(ring|necklace|bracelet|earring|pendant|jewelry|jewellery|wedding|engagement)/.test(productSignals);
+            const suggestedSupply = typeof suggestion.is_supply === 'boolean' ? suggestion.is_supply : false;
+            const finalIsSupply = looksLikeFinishedJewelry ? false : suggestedSupply;
+
             updateNewProductData({
                 title: result.title || newProductData.title || '',
                 description: result.description || newProductData.description || '',
@@ -196,7 +201,7 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
                 quantity: Number(suggestion.quantity || newProductData.quantity || 1),
                 who_made: (suggestion.who_made as any) || newProductData.who_made || 'i_did',
                 when_made: (suggestion.when_made as any) || newProductData.when_made || 'made_to_order',
-                is_supply: typeof suggestion.is_supply === 'boolean' ? suggestion.is_supply : (newProductData.is_supply || false),
+                is_supply: finalIsSupply,
             });
 
             showToast({ tKey: 'toast_metadata_generated', type: 'success' });
@@ -260,9 +265,13 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
                     <h3 className="text-lg font-bold">Upload Images + Analyze</h3>
                     <p className="text-sm text-gray-500">Upload photos, then click Analyze to auto-fill listing basics.</p>
                 </div>
-                <button onClick={handleAnalyze} disabled={isAnalyzing || !(newProductData.images && newProductData.images.length)} className="btn-primary flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                <button
+                    onClick={handleAnalyze}
+                    disabled={isAnalyzing || !(newProductData.images && newProductData.images.length)}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-white bg-purple-600 hover:bg-purple-700 shadow-sm transition disabled:opacity-60 disabled:cursor-not-allowed"
+                >
                     {isAnalyzing ? <Loader2 className="w-4 h-4 animate-spin"/> : <Sparkles className="w-4 h-4"/>}
-                    Analyze
+                    {isAnalyzing ? 'Analyzing...' : 'Analyze with AI'}
                 </button>
             </div>
 
