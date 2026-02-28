@@ -1,5 +1,6 @@
 import React, { useState, useMemo, ChangeEvent, DragEvent } from 'react';
 import { PlusSquare, Info, UploadCloud, Sparkles, Eye, Send, ArrowLeft, Loader2, X, Tag, Image as ImageIcon } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { useAppContext } from '../contexts/AppContext';
 import { useTranslation } from '../contexts/LanguageContext';
 import { NewProductData } from '../types';
@@ -576,44 +577,26 @@ const StepPricing: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNex
     const sizes = newProductData.ring_sizes || ['6', '7', '8', '9', '10', '11', '12'];
     const materials = newProductData.ring_materials || ['sterling silver', '14k gold', 'platinum'];
 
-    const parseCsv = (text: string) => {
-        const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-        if (lines.length < 2) throw new Error('CSV is empty.');
-
-        const delimiter = (lines[0].match(/;/g)?.length || 0) > (lines[0].match(/,/g)?.length || 0) ? ';' : ',';
-        const normalizeHeader = (h: string) => h.replace(/^"|"$/g, '').trim().toLowerCase().replace(/[_\-]+/g, ' ').replace(/\s+/g, ' ');
-        const headers = lines[0].split(delimiter).map(normalizeHeader);
-
-        const findIndex = (aliases: string[]) => headers.findIndex(h => aliases.includes(h));
-        const idx = {
-            size: findIndex(['size', 'ring size', 'ringsize', 'size us', 'us size']),
-            material: findIndex(['material', 'metal', 'variant material']),
-            price: findIndex(['price', 'base price', 'unit price', 'final price']),
-            quantity: findIndex(['quantity', 'qty', 'stock']),
-            sku: findIndex(['sku', 'code', 'item sku']),
-        };
-
-        if (idx.size === -1 || idx.material === -1 || idx.price === -1) {
-            throw new Error('CSV must include size/material/price columns (aliases supported: ring size, metal, base price).');
-        }
-
-        const rows = lines.slice(1).map((line) => {
-            const c = line.split(delimiter).map(v => v.replace(/^"|"$/g, '').trim());
-            return {
-                size: c[idx.size] || '',
-                material: c[idx.material] || '',
-                price: Number(String(c[idx.price] || '0').replace(/[^0-9.\-]/g, '')),
-                quantity: idx.quantity >= 0 ? Number(String(c[idx.quantity] || '0').replace(/[^0-9.\-]/g, '')) : undefined,
-                sku: idx.sku >= 0 ? c[idx.sku] || '' : undefined,
-            };
-        }).filter(r => r.size && r.material);
-
-        return rows;
-    };
-
     const handleCsvUpload = async (file: File) => {
-        const text = await file.text();
-        const rows = parseCsv(text);
+        const data = await file.arrayBuffer();
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rowsRaw: any[] = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+        // Match Optimizer Prices tab mapping exactly
+        const rows = rowsRaw
+            .map((r) => ({
+                size: String(r.Size ?? '').trim(),
+                material: String(r.Material ?? '').trim(),
+                price: Number(r['Final Price (CAD)'] ?? 0),
+                quantity: r.Quantity !== undefined && r.Quantity !== '' ? Number(r.Quantity) : undefined,
+                sku: r.SKU !== undefined ? String(r.SKU).trim() : undefined,
+            }))
+            .filter((r) => r.size && r.material && !Number.isNaN(r.price) && r.price > 0);
+
+        if (rows.length === 0) {
+            throw new Error('Pricing file parsed but no valid rows found. Expected columns: Size, Material, Final Price (CAD).');
+        }
         const expected = new Set(sizes.flatMap(s => materials.map(m => `${s}__${m.toLowerCase()}`)));
         const got = new Set(rows.map(r => `${r.size}__${String(r.material).toLowerCase()}`));
         const missing = [...expected].filter(k => !got.has(k));
@@ -678,8 +661,8 @@ const StepPricing: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNex
 
             <div className="p-4 rounded-lg border border-dashed border-indigo-300 dark:border-indigo-700 bg-indigo-50/50 dark:bg-indigo-900/20">
                 <label className="block text-sm font-medium mb-2">Upload pricing CSV</label>
-                <input type="file" accept=".csv,text/csv" onChange={onFileChange} className="block w-full text-sm" />
-                <p className="text-xs text-gray-500 mt-2">Required columns: size, material, price (optional: quantity, sku)</p>
+                <input type="file" accept=".csv,.xlsx,.xls" onChange={onFileChange} className="block w-full text-sm" />
+                <p className="text-xs text-gray-500 mt-2">Use the same pricing export format as Optimizer Prices tab: Size, Material, Final Price (CAD).</p>
                 {csvStatus && <p className="text-xs mt-2 text-indigo-700 dark:text-indigo-300">{csvStatus}</p>}
                 <p className="text-xs mt-1 text-gray-600 dark:text-gray-400">Rows loaded: {newProductData.pricing_rows?.length || 0}</p>
             </div>
