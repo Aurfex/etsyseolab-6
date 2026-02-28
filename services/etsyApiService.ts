@@ -15,6 +15,46 @@ const sanitizeFileName = (name: string, index: number): string => {
   return `${String(index + 1).padStart(2, '0')}-${base}${ext}`;
 };
 
+const MAX_UPLOAD_BYTES = 3.8 * 1024 * 1024;
+const MAX_DIMENSION = 1800;
+
+const compressImageForUpload = async (file: File, index: number): Promise<File> => {
+  try {
+    if (file.size <= MAX_UPLOAD_BYTES) {
+      const safeName = sanitizeFileName(file.name, index);
+      return new File([file], safeName, { type: file.type || 'image/jpeg' });
+    }
+
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, MAX_DIMENSION / Math.max(bitmap.width, bitmap.height));
+    const w = Math.max(1, Math.round(bitmap.width * scale));
+    const h = Math.max(1, Math.round(bitmap.height * scale));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas unavailable');
+
+    ctx.drawImage(bitmap, 0, 0, w, h);
+    bitmap.close();
+
+    let quality = 0.86;
+    let outBlob: Blob = await new Promise((resolve) => canvas.toBlob((b) => resolve(b || file), 'image/jpeg', quality));
+
+    while (outBlob.size > MAX_UPLOAD_BYTES && quality > 0.45) {
+      quality -= 0.08;
+      outBlob = await new Promise((resolve) => canvas.toBlob((b) => resolve(b || outBlob), 'image/jpeg', quality));
+    }
+
+    const safeName = sanitizeFileName(file.name, index).replace(/\.(png|webp|gif)$/i, '.jpg');
+    return new File([outBlob], safeName, { type: 'image/jpeg' });
+  } catch {
+    const safeName = sanitizeFileName(file.name, index);
+    return new File([file], safeName, { type: file.type || 'image/jpeg' });
+  }
+};
+
 // Helper to get the auth token from sessionStorage
 const getAuthToken = (): string | null => {
     const authData = sessionStorage.getItem('auth');
@@ -118,9 +158,8 @@ export async function uploadListingImage(listingId: string | number, file: File,
   const token = getAuthToken();
   if (!token) throw new Error("Authentication required.");
 
-  const safeName = sanitizeFileName(file.name, index);
-  const safeFile = new File([file], safeName, { type: file.type || 'image/jpeg' });
-  console.log(`Uploading image ${safeFile.name} for listing ID ${listingId} via proxy.`);
+  const safeFile = await compressImageForUpload(file, index);
+  console.log(`Uploading image ${safeFile.name} (${Math.round(safeFile.size/1024)}KB) for listing ID ${listingId} via proxy.`);
 
   const formData = new FormData();
   formData.append('listing_id', String(listingId));
