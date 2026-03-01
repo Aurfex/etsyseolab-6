@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { Calculator, Download } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Calculator, Download, RefreshCw } from 'lucide-react';
 
 type Material = '14k Gold' | 'Platinum' | 'Silver 925';
 
@@ -153,11 +153,6 @@ const PricingCalculatorPage: React.FC = () => {
     return init;
   });
 
-  const setNum = (k: keyof typeof inputs, v: string) => {
-    const n = Number(v);
-    setInputs((p) => ({ ...p, [k]: Number.isFinite(n) ? n : 0 }));
-  };
-
   const bindField = (k: keyof typeof inputs, fallbackDecimals = 2) => ({
     value: draftInputs[k] ?? String(inputs[k]),
     onChange: (v: string) => setDraftInputs((p) => ({ ...p, [k]: v })),
@@ -179,6 +174,53 @@ const PricingCalculatorPage: React.FC = () => {
     setDraftInputs((p) => ({ ...p, taxRate: String(rate) }));
   };
 
+  const [isRefreshingMetals, setIsRefreshingMetals] = useState(false);
+  const [metalStatus, setMetalStatus] = useState<string>('');
+
+  const refreshMetalPrices = async () => {
+    try {
+      setIsRefreshingMetals(true);
+      setMetalStatus('');
+
+      const response = await fetch('/api/metal-prices');
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to refresh metal prices');
+      }
+
+      const nextGold = Number(data.goldPricePerGram || 0);
+      const nextPlatinum = Number(data.platinumPricePerGram || 0);
+      const nextSilver = Number(data.silverPricePerGram || 0);
+      const currentBaseWeight = inputs.baseWeightSize7;
+      const suggestedSilverFixed = nextSilver > 0 ? nextSilver * currentBaseWeight : 0;
+
+      setInputs((p) => ({
+        ...p,
+        goldPricePerGram: nextGold > 0 ? nextGold : p.goldPricePerGram,
+        platinumPricePerGram: nextPlatinum > 0 ? nextPlatinum : p.platinumPricePerGram,
+        silverFixedPrice: suggestedSilverFixed > 0 ? suggestedSilverFixed : p.silverFixedPrice,
+      }));
+
+      setDraftInputs((p) => ({
+        ...p,
+        goldPricePerGram: nextGold > 0 ? String(Number(nextGold.toFixed(2))) : p.goldPricePerGram,
+        platinumPricePerGram: nextPlatinum > 0 ? String(Number(nextPlatinum.toFixed(2))) : p.platinumPricePerGram,
+        silverFixedPrice: suggestedSilverFixed > 0 ? String(Number(suggestedSilverFixed.toFixed(2))) : p.silverFixedPrice,
+      }));
+
+      setMetalStatus(`Live metal prices updated (${new Date().toLocaleTimeString()}).`);
+    } catch (error: any) {
+      setMetalStatus(error?.message || 'Could not refresh metal prices.');
+    } finally {
+      setIsRefreshingMetals(false);
+    }
+  };
+
+  useEffect(() => {
+    refreshMetalPrices();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -197,6 +239,16 @@ const PricingCalculatorPage: React.FC = () => {
           <FieldInput label="Platinum Price / g" {...bindField('platinumPricePerGram')} />
           <FieldInput label="Silver Fixed Price / Ring" {...bindField('silverFixedPrice')} />
           <FieldInput label="Base Weight Size 7 (g)" {...bindField('baseWeightSize7')} />
+
+          <button
+            onClick={refreshMetalPrices}
+            disabled={isRefreshingMetals}
+            className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg disabled:opacity-60"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshingMetals ? 'animate-spin' : ''}`} />
+            {isRefreshingMetals ? 'Refreshing metal prices...' : 'Refresh Live Metal Prices (CAD)'}
+          </button>
+          {metalStatus && <p className="text-xs text-gray-500">{metalStatus}</p>}
 
           <hr className="border-gray-200 dark:border-gray-700" />
           <FieldInput label="Design" {...bindField('designCost')} />
