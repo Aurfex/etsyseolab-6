@@ -158,13 +158,13 @@ export async function trackListingRank(input: { listing_id: string | number; key
   const token = getAuthToken();
   if (!token) throw new Error('Authentication required.');
 
-  const response = await fetch('/api/rank-track', {
+  const response = await fetch('/api/seo-compare', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
     },
-    body: JSON.stringify(input),
+    body: JSON.stringify({ action: 'rank_track', ...input }),
   });
 
   if (!response.ok) {

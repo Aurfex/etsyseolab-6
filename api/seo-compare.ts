@@ -2,10 +2,12 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import axios from 'axios';
 
 type CompareBody = {
-  title: string;
+  action?: 'compare' | 'rank_track';
+  title?: string;
   description?: string;
   tags?: string[];
   listing_id?: string;
+  keywords?: string[];
 };
 
 const calcScore = (title: string, description: string, tags: string[]) => {
@@ -43,16 +45,44 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   };
 
   try {
-    const { title, description = '', tags = [], listing_id }: CompareBody = req.body || {};
+    const { action = 'compare', title = '', description = '', tags = [], listing_id, keywords = [] }: CompareBody = req.body || {};
+
+    if (action === 'rank_track') {
+      if (!listing_id) return res.status(400).json({ error: 'listing_id is required' });
+      const cleanKeywords = (Array.isArray(keywords) ? keywords : [])
+        .map((k) => String(k || '').trim())
+        .filter(Boolean)
+        .slice(0, 10);
+      if (cleanKeywords.length === 0) return res.status(400).json({ error: 'At least one keyword is required' });
+
+      const tracked: Array<{ keyword: string; rank: number | null; found: boolean }> = [];
+      for (const keyword of cleanKeywords) {
+        const url = `https://openapi.etsy.com/v3/application/listings/active?keywords=${encodeURIComponent(keyword)}&limit=48`;
+        const { data } = await axios.get(url, { headers });
+        const results = Array.isArray(data?.results) ? data.results : [];
+        const idx = results.findIndex((r: any) => String(r.listing_id) === String(listing_id));
+        tracked.push({ keyword, rank: idx >= 0 ? idx + 1 : null, found: idx >= 0 });
+      }
+
+      const foundCount = tracked.filter((x) => x.found).length;
+      const rankedOnly = tracked.filter((x) => x.rank != null).map((x) => Number(x.rank));
+      const avgRank = rankedOnly.length ? Number((rankedOnly.reduce((a, b) => a + b, 0) / rankedOnly.length).toFixed(1)) : null;
+
+      return res.status(200).json({
+        listing_id: String(listing_id),
+        tracked,
+        foundCount,
+        total: tracked.length,
+        avgRank,
+        note: 'Approximate Etsy rank via active listing search API (not guaranteed absolute SERP position).',
+      });
+    }
+
     if (!title) return res.status(400).json({ error: 'title is required' });
 
-    const keywords = title
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 5)
-      .join(' ');
+    const seedKeywords = title.split(/\s+/).filter(Boolean).slice(0, 5).join(' ');
 
-    const searchUrl = `https://openapi.etsy.com/v3/application/listings/active?keywords=${encodeURIComponent(keywords)}&limit=20`;
+    const searchUrl = `https://openapi.etsy.com/v3/application/listings/active?keywords=${encodeURIComponent(seedKeywords)}&limit=20`;
     const { data } = await axios.get(searchUrl, { headers });
     const results = Array.isArray(data?.results) ? data.results : [];
 
@@ -62,16 +92,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const cTitle = r.title || '';
         const cDescription = r.description || '';
         const cTags = Array.isArray(r.tags) ? r.tags : [];
-        return {
-          listing_id: String(r.listing_id),
-          title: cTitle,
-          score: calcScore(cTitle, cDescription, cTags)
-        };
+        return { listing_id: String(r.listing_id), title: cTitle, score: calcScore(cTitle, cDescription, cTags) };
       });
 
     const yourScore = calcScore(title, description, tags);
-    const ranked = [...competitors, { listing_id: String(listing_id || 'self'), title, score: yourScore }]
-      .sort((a, b) => b.score - a.score);
+    const ranked = [...competitors, { listing_id: String(listing_id || 'self'), title, score: yourScore }].sort((a, b) => b.score - a.score);
 
     const yourRank = Math.max(1, ranked.findIndex(r => r.listing_id === String(listing_id || 'self')) + 1);
     const top5 = ranked.slice(0, 5);
@@ -84,7 +109,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (recommendations.length === 0) recommendations.push('Great baseline. Focus on stronger keyword phrasing in first 40 title characters.');
 
     return res.status(200).json({
-      keywords,
+      keywords: seedKeywords,
       yourScore,
       yourRank,
       totalCompared: ranked.length,
