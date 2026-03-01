@@ -49,7 +49,7 @@ const resizeForFinalOutput = async (file: File): Promise<Blob> => {
   bitmap.close();
 
   const outBlob: Blob = await new Promise((resolve) => {
-    canvas.toBlob((b) => resolve(b || file), 'image/jpeg', 0.9);
+    canvas.toBlob((b) => resolve(b || file), 'image/webp', 0.9);
   });
   return outBlob;
 };
@@ -157,7 +157,7 @@ const ImageSeoPage: React.FC = () => {
         const seen = (usedStems.get(stem) || 0) + 1;
         usedStems.set(stem, seen);
         const uniqueStem = seen > 1 ? `${stem}-${seen}` : stem;
-        const newName = `${String(i + 1).padStart(2, '0')}-${uniqueStem}.jpg`;
+        const newName = `${uniqueStem}.webp`;
 
         out.push({ file, resizedBlob, newName, ms: Math.round(performance.now() - itemStart) });
       }
@@ -226,7 +226,7 @@ const ImageSeoPage: React.FC = () => {
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2"><ImageIcon className="w-5 h-5" /> Results</h2>
             <button onClick={downloadRenamed} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold">
-              <Download className="w-4 h-4" /> Download ZIP (2000x2000)
+              <Download className="w-4 h-4" /> Download ZIP (2000x2000 WEBP)
             </button>
           </div>
 
