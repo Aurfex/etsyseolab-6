@@ -3,7 +3,7 @@ import { Bot, AlertTriangle, Loader2, Search, Wrench, Save } from 'lucide-react'
 import { useAppContext } from '../contexts/AppContext';
 import { Product } from '../types';
 import { useTranslation } from '../contexts/LanguageContext';
-import { updateListing } from '../services/etsyApiService';
+import { compareSeoWithCompetitors, updateListing } from '../services/etsyApiService';
 
 const Card: React.FC<{children: React.ReactNode, className?: string}> = ({ children, className }) => (
   <div className={`bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card dark:shadow-card-dark ${className}`}>
@@ -65,7 +65,7 @@ const AutopilotPage: React.FC = () => {
   const [fixingIssueId, setFixingIssueId] = useState<string | null>(null);
   const [savingProductId, setSavingProductId] = useState<string | null>(null);
   const [filterType, setFilterType] = useState<'all' | Issue['type']>('all');
-  const [fixPreview, setFixPreview] = useState<Record<string, { old: Pick<Product, 'title' | 'description' | 'tags'>; next: Pick<Product, 'title' | 'description' | 'tags'> }>>({});
+  const [fixPreview, setFixPreview] = useState<Record<string, { old: Pick<Product, 'title' | 'description' | 'tags'>; next: Pick<Product, 'title' | 'description' | 'tags'>; gate: { beforeScore: number; afterScore: number; beforeRank: number; afterRank: number } }>>({});
 
   const stats = useMemo(() => ({
     totalProducts: products.length,
@@ -103,6 +103,14 @@ const AutopilotPage: React.FC = () => {
         description: product.description,
         tags: Array.isArray(product.tags) ? product.tags : [],
       };
+
+      const beforeCmp = await compareSeoWithCompetitors({
+        listing_id: product.listing_id || product.id,
+        title: before.title,
+        description: before.description,
+        tags: before.tags,
+      });
+
       const optimized = await runFullOptimization(product);
       const after = {
         title: optimized.title || before.title,
@@ -110,7 +118,41 @@ const AutopilotPage: React.FC = () => {
         tags: optimized.tags?.length ? optimized.tags : before.tags,
       };
 
-      setFixPreview(prev => ({ ...prev, [product.id]: { old: before, next: after } }));
+      const afterCmp = await compareSeoWithCompetitors({
+        listing_id: product.listing_id || product.id,
+        title: after.title,
+        description: after.description,
+        tags: after.tags,
+      });
+
+      const titleValid = after.title.length >= 90 && after.title.length <= 140;
+      const tagsValid = after.tags.length >= 10 && after.tags.length <= 13 && after.tags.every(t => String(t).trim().length > 0 && String(t).trim().length <= 20);
+      const descValid = after.description.length >= 300;
+      const improvedOrEqual = afterCmp.yourScore >= beforeCmp.yourScore;
+      const notWorseRank = afterCmp.yourRank <= beforeCmp.yourRank;
+
+      if (!(titleValid && tagsValid && descValid && improvedOrEqual && notWorseRank)) {
+        showToast({
+          tKey: 'toast_generic_error_with_message',
+          options: { message: `Quality Gate rejected: title/tags/description/rank-score check failed (before ${beforeCmp.yourScore} -> after ${afterCmp.yourScore}).` },
+          type: 'error'
+        });
+        return;
+      }
+
+      setFixPreview(prev => ({
+        ...prev,
+        [product.id]: {
+          old: before,
+          next: after,
+          gate: {
+            beforeScore: beforeCmp.yourScore,
+            afterScore: afterCmp.yourScore,
+            beforeRank: beforeCmp.yourRank,
+            afterRank: afterCmp.yourRank,
+          }
+        }
+      }));
       setIssues(prev => prev.filter(i => i.productId !== issue.productId));
       showToast({ tKey: 'toast_metadata_generated', type: 'success' });
     } finally {
@@ -196,6 +238,7 @@ const AutopilotPage: React.FC = () => {
                   <p className="font-semibold text-gray-900 dark:text-white">{p?.title || productId}</p>
                   <p className="text-xs text-gray-500 mt-1">Title (new): {preview.next.title}</p>
                   <p className="text-xs text-gray-500">Tags (new): {preview.next.tags.join(', ')}</p>
+                  <p className="text-xs text-emerald-700 dark:text-emerald-300">Quality Gate: Score {preview.gate.beforeScore} → {preview.gate.afterScore} | Rank #{preview.gate.beforeRank} → #{preview.gate.afterRank}</p>
                   <div className="mt-2 flex gap-2">
                     <button
                       onClick={() => saveFixToEtsy(productId)}
