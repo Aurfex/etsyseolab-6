@@ -15,6 +15,38 @@ type CompetitorInsights = {
     recommendations: string[];
 };
 
+const OUNCE_TO_GRAM = 31.1034768;
+
+type GoldApiResponse = {
+    price?: number;
+    price_gram_24k?: number;
+    price_gram?: number;
+    timestamp?: number;
+};
+
+async function fetchMetal(symbol: 'XAU' | 'XAG' | 'XPT', apiKey: string): Promise<GoldApiResponse> {
+    const response = await fetch(`https://www.goldapi.io/api/${symbol}/CAD`, {
+        headers: {
+            'x-access-token': apiKey,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`GoldAPI ${symbol} failed: ${response.status} ${text}`);
+    }
+
+    return response.json();
+}
+
+function perGram(data: GoldApiResponse, symbol: 'XAU' | 'XAG' | 'XPT'): number {
+    if (symbol === 'XAU' && typeof data.price_gram_24k === 'number') return data.price_gram_24k;
+    if (typeof data.price_gram === 'number') return data.price_gram;
+    if (typeof data.price === 'number') return data.price / OUNCE_TO_GRAM;
+    return 0;
+}
+
 const calcScore = (title: string, description: string, tags: string[]) => {
     let score = 30;
     if (title.length >= 90 && title.length <= 140) score += 25;
@@ -147,11 +179,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return;
     }
 
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method Not Allowed' });
-    }
-
     try {
+        if (req.method === 'GET' && String(req.query?.action || '') === 'metal-prices') {
+            const goldApiKey = process.env.GOLDAPI_KEY;
+            if (!goldApiKey) {
+                return res.status(500).json({ error: 'Missing GOLDAPI_KEY in environment variables' });
+            }
+
+            const [gold, silver, platinum] = await Promise.all([
+                fetchMetal('XAU', goldApiKey),
+                fetchMetal('XAG', goldApiKey),
+                fetchMetal('XPT', goldApiKey),
+            ]);
+
+            return res.status(200).json({
+                currency: 'CAD',
+                goldPricePerGram: perGram(gold, 'XAU'),
+                silverPricePerGram: perGram(silver, 'XAG'),
+                platinumPricePerGram: perGram(platinum, 'XPT'),
+                source: 'goldapi.io',
+                fetchedAt: new Date().toISOString(),
+                rawTimestamp: Math.max(gold.timestamp || 0, silver.timestamp || 0, platinum.timestamp || 0),
+            });
+        }
+
+        if (req.method !== 'POST') {
+            return res.status(405).json({ error: 'Method Not Allowed' });
+        }
+
         const { product, type = 'all' } = req.body as { product: Product; type?: 'all' | 'tags' | 'description' };
 
         const authHeader = req.headers.authorization;

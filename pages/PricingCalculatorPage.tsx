@@ -182,7 +182,7 @@ const PricingCalculatorPage: React.FC = () => {
       setIsRefreshingMetals(true);
       setMetalStatus('');
 
-      const response = await fetch('/api/metal-prices');
+      const response = await fetch('/api/optimize?action=metal-prices');
       const data = await response.json();
 
       if (!response.ok) {
