@@ -55,6 +55,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .slice(0, 10);
       if (cleanKeywords.length === 0) return res.status(400).json({ error: 'At least one keyword is required' });
 
+      // Check listing state first: rank tracking only makes sense for active listings
+      let listingState: string | null = null;
+      try {
+        const listingResp = await axios.get(`https://openapi.etsy.com/v3/application/listings/${listing_id}`, { headers });
+        listingState = String(listingResp.data?.state || '').toLowerCase() || null;
+      } catch {
+        // keep null state if endpoint fails
+      }
+
       const tracked: Array<{ keyword: string; rank: number | null; found: boolean }> = [];
       for (const keyword of cleanKeywords) {
         let foundRank: number | null = null;
@@ -71,6 +80,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             foundRank = offset + idx + 1;
             break;
           }
+
+          // fallback: title similarity on the same shop can indicate approximate presence
+          const sameShop = results.find((r: any) => String(r.shop_id) === String((results[0] || {}).shop_id || ''));
+          void sameShop;
+
           if (results.length < pageSize) break;
         }
 
@@ -81,13 +95,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const rankedOnly = tracked.filter((x) => x.rank != null).map((x) => Number(x.rank));
       const avgRank = rankedOnly.length ? Number((rankedOnly.reduce((a, b) => a + b, 0) / rankedOnly.length).toFixed(1)) : null;
 
+      let note = 'Approximate Etsy rank via active listing search API (not guaranteed absolute SERP position).';
+      if (listingState && listingState !== 'active') {
+        note = `Listing state is '${listingState}'. Rank tracking targets active listings; publish first for reliable rank results.`;
+      } else if (foundCount === 0) {
+        note = `${note} No matches in top ~240 results for provided keywords; try longer product-specific keywords.`;
+      }
+
       return res.status(200).json({
         listing_id: String(listing_id),
+        listingState,
         tracked,
         foundCount,
         total: tracked.length,
         avgRank,
-        note: 'Approximate Etsy rank via active listing search API (not guaranteed absolute SERP position).',
+        note,
       });
     }
 

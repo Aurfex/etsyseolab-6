@@ -154,7 +154,7 @@ export async function compareSeoWithCompetitors(input: { listing_id?: string | n
   return response.json();
 }
 
-export async function trackListingRank(input: { listing_id: string | number; keywords: string[] }): Promise<{ listing_id: string; tracked: Array<{ keyword: string; rank: number | null; found: boolean }>; foundCount: number; total: number; avgRank: number | null; note: string }> {
+export async function trackListingRank(input: { listing_id: string | number; keywords: string[] }): Promise<{ listing_id: string; listingState?: string | null; tracked: Array<{ keyword: string; rank: number | null; found: boolean }>; foundCount: number; total: number; avgRank: number | null; note: string }> {
   const token = getAuthToken();
   if (!token) throw new Error('Authentication required.');
 

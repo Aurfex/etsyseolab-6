@@ -50,7 +50,7 @@ const CompetitorRadarPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [rankKeywords, setRankKeywords] = useState('');
   const [isTrackingRank, setIsTrackingRank] = useState(false);
-  const [rankData, setRankData] = useState<{ tracked: Array<{ keyword: string; rank: number | null; found: boolean }>; foundCount: number; total: number; avgRank: number | null; note: string } | null>(null);
+  const [rankData, setRankData] = useState<{ listingState?: string | null; tracked: Array<{ keyword: string; rank: number | null; found: boolean }>; foundCount: number; total: number; avgRank: number | null; note: string } | null>(null);
 
   const selectedProduct = useMemo(() => products.find(p => p.id === selectedProductId) || null, [products, selectedProductId]);
 
@@ -118,9 +118,23 @@ const CompetitorRadarPage: React.FC = () => {
 
   const handleTrackRank = async () => {
     if (!selectedProduct) return;
-    const keywords = rankKeywords.split(',').map(k => k.trim()).filter(Boolean);
+
+    let keywords = rankKeywords.split(',').map(k => k.trim()).filter(Boolean);
     if (!keywords.length) {
-      showToast({ tKey: 'toast_generic_error_with_message', options: { message: 'Add comma-separated keywords first.' }, type: 'error' });
+      const auto = [
+        ...String(selectedProduct.title || '').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean)
+      ];
+      const chunks = [
+        auto.slice(0, 3).join(' '),
+        auto.slice(0, 4).join(' '),
+        auto.slice(1, 5).join(' '),
+      ].map(s => s.trim()).filter(Boolean);
+      keywords = [...new Set(chunks)].slice(0, 5);
+      setRankKeywords(keywords.join(', '));
+    }
+
+    if (!keywords.length) {
+      showToast({ tKey: 'toast_generic_error_with_message', options: { message: 'Add keywords or select a product with a valid title.' }, type: 'error' });
       return;
     }
 
@@ -131,6 +145,7 @@ const CompetitorRadarPage: React.FC = () => {
         keywords,
       });
       setRankData({
+        listingState: data.listingState,
         tracked: data.tracked,
         foundCount: data.foundCount,
         total: data.total,
@@ -258,6 +273,9 @@ const CompetitorRadarPage: React.FC = () => {
           {rankData && (
             <div className="mt-4 space-y-2 text-sm">
               <p className="text-gray-700 dark:text-gray-300">Found: {rankData.foundCount}/{rankData.total} | Avg rank: {rankData.avgRank ?? 'N/A'}</p>
+            {rankData.listingState && rankData.listingState !== 'active' && (
+              <p className="text-xs text-amber-700 dark:text-amber-300">Listing state: {rankData.listingState} (publish/activate for reliable rank tracking)</p>
+            )}
               <div className="max-h-52 overflow-auto border rounded-lg border-gray-200 dark:border-gray-700">
                 <table className="w-full text-xs">
                   <thead className="bg-gray-100 dark:bg-gray-800">
