@@ -57,11 +57,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       const tracked: Array<{ keyword: string; rank: number | null; found: boolean }> = [];
       for (const keyword of cleanKeywords) {
-        const url = `https://openapi.etsy.com/v3/application/listings/active?keywords=${encodeURIComponent(keyword)}&limit=48`;
-        const { data } = await axios.get(url, { headers });
-        const results = Array.isArray(data?.results) ? data.results : [];
-        const idx = results.findIndex((r: any) => String(r.listing_id) === String(listing_id));
-        tracked.push({ keyword, rank: idx >= 0 ? idx + 1 : null, found: idx >= 0 });
+        let foundRank: number | null = null;
+        const pageSize = 48;
+        const maxPages = 5; // up to top ~240 results for better approximation
+
+        for (let page = 0; page < maxPages; page++) {
+          const offset = page * pageSize;
+          const url = `https://openapi.etsy.com/v3/application/listings/active?keywords=${encodeURIComponent(keyword)}&limit=${pageSize}&offset=${offset}`;
+          const { data } = await axios.get(url, { headers });
+          const results = Array.isArray(data?.results) ? data.results : [];
+          const idx = results.findIndex((r: any) => String(r.listing_id) === String(listing_id));
+          if (idx >= 0) {
+            foundRank = offset + idx + 1;
+            break;
+          }
+          if (results.length < pageSize) break;
+        }
+
+        tracked.push({ keyword, rank: foundRank, found: foundRank !== null });
       }
 
       const foundCount = tracked.filter((x) => x.found).length;
