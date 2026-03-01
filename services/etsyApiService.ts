@@ -154,6 +154,27 @@ export async function compareSeoWithCompetitors(input: { listing_id?: string | n
   return response.json();
 }
 
+export async function trackListingRank(input: { listing_id: string | number; keywords: string[] }): Promise<{ listing_id: string; tracked: Array<{ keyword: string; rank: number | null; found: boolean }>; foundCount: number; total: number; avgRank: number | null; note: string }> {
+  const token = getAuthToken();
+  if (!token) throw new Error('Authentication required.');
+
+  const response = await fetch('/api/rank-track', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: 'Failed to track rank.' }));
+    throw new Error(errorData.error || `Rank Track API Error: ${response.status}`);
+  }
+
+  return response.json();
+}
+
 export async function uploadListingImage(listingId: string | number, file: File, altText: string, index = 0): Promise<{ success: boolean }> {
   const token = getAuthToken();
   if (!token) throw new Error("Authentication required.");

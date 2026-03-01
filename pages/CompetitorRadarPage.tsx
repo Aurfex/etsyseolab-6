@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Search, Tag, FileText, LayoutGrid, Sparkles, Loader2, Save } from 'lucide-react';
 import { useAppContext } from '../contexts/AppContext';
-import { compareSeoWithCompetitors, updateListing } from '../services/etsyApiService';
+import { compareSeoWithCompetitors, trackListingRank, updateListing } from '../services/etsyApiService';
 import { useTranslation } from '../contexts/LanguageContext';
 import { Product } from '../types';
 
@@ -48,6 +48,9 @@ const CompetitorRadarPage: React.FC = () => {
   const [draft, setDraft] = useState<{ old: Pick<Product, 'title' | 'description' | 'tags'>; next: Pick<Product, 'title' | 'description' | 'tags'> } | null>(null);
   const [isApplying, setIsApplying] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [rankKeywords, setRankKeywords] = useState('');
+  const [isTrackingRank, setIsTrackingRank] = useState(false);
+  const [rankData, setRankData] = useState<{ tracked: Array<{ keyword: string; rank: number | null; found: boolean }>; foundCount: number; total: number; avgRank: number | null; note: string } | null>(null);
 
   const selectedProduct = useMemo(() => products.find(p => p.id === selectedProductId) || null, [products, selectedProductId]);
 
@@ -110,6 +113,34 @@ const CompetitorRadarPage: React.FC = () => {
       showToast({ tKey: 'toast_generic_error_with_message', options: { message: e.message }, type: 'error' });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleTrackRank = async () => {
+    if (!selectedProduct) return;
+    const keywords = rankKeywords.split(',').map(k => k.trim()).filter(Boolean);
+    if (!keywords.length) {
+      showToast({ tKey: 'toast_generic_error_with_message', options: { message: 'Add comma-separated keywords first.' }, type: 'error' });
+      return;
+    }
+
+    setIsTrackingRank(true);
+    try {
+      const data = await trackListingRank({
+        listing_id: selectedProduct.listing_id || selectedProduct.id,
+        keywords,
+      });
+      setRankData({
+        tracked: data.tracked,
+        foundCount: data.foundCount,
+        total: data.total,
+        avgRank: data.avgRank,
+        note: data.note,
+      });
+    } catch (e: any) {
+      showToast({ tKey: 'toast_generic_error_with_message', options: { message: e.message }, type: 'error' });
+    } finally {
+      setIsTrackingRank(false);
     }
   };
 
@@ -205,6 +236,51 @@ const CompetitorRadarPage: React.FC = () => {
             {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
             <span>{isSaving ? 'Saving...' : 'Save to Etsy'}</span>
           </button>
+        </Card>
+      )}
+
+      {selectedProduct && (
+        <Card>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Rank Tracking (Phase 2)</h3>
+          <p className="text-xs text-gray-500 mb-2">Enter comma-separated keywords to estimate Etsy rank for this listing.</p>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <input
+              value={rankKeywords}
+              onChange={(e) => setRankKeywords(e.target.value)}
+              placeholder="e.g. rose gold ring, eternity band, wedding ring"
+              className="md:col-span-3 bg-gray-100 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 rounded-lg p-3"
+            />
+            <button onClick={handleTrackRank} disabled={isTrackingRank} className="bg-purple-600 text-white font-semibold px-4 py-3 rounded-lg hover:bg-purple-700 disabled:opacity-60">
+              {isTrackingRank ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'Track Rank'}
+            </button>
+          </div>
+
+          {rankData && (
+            <div className="mt-4 space-y-2 text-sm">
+              <p className="text-gray-700 dark:text-gray-300">Found: {rankData.foundCount}/{rankData.total} | Avg rank: {rankData.avgRank ?? 'N/A'}</p>
+              <div className="max-h-52 overflow-auto border rounded-lg border-gray-200 dark:border-gray-700">
+                <table className="w-full text-xs">
+                  <thead className="bg-gray-100 dark:bg-gray-800">
+                    <tr>
+                      <th className="text-left p-2">Keyword</th>
+                      <th className="text-left p-2">Rank</th>
+                      <th className="text-left p-2">Found</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rankData.tracked.map((r, i) => (
+                      <tr key={`${r.keyword}-${i}`} className="border-t border-gray-100 dark:border-gray-800">
+                        <td className="p-2">{r.keyword}</td>
+                        <td className="p-2">{r.rank ?? '-'}</td>
+                        <td className="p-2">{r.found ? 'Yes' : 'No'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-gray-500">{rankData.note}</p>
+            </div>
+          )}
         </Card>
       )}
     </div>
