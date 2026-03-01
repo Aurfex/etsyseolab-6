@@ -122,6 +122,7 @@ const ImageSeoPage: React.FC = () => {
       if (!token) throw new Error('Authentication required.');
 
       const out: RenamedImage[] = [];
+      const usedStems = new Map<string, number>();
       let resizedCount = 0;
       const started = performance.now();
 
@@ -139,6 +140,7 @@ const ImageSeoPage: React.FC = () => {
             'Authorization': `Bearer ${token}`,
           },
           body: JSON.stringify({
+            action: 'image_seo_name',
             details: {
               title: productTitle,
               description: '',
@@ -151,8 +153,11 @@ const ImageSeoPage: React.FC = () => {
         const json = await resp.json().catch(() => ({}));
         if (!resp.ok) throw new Error(json.error || `Name generation failed (${resp.status})`);
 
-        const title = String(json?.title || productTitle).trim();
-        const newName = `${String(i + 1).padStart(2, '0')}-${sanitizeName(title || productTitle)}.jpg`;
+        const stem = sanitizeName(String(json?.filenameStem || productTitle || 'product-image'));
+        const seen = (usedStems.get(stem) || 0) + 1;
+        usedStems.set(stem, seen);
+        const uniqueStem = seen > 1 ? `${stem}-${seen}` : stem;
+        const newName = `${String(i + 1).padStart(2, '0')}-${uniqueStem}.jpg`;
 
         out.push({ file, resizedBlob, newName, ms: Math.round(performance.now() - itemStart) });
       }

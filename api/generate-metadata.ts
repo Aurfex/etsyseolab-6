@@ -11,6 +11,15 @@ const verifyAuth = (req: VercelRequest): { authorized: boolean; error?: string }
 
 type VisionImageInput = { mimeType: string; data: string };
 
+const slugify = (s: string) =>
+  String(s || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, ' ')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 90);
+
 type OutputShape = {
   title: string;
   description: string;
@@ -67,9 +76,48 @@ export default async function endpoint(req: VercelRequest, res: VercelResponse) 
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
   try {
-    const body = (req.body || {}) as { details?: { title?: string; description?: string; keywords?: string }; images?: VisionImageInput[] };
+    const body = (req.body || {}) as { action?: string; details?: { title?: string; description?: string; keywords?: string }; images?: VisionImageInput[] };
     const details = body?.details || {};
     const images = Array.isArray(body?.images) ? body.images.slice(0, 5) : [];
+
+    if (body?.action === 'image_seo_name') {
+      if (!images.length) return res.status(400).json({ error: 'images are required for image_seo_name' });
+
+      const geminiKey = process.env.API_KEY;
+      if (!geminiKey) {
+        return res.status(500).json({ error: 'Gemini API key (API_KEY) is required for image_seo_name mode.' });
+      }
+
+      const ai = new GoogleGenAI({ apiKey: geminiKey });
+      const filePrompt = `Create ONE unique, SEO-friendly Etsy image filename stem for this single product image.
+Rules:
+- return strict JSON: {"filenameStem":"..."}
+- use product intent + visible details in this specific image
+- include distinct visual qualifier (e.g. front-view, side-angle, close-up, texture-detail)
+- lowercase words, hyphen-separated style
+- avoid generic repeats, no numbering, no extension
+- max 90 chars
+
+Product title: ${String(details.title || '').trim() || 'N/A'}
+Manual keywords: ${String(details.keywords || '').trim() || 'N/A'}`;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: [{ role: 'user', parts: [{ text: filePrompt }, { inlineData: { mimeType: images[0].mimeType || 'image/jpeg', data: images[0].data } }] }],
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: { filenameStem: { type: Type.STRING } },
+            required: ['filenameStem'],
+          } as any,
+        },
+      });
+
+      const parsed = JSON.parse(response.text || '{}');
+      const filenameStem = slugify(parsed?.filenameStem || `${details.title || 'product'} image`);
+      return res.status(200).json({ filenameStem });
+    }
 
     const prompt = `You are an Etsy SEO + listing setup expert.
 Return STRICT JSON with keys: title, description, tags, imageAltTexts, suggestedBasics.
