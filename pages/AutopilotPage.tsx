@@ -65,7 +65,7 @@ const AutopilotPage: React.FC = () => {
   const [fixingIssueId, setFixingIssueId] = useState<string | null>(null);
   const [savingProductId, setSavingProductId] = useState<string | null>(null);
   const [filterType, setFilterType] = useState<'all' | Issue['type']>('all');
-  const [fixPreview, setFixPreview] = useState<Record<string, { old: Pick<Product, 'title' | 'description' | 'tags'>; next: Pick<Product, 'title' | 'description' | 'tags'>; gate: { beforeScore: number; afterScore: number; beforeRank: number; afterRank: number } }>>({});
+  const [fixPreview, setFixPreview] = useState<Record<string, { old: Pick<Product, 'title' | 'description' | 'tags'>; next: Pick<Product, 'title' | 'description' | 'tags'>; gate: { beforeScore: number; afterScore: number; beforeRank: number; afterRank: number; passed: boolean; reason?: string } }>>({});
 
   const stats = useMemo(() => ({
     totalProducts: products.length,
@@ -132,14 +132,10 @@ const AutopilotPage: React.FC = () => {
       const rankDelta = beforeCmp.yourRank - afterCmp.yourRank; // positive means better rank
       const balancedPass = (scoreDelta >= 0 && rankDelta >= 0) || (scoreDelta >= -1 && rankDelta > 0);
 
-      if (!(titleValid && tagsValid && descValid && balancedPass)) {
-        showToast({
-          tKey: 'toast_generic_error_with_message',
-          options: { message: `Quality Gate rejected (balanced mode): before score/rank ${beforeCmp.yourScore}/#${beforeCmp.yourRank} -> after ${afterCmp.yourScore}/#${afterCmp.yourRank}.` },
-          type: 'error'
-        });
-        return;
-      }
+      const passed = titleValid && tagsValid && descValid && balancedPass;
+      const reason = passed
+        ? undefined
+        : `Gate warning: before ${beforeCmp.yourScore}/#${beforeCmp.yourRank} -> after ${afterCmp.yourScore}/#${afterCmp.yourRank}`;
 
       setFixPreview(prev => ({
         ...prev,
@@ -151,11 +147,17 @@ const AutopilotPage: React.FC = () => {
             afterScore: afterCmp.yourScore,
             beforeRank: beforeCmp.yourRank,
             afterRank: afterCmp.yourRank,
+            passed,
+            reason,
           }
         }
       }));
       setIssues(prev => prev.filter(i => i.productId !== issue.productId));
-      showToast({ tKey: 'toast_metadata_generated', type: 'success' });
+      if (!passed) {
+        showToast({ tKey: 'toast_generic_error_with_message', options: { message: `${reason}. Preview generated; review and save manually if acceptable.` }, type: 'info' });
+      } else {
+        showToast({ tKey: 'toast_metadata_generated', type: 'success' });
+      }
     } finally {
       setFixingIssueId(null);
     }
@@ -239,7 +241,12 @@ const AutopilotPage: React.FC = () => {
                   <p className="font-semibold text-gray-900 dark:text-white">{p?.title || productId}</p>
                   <p className="text-xs text-gray-500 mt-1">Title (new): {preview.next.title}</p>
                   <p className="text-xs text-gray-500">Tags (new): {preview.next.tags.join(', ')}</p>
-                  <p className="text-xs text-emerald-700 dark:text-emerald-300">Quality Gate: Score {preview.gate.beforeScore} → {preview.gate.afterScore} | Rank #{preview.gate.beforeRank} → #{preview.gate.afterRank}</p>
+                  <p className={`text-xs ${preview.gate.passed ? 'text-emerald-700 dark:text-emerald-300' : 'text-amber-700 dark:text-amber-300'}`}>
+                    Quality Gate: Score {preview.gate.beforeScore} → {preview.gate.afterScore} | Rank #{preview.gate.beforeRank} → #{preview.gate.afterRank} {preview.gate.passed ? '✓' : '⚠'}
+                  </p>
+                  {!preview.gate.passed && preview.gate.reason && (
+                    <p className="text-xs text-amber-700 dark:text-amber-300">{preview.gate.reason}</p>
+                  )}
                   <div className="mt-2 flex gap-2">
                     <button
                       onClick={() => saveFixToEtsy(productId)}
