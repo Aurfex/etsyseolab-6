@@ -16,6 +16,7 @@ type CompetitorInsights = {
 };
 
 const OUNCE_TO_GRAM = 31.1034768;
+const GOLD_14K_PURITY = 0.585;
 
 type GoldApiResponse = {
     price?: number;
@@ -192,9 +193,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 fetchMetal('XPT', goldApiKey),
             ]);
 
+            const gold24kPricePerGram = perGram(gold, 'XAU');
+            const gold14kPricePerGram = gold24kPricePerGram * GOLD_14K_PURITY;
+
             return res.status(200).json({
                 currency: 'CAD',
-                goldPricePerGram: perGram(gold, 'XAU'),
+                goldPricePerGram: gold14kPricePerGram,
+                gold14kPricePerGram,
+                gold24kPricePerGram,
                 silverPricePerGram: perGram(silver, 'XAG'),
                 platinumPricePerGram: perGram(platinum, 'XPT'),
                 source: 'goldapi.io',
