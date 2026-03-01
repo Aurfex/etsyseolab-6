@@ -83,12 +83,11 @@ export default async function endpoint(req: VercelRequest, res: VercelResponse) 
     if (body?.action === 'image_seo_name') {
       if (!images.length) return res.status(400).json({ error: 'images are required for image_seo_name' });
 
-      const geminiKey = process.env.API_KEY;
-      if (!geminiKey) {
-        return res.status(500).json({ error: 'Gemini API key (API_KEY) is required for image_seo_name mode.' });
+      const openAiKey = process.env.OPENAI_API_KEY;
+      if (!openAiKey) {
+        return res.status(500).json({ error: 'OPENAI_API_KEY is required for image_seo_name mode.' });
       }
 
-      const ai = new GoogleGenAI({ apiKey: geminiKey });
       const filePrompt = `Create ONE unique, SEO-friendly Etsy image filename stem for this single product image.
 Rules:
 - return strict JSON: {"filenameStem":"..."}
@@ -101,22 +100,43 @@ Rules:
 Product title: ${String(details.title || '').trim() || 'N/A'}
 Manual keywords: ${String(details.keywords || '').trim() || 'N/A'}`;
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: [{ role: 'user', parts: [{ text: filePrompt }, { inlineData: { mimeType: images[0].mimeType || 'image/jpeg', data: images[0].data } }] }],
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: { filenameStem: { type: Type.STRING } },
-            required: ['filenameStem'],
-          } as any,
+      const oaiResp = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${openAiKey}`,
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          model: process.env.OPENAI_MODEL || 'gpt-4o',
+          temperature: 0.2,
+          response_format: { type: 'json_object' },
+          messages: [
+            {
+              role: 'user',
+              content: [
+                { type: 'text', text: filePrompt },
+                {
+                  type: 'image_url',
+                  image_url: { url: `data:${images[0].mimeType || 'image/jpeg'};base64,${images[0].data}` },
+                },
+              ],
+            },
+          ],
+        }),
       });
 
-      const parsed = JSON.parse(response.text || '{}');
+      const oaiData: any = await oaiResp.json().catch(() => ({}));
+      if (!oaiResp.ok) {
+        return res.status(502).json({ error: oaiData?.error?.message || `OpenAI request failed (${oaiResp.status})` });
+      }
+
+      const txt = String(oaiData?.choices?.[0]?.message?.content || '{}');
+      const start = txt.indexOf('{');
+      const end = txt.lastIndexOf('}');
+      const jsonText = start >= 0 && end > start ? txt.slice(start, end + 1) : '{}';
+      const parsed = JSON.parse(jsonText);
       const filenameStem = slugify(parsed?.filenameStem || `${details.title || 'product'} image`);
-      return res.status(200).json({ filenameStem });
+      return res.status(200).json({ filenameStem, provider: 'openai' });
     }
 
     const prompt = `You are an Etsy SEO + listing setup expert.
