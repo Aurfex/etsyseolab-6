@@ -67,7 +67,7 @@ export default async function endpoint(req: VercelRequest, res: VercelResponse) 
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
   try {
-    const body = (req.body || {}) as { details?: { title?: string; description?: string }; images?: VisionImageInput[] };
+    const body = (req.body || {}) as { details?: { title?: string; description?: string; keywords?: string }; images?: VisionImageInput[] };
     const details = body?.details || {};
     const images = Array.isArray(body?.images) ? body.images.slice(0, 5) : [];
 
@@ -88,7 +88,8 @@ Rules:
 - avoid fake claims
 Seller notes:
 - title: ${String(details.title || '').trim() || 'N/A'}
-- description: ${String(details.description || '').trim() || 'N/A'}`;
+- description: ${String(details.description || '').trim() || 'N/A'}
+- manual keywords: ${String(details.keywords || '').trim() || 'N/A'}`;
 
     // Prefer OpenAI when available (user preference)
     const openAiKey = process.env.OPENAI_API_KEY;

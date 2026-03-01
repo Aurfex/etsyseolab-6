@@ -78,7 +78,7 @@ interface AppContextType {
   // Add Product
   newProductData: Partial<NewProductData>;
   updateNewProductData: (data: Partial<NewProductData>) => void;
-  generateSeoMetadata: (details: Pick<NewProductData, 'title' | 'description'>, files?: File[]) => Promise<Pick<NewProductData, 'title' | 'description' | 'tags'> & { imageAltTexts?: string[]; suggestedBasics?: { categoryHint?: string; price?: number; quantity?: number; who_made?: string; when_made?: string; is_supply?: boolean } }>;
+  generateSeoMetadata: (details: Pick<NewProductData, 'title' | 'description'> & { keywords?: string }, files?: File[]) => Promise<Pick<NewProductData, 'title' | 'description' | 'tags'> & { imageAltTexts?: string[]; suggestedBasics?: { categoryHint?: string; price?: number; quantity?: number; who_made?: string; when_made?: string; is_supply?: boolean } }>;
   publishNewProduct: (productData: NewProductData) => Promise<void>;
   etsyCategories: EtsyCategory[];
 }
@@ -131,6 +131,7 @@ const defaultNewProductData: Partial<NewProductData> = {
     personalization_instructions: '',
     personalization_buyer_limit: 256,
     personalization_optional: true,
+    ai_keywords: '',
 };
 
 
@@ -700,7 +701,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }, []);
 
     const generateSeoMetadata = useCallback(async (
-        details: Pick<NewProductData, 'title' | 'description'>,
+        details: Pick<NewProductData, 'title' | 'description'> & { keywords?: string },
         files: File[] = []
     ): Promise<Pick<NewProductData, 'title' | 'description' | 'tags'> & { imageAltTexts?: string[]; suggestedBasics?: { categoryHint?: string; price?: number; quantity?: number; who_made?: string; when_made?: string; is_supply?: boolean } }> => {
         try {

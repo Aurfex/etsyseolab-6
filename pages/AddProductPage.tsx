@@ -192,7 +192,11 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
         setIsAnalyzing(true);
         try {
             const result = await generateSeoMetadata(
-                { title: newProductData.title || '', description: newProductData.description || '' },
+                {
+                    title: newProductData.title || '',
+                    description: newProductData.description || '',
+                    keywords: (newProductData.ai_keywords || '').trim(),
+                },
                 newProductData.images || []
             );
 
@@ -380,6 +384,19 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                <div className="md:col-span-2">
+                    <label htmlFor="ai_keywords" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Manual keywords for AI (optional)</label>
+                    <input
+                        type="text"
+                        name="ai_keywords"
+                        id="ai_keywords"
+                        value={newProductData.ai_keywords || ''}
+                        onChange={handleChange}
+                        placeholder="e.g. irish claddagh ring, rose gold, wedding band, celtic"
+                        className="mt-1 block w-full input-field"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">AI will use these keywords together with uploaded images to generate title/description/tags.</p>
+                </div>
                 <div>
                     <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_title_label')}</label>
                     <input type="text" name="title" id="title" value={newProductData.title || ''} onChange={handleChange} className="mt-1 block w-full input-field" />

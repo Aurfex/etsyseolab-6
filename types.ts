@@ -315,4 +315,7 @@ export interface NewProductData {
     personalization_instructions?: string;
     personalization_buyer_limit?: number;
     personalization_optional?: boolean;
+
+    // Optional manual guidance for AI generation
+    ai_keywords?: string;
 }

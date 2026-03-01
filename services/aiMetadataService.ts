@@ -6,7 +6,7 @@ type VisionImageInput = {
 };
 
 type GenerateMetadataPayload = {
-  details: Pick<NewProductData, 'title' | 'description'>;
+  details: Pick<NewProductData, 'title' | 'description'> & { keywords?: string };
   images?: VisionImageInput[];
 };
 
@@ -71,7 +71,7 @@ const optimizeImageForVision = async (file: File): Promise<VisionImageInput> => 
  * Supports image-aware generation when files are provided.
  */
 export const generateSeoMetadata = async (
-  details: Pick<NewProductData, 'title' | 'description'>,
+  details: Pick<NewProductData, 'title' | 'description'> & { keywords?: string },
   files: File[] = []
 ): Promise<Pick<NewProductData, 'title' | 'description' | 'tags'> & { imageAltTexts?: string[]; suggestedBasics?: { categoryHint?: string; price?: number; quantity?: number; who_made?: string; when_made?: string; is_supply?: boolean } }> => {
   const token = sessionStorage.getItem('auth') ? JSON.parse(sessionStorage.getItem('auth')!).token : null;
