@@ -15,6 +15,7 @@
     "axios": "^1.13.5",
     "cookie-parser": "^1.4.7",
     "formidable": "^3.5.4",
+    "jszip": "^3.10.1",
     "lucide-react": "^0.525.0",
     "openai": "^6.25.0",
     "react": "^19.1.0",

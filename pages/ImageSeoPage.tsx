@@ -1,9 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { Download, ImageIcon, Loader2, Sparkles } from 'lucide-react';
+import JSZip from 'jszip';
 import { useAppContext } from '../contexts/AppContext';
 
 type RenamedImage = {
   file: File;
+  resizedBlob: Blob;
   newName: string;
   ms?: number;
 };
@@ -21,6 +23,36 @@ const blobToBase64 = (blob: Blob): Promise<string> => new Promise((resolve, reje
 
 const MAX_DIM = 1024;
 const MAX_BYTES = 300 * 1024;
+const OUTPUT_SIZE = 2000;
+
+const resizeForFinalOutput = async (file: File): Promise<Blob> => {
+  const bitmap = await createImageBitmap(file);
+  const canvas = document.createElement('canvas');
+  canvas.width = OUTPUT_SIZE;
+  canvas.height = OUTPUT_SIZE;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    bitmap.close();
+    return file;
+  }
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, OUTPUT_SIZE, OUTPUT_SIZE);
+
+  const scale = Math.min(OUTPUT_SIZE / bitmap.width, OUTPUT_SIZE / bitmap.height);
+  const w = Math.max(1, Math.round(bitmap.width * scale));
+  const h = Math.max(1, Math.round(bitmap.height * scale));
+  const x = Math.round((OUTPUT_SIZE - w) / 2);
+  const y = Math.round((OUTPUT_SIZE - h) / 2);
+
+  ctx.drawImage(bitmap, x, y, w, h);
+  bitmap.close();
+
+  const outBlob: Blob = await new Promise((resolve) => {
+    canvas.toBlob((b) => resolve(b || file), 'image/jpeg', 0.9);
+  });
+  return outBlob;
+};
 
 const optimizeImageForAnalyze = async (file: File): Promise<{ mimeType: string; data: string; resized: boolean }> => {
   if (file.size <= MAX_BYTES) {
@@ -96,6 +128,7 @@ const ImageSeoPage: React.FC = () => {
       for (let i = 0; i < files.length; i++) {
         const itemStart = performance.now();
         const file = files[i];
+        const resizedBlob = await resizeForFinalOutput(file);
         const optimized = await optimizeImageForAnalyze(file);
         if (optimized.resized) resizedCount += 1;
 
@@ -119,10 +152,9 @@ const ImageSeoPage: React.FC = () => {
         if (!resp.ok) throw new Error(json.error || `Name generation failed (${resp.status})`);
 
         const title = String(json?.title || productTitle).trim();
-        const ext = (file.name.match(/\.[a-z0-9]+$/i)?.[0] || '.jpg').toLowerCase();
-        const newName = `${String(i + 1).padStart(2, '0')}-${sanitizeName(title || productTitle)}${ext}`;
+        const newName = `${String(i + 1).padStart(2, '0')}-${sanitizeName(title || productTitle)}.jpg`;
 
-        out.push({ file, newName, ms: Math.round(performance.now() - itemStart) });
+        out.push({ file, resizedBlob, newName, ms: Math.round(performance.now() - itemStart) });
       }
 
       const totalMs = Math.round(performance.now() - started);
@@ -136,17 +168,24 @@ const ImageSeoPage: React.FC = () => {
     }
   };
 
-  const downloadRenamed = () => {
-    results.forEach(({ file, newName }) => {
-      const url = URL.createObjectURL(file);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = newName;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    });
+  const downloadRenamed = async () => {
+    if (!results.length) return;
+    const zip = new JSZip();
+
+    for (const r of results) {
+      const buf = await r.resizedBlob.arrayBuffer();
+      zip.file(r.newName, buf);
+    }
+
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(zipBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `image-seo-${Date.now()}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -182,7 +221,7 @@ const ImageSeoPage: React.FC = () => {
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2"><ImageIcon className="w-5 h-5" /> Results</h2>
             <button onClick={downloadRenamed} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold">
-              <Download className="w-4 h-4" /> Download Renamed
+              <Download className="w-4 h-4" /> Download ZIP (2000x2000)
             </button>
           </div>
 
