@@ -128,13 +128,14 @@ const AutopilotPage: React.FC = () => {
       const titleValid = after.title.length >= 90 && after.title.length <= 140;
       const tagsValid = after.tags.length >= 10 && after.tags.length <= 13 && after.tags.every(t => String(t).trim().length > 0 && String(t).trim().length <= 20);
       const descValid = after.description.length >= 300;
-      const improvedOrEqual = afterCmp.yourScore >= beforeCmp.yourScore;
-      const notWorseRank = afterCmp.yourRank <= beforeCmp.yourRank;
+      const scoreDelta = afterCmp.yourScore - beforeCmp.yourScore;
+      const rankDelta = beforeCmp.yourRank - afterCmp.yourRank; // positive means better rank
+      const balancedPass = (scoreDelta >= 0 && rankDelta >= 0) || (scoreDelta >= -1 && rankDelta > 0);
 
-      if (!(titleValid && tagsValid && descValid && improvedOrEqual && notWorseRank)) {
+      if (!(titleValid && tagsValid && descValid && balancedPass)) {
         showToast({
           tKey: 'toast_generic_error_with_message',
-          options: { message: `Quality Gate rejected: title/tags/description/rank-score check failed (before ${beforeCmp.yourScore} -> after ${afterCmp.yourScore}).` },
+          options: { message: `Quality Gate rejected (balanced mode): before score/rank ${beforeCmp.yourScore}/#${beforeCmp.yourRank} -> after ${afterCmp.yourScore}/#${afterCmp.yourRank}.` },
           type: 'error'
         });
         return;
