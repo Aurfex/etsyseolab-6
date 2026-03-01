@@ -5,18 +5,54 @@ import { useAppContext } from '../contexts/AppContext';
 type RenamedImage = {
   file: File;
   newName: string;
+  ms?: number;
 };
 
-const fileToBase64 = (file: File): Promise<string> => new Promise((resolve, reject) => {
+const blobToBase64 = (blob: Blob): Promise<string> => new Promise((resolve, reject) => {
   const reader = new FileReader();
   reader.onload = () => {
     const result = String(reader.result || '');
     const comma = result.indexOf(',');
     resolve(comma >= 0 ? result.slice(comma + 1) : result);
   };
-  reader.onerror = () => reject(reader.error || new Error('Failed to read file'));
-  reader.readAsDataURL(file);
+  reader.onerror = () => reject(reader.error || new Error('Failed to read blob'));
+  reader.readAsDataURL(blob);
 });
+
+const MAX_DIM = 1024;
+const MAX_BYTES = 300 * 1024;
+
+const optimizeImageForAnalyze = async (file: File): Promise<{ mimeType: string; data: string; resized: boolean }> => {
+  if (file.size <= MAX_BYTES) {
+    return { mimeType: file.type || 'image/jpeg', data: await blobToBase64(file), resized: false };
+  }
+
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, MAX_DIM / Math.max(bitmap.width, bitmap.height));
+  const w = Math.max(1, Math.round(bitmap.width * scale));
+  const h = Math.max(1, Math.round(bitmap.height * scale));
+
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    bitmap.close();
+    return { mimeType: file.type || 'image/jpeg', data: await blobToBase64(file), resized: false };
+  }
+
+  ctx.drawImage(bitmap, 0, 0, w, h);
+  bitmap.close();
+
+  let q = 0.8;
+  let outBlob: Blob = await new Promise((resolve) => canvas.toBlob((b) => resolve(b || file), 'image/jpeg', q));
+  while (outBlob.size > MAX_BYTES && q > 0.45) {
+    q -= 0.08;
+    outBlob = await new Promise((resolve) => canvas.toBlob((b) => resolve(b || outBlob), 'image/jpeg', q));
+  }
+
+  return { mimeType: 'image/jpeg', data: await blobToBase64(outBlob), resized: true };
+};
 
 const sanitizeName = (name: string) =>
   name
@@ -34,6 +70,7 @@ const ImageSeoPage: React.FC = () => {
   const [files, setFiles] = useState<File[]>([]);
   const [results, setResults] = useState<RenamedImage[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [timing, setTiming] = useState<{ totalMs: number; avgMs: number; resizedCount: number } | null>(null);
 
   const canRun = useMemo(() => files.length > 0 && productTitle.trim().length > 0, [files.length, productTitle]);
 
@@ -41,6 +78,7 @@ const ImageSeoPage: React.FC = () => {
     const list = Array.from(e.target.files || []).filter(f => f.type.startsWith('image/')).slice(0, 15);
     setFiles(list);
     setResults([]);
+    setTiming(null);
   };
 
   const generateNames = async () => {
@@ -52,9 +90,14 @@ const ImageSeoPage: React.FC = () => {
       if (!token) throw new Error('Authentication required.');
 
       const out: RenamedImage[] = [];
+      let resizedCount = 0;
+      const started = performance.now();
+
       for (let i = 0; i < files.length; i++) {
+        const itemStart = performance.now();
         const file = files[i];
-        const base64 = await fileToBase64(file);
+        const optimized = await optimizeImageForAnalyze(file);
+        if (optimized.resized) resizedCount += 1;
 
         const resp = await fetch('/api/generate-metadata', {
           method: 'POST',
@@ -68,20 +111,22 @@ const ImageSeoPage: React.FC = () => {
               description: '',
               keywords,
             },
-            images: [{ mimeType: file.type || 'image/jpeg', data: base64 }],
+            images: [{ mimeType: optimized.mimeType, data: optimized.data }],
           }),
         });
 
-        const json = await resp.json();
-        if (!resp.ok) throw new Error(json.error || 'Name generation failed');
+        const json = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(json.error || `Name generation failed (${resp.status})`);
 
         const title = String(json?.title || productTitle).trim();
         const ext = (file.name.match(/\.[a-z0-9]+$/i)?.[0] || '.jpg').toLowerCase();
         const newName = `${String(i + 1).padStart(2, '0')}-${sanitizeName(title || productTitle)}${ext}`;
 
-        out.push({ file, newName });
+        out.push({ file, newName, ms: Math.round(performance.now() - itemStart) });
       }
 
+      const totalMs = Math.round(performance.now() - started);
+      setTiming({ totalMs, avgMs: Math.round(totalMs / Math.max(1, out.length)), resizedCount });
       setResults(out);
       showToast({ tKey: 'toast_metadata_generated', type: 'success' });
     } catch (e: any) {
@@ -140,11 +185,24 @@ const ImageSeoPage: React.FC = () => {
               <Download className="w-4 h-4" /> Download Renamed
             </button>
           </div>
+
+          {timing && (
+            <div className="text-xs p-3 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 text-indigo-800 dark:text-indigo-200">
+              Total: {timing.totalMs} ms | Avg/Image: {timing.avgMs} ms | Resized: {timing.resizedCount}/{results.length}
+            </div>
+          )}
+
           <div className="space-y-2 text-sm">
             {results.map((r, i) => (
-              <div key={`${r.newName}-${i}`} className="p-2 rounded border border-gray-200 dark:border-gray-700 flex justify-between gap-4">
-                <span className="text-gray-500 truncate">{r.file.name}</span>
-                <span className="font-semibold text-gray-900 dark:text-white truncate">{r.newName}</span>
+              <div key={`${r.newName}-${i}`} className="p-2 rounded border border-gray-200 dark:border-gray-700 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <img src={URL.createObjectURL(r.file)} alt={r.file.name} className="w-12 h-12 object-cover rounded border border-gray-200 dark:border-gray-700" />
+                  <div className="min-w-0">
+                    <div className="text-gray-500 truncate">{r.file.name}</div>
+                    <div className="font-semibold text-gray-900 dark:text-white truncate">{r.newName}</div>
+                  </div>
+                </div>
+                <span className="text-xs text-gray-500 whitespace-nowrap">{r.ms ?? 0} ms</span>
               </div>
             ))}
           </div>
