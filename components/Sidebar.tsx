@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Page, Language } from '../types';
-import { LayoutDashboard, SearchCheck, Zap, Bot, Radar, Settings, Sun, Moon, MessageSquareDashed, HelpCircle, Mic, Gift, ChevronLeft, ChevronRight, User, LogOut, Trophy, LayoutTemplate, PlusSquare, Lock, Calculator } from 'lucide-react';
+import { LayoutDashboard, SearchCheck, Zap, Bot, Radar, Settings, Sun, Moon, MessageSquareDashed, HelpCircle, Mic, Gift, ChevronLeft, ChevronRight, User, LogOut, Trophy, LayoutTemplate, PlusSquare, Lock, Calculator, ImageIcon } from 'lucide-react';
 import { useTranslation } from '../contexts/LanguageContext';
 import { useAppContext } from '../contexts/AppContext';
 
@@ -65,6 +65,7 @@ const Sidebar: React.FC = () => {
             { id: 'optimizer', label: t('nav_optimizer'), icon: SearchCheck, authRequired: true },
             { id: 'add_product', label: t('nav_add_product'), icon: PlusSquare, authRequired: true },
             { id: 'pricing', label: 'Pricing Calculator', icon: Calculator, authRequired: true },
+            { id: 'image_seo', label: 'Image SEO', icon: ImageIcon, authRequired: true },
             { id: 'autopilot', label: t('nav_autopilot'), icon: Bot, authRequired: true },
             { id: 'competitor', label: t('nav_competitor'), icon: Radar, authRequired: true },
             { id: 'reviews', label: t('nav_reviews'), icon: MessageSquareDashed, authRequired: true },

@@ -20,6 +20,7 @@ import LoyaltyPage from './pages/LoyaltyPage';
 import StoryMagazinePage from './pages/StoryMagazinePage';
 import AddProductPage from './pages/AddProductPage';
 import PricingCalculatorPage from './pages/PricingCalculatorPage';
+import ImageSeoPage from './pages/ImageSeoPage';
 
 const App: React.FC = () => {
   const { 
@@ -86,6 +87,8 @@ const App: React.FC = () => {
         return <AddProductPage />;
       case 'pricing':
         return <PricingCalculatorPage />;
+      case 'image_seo':
+        return <ImageSeoPage />;
       case 'settings':
         return <SettingsPage />;
       case 'dashboard':
