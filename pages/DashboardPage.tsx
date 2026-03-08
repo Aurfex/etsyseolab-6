@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Package, TrendingUp, Zap, Activity, FileText, Tag, Image as ImageIcon, Check, Info, AlertTriangle, AlertCircle, RefreshCw } from 'lucide-react';
+import { Package, TrendingUp, Zap, Activity, FileText, Tag, Image as ImageIcon, Check, Info, AlertTriangle, AlertCircle, RefreshCw, DollarSign, Search, Flame } from 'lucide-react';
 import type { ElementType } from 'react';
 import { useAppContext } from '../contexts/AppContext';
 import { ActivityLog } from '../types';
 import { useTranslation } from '../contexts/LanguageContext';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 
 interface MetricCardProps {
   icon: ElementType;
@@ -31,59 +32,22 @@ const MetricCard: React.FC<MetricCardProps> = ({ icon: Icon, title, value, chang
   </div>
 );
 
-const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
-    const { t } = useTranslation();
-    const { tKey, subtitle, change, status, timestamp, options } = activity;
-
-    const activityTypeMap: Record<string, { icon: ElementType, tagType: 'success' | 'processing' | 'info' | 'queued' | 'running'}> = {
-        title_optimization: { icon: FileText, tagType: 'success' },
-        tag_enhancement: { icon: Tag, tagType: 'success' },
-        description_rewrite: { icon: FileText, tagType: 'success' },
-        image_optimization: { icon: ImageIcon, tagType: 'success' },
-        sync_start: { icon: Activity, tagType: 'running'},
-        sync_complete: { icon: Check, tagType: 'success'},
-        default: {icon: Info, tagType: 'info'}
-    };
-
-    const { icon: Icon, tagType } = activityTypeMap[activity.type] || activityTypeMap.default;
-
-  const tagStyles = {
-    success: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
-    processing: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 animate-pulse',
-    info: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-    queued: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-    running: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-  };
-
-  const getTagText = () => {
-      if (change) return change;
-      if (status) return t(`status_${status.toLowerCase()}` as any);
-      return t('status_info');
-  }
-
-  return (
-    <div className="flex items-center space-x-4 py-3">
-      <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full">
-        <Icon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-      </div>
-      <div className="flex-grow">
-        <p className="font-semibold text-gray-900 dark:text-white">{t(tKey, options)}</p>
-        <p className="text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>
-      </div>
-      <div className="text-right">
-        <span className={`px-3 py-1 text-xs font-medium rounded-full ${tagStyles[tagType]}`}>{getTagText()}</span>
-        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{timestamp.toLocaleTimeString()}</p>
-      </div>
-    </div>
-  );
-};
-
+// Mock data for the Revenue Chart
+const revenueData = [
+  { name: 'Mon', actual: 120, missed: 400 },
+  { name: 'Tue', actual: 180, missed: 420 },
+  { name: 'Wed', actual: 150, missed: 450 },
+  { name: 'Thu', actual: 200, missed: 500 },
+  { name: 'Fri', actual: 250, missed: 520 },
+  { name: 'Sat', actual: 300, missed: 600 },
+  { name: 'Sun', actual: 280, missed: 650 },
+];
 
 const DashboardPage: React.FC = () => {
     const { products, activityLogs } = useAppContext();
     const { t } = useTranslation();
     
-    // Store Health Logic (Mocked for Demo effect if no products, real if products exist)
+    // Store Health Logic (Mocked for Demo effect)
     const [isFixing, setIsFixing] = useState(false);
     const [healthScore, setHealthScore] = useState<'A+' | 'C-'>('C-');
     
@@ -108,7 +72,6 @@ const DashboardPage: React.FC = () => {
         ? Math.round(products.reduce((acc, p) => acc + p.seoScore, 0) / products.length)
         : 0;
 
-    const recentActivities = activityLogs.slice(-4).reverse();
     const latestProducts = products.slice(0, 4);
 
     return (
@@ -129,7 +92,7 @@ const DashboardPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* 🔥 WOW FACTOR: Store Health Dashboard 🔥 */}
+            {/* dY" WOW FACTOR: Store Health Dashboard dY" */}
             <div className="relative overflow-hidden bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-card dark:shadow-card-dark border border-gray-100 dark:border-gray-700">
                 {/* Decorative background glow */}
                 <div className={`absolute -top-24 -right-24 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-20 transition-all duration-1000 ${healthScore === 'C-' ? 'bg-red-400' : 'bg-green-400'}`}></div>
@@ -223,57 +186,103 @@ const DashboardPage: React.FC = () => {
                 </div>
             </div>
 
+            {/* NEW: Missed Revenue & AI Intelligence Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Chart: Missed Revenue */}
+                <div className="col-span-1 lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card dark:shadow-card-dark border border-gray-100 dark:border-gray-700">
+                    <div className="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center">
+                                <DollarSign className="w-5 h-5 me-2 text-red-500"/>
+                                AI Revenue Forecast
+                            </h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Estimated impact of poor SEO on your sales</p>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-sm text-gray-500">Missed This Month</p>
+                            <p className={`text-2xl font-bold ${healthScore === 'C-' ? 'text-red-500' : 'text-green-500'}`}>
+                                {healthScore === 'C-' ? '$2,450.00' : '$0.00'}
+                            </p>
+                        </div>
+                    </div>
+                    <div className="h-64 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                <defs>
+                                    <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.3}/>
+                                        <stop offset="95%" stopColor="#4F46E5" stopOpacity={0}/>
+                                    </linearGradient>
+                                    <linearGradient id="colorMissed" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor={healthScore === 'C-' ? "#EF4444" : "#10B981"} stopOpacity={0.3}/>
+                                        <stop offset="95%" stopColor={healthScore === 'C-' ? "#EF4444" : "#10B981"} stopOpacity={0}/>
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#374151" opacity={0.2} />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#6B7280', fontSize: 12}} />
+                                <YAxis axisLine={false} tickLine={false} tick={{fill: '#6B7280', fontSize: 12}} tickFormatter={(value) => `$${value}`} />
+                                <Tooltip 
+                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                    formatter={(value: number) => [`$${value}`, 'Revenue']}
+                                />
+                                <Area type="monotone" dataKey="actual" name="Current Revenue" stroke="#4F46E5" strokeWidth={3} fillOpacity={1} fill="url(#colorActual)" />
+                                {healthScore === 'C-' && (
+                                    <Area type="monotone" dataKey="missed" name="Potential Revenue" stroke="#EF4444" strokeWidth={2} strokeDasharray="5 5" fillOpacity={1} fill="url(#colorMissed)" />
+                                )}
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                {/* Right Column: Alerts & Trends */}
+                <div className="col-span-1 flex flex-col gap-6">
+                    {/* Competitor Alert */}
+                    <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 p-6 rounded-2xl border border-indigo-100 dark:border-indigo-800/50 shadow-sm">
+                        <div className="flex items-center gap-3 mb-3">
+                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-800 text-indigo-600 dark:text-indigo-300">
+                                <Search className="w-4 h-4" />
+                            </span>
+                            <h3 className="font-bold text-gray-900 dark:text-white">Competitor Radar</h3>
+                        </div>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                            <strong>@BohoJewelryCo</strong> just listed 3 new items using the tag <span className="inline-block bg-white dark:bg-gray-800 px-2 py-1 rounded text-xs border border-gray-200 dark:border-gray-700 mx-1 font-mono text-purple-600 dark:text-purple-400">chunky silver ring</span>.
+                        </p>
+                        <button className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors">
+                            Analyze Their SEO
+                        </button>
+                    </div>
+
+                    {/* Trending Keywords */}
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card dark:shadow-card-dark border border-gray-100 dark:border-gray-700 flex-grow">
+                        <div className="flex items-center gap-3 mb-4">
+                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
+                                <Flame className="w-4 h-4" />
+                            </span>
+                            <h3 className="font-bold text-gray-900 dark:text-white">Etsy Hot Trends</h3>
+                        </div>
+                        <ul className="space-y-3">
+                            <li className="flex justify-between items-center">
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">1. Cyberpunk mask</span>
+                                <span className="text-xs text-green-500 font-bold">+124%</span>
+                            </li>
+                            <li className="flex justify-between items-center">
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">2. Mother's day necklace</span>
+                                <span className="text-xs text-green-500 font-bold">+89%</span>
+                            </li>
+                            <li className="flex justify-between items-center">
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">3. Raw emerald ring</span>
+                                <span className="text-xs text-green-500 font-bold">+45%</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <MetricCard icon={Package} title={t('metric_total_products')} value={String(products.length || 124)} change="" bgColor="bg-white dark:bg-gray-800" iconColor="text-blue-500"/>
                 <MetricCard icon={TrendingUp} title={t('metric_avg_seo_score')} value={healthScore === 'A+' ? '98%' : `${avgSeoScore || 62}%`} change={healthScore === 'A+' ? '+36% today' : ''} bgColor="bg-white dark:bg-gray-800" iconColor="text-green-500"/>
                 <MetricCard icon={Zap} title={t('metric_ai_optimizations')} value={healthScore === 'A+' ? String(optimizationsToday + 15) : String(optimizationsToday)} change={t('today')} bgColor="bg-white dark:bg-gray-800" iconColor="text-purple-500"/>
                 <MetricCard icon={Activity} title={t('metric_sync_status')} value={t('live')} change={t('live_status_time_ago', { minutes: 1 })} bgColor="bg-white dark:bg-gray-800" iconColor="text-orange-500"/>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card dark:shadow-card-dark">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center mb-4">
-                    <Package className="w-5 h-5 me-2 text-blue-500"/>{t('your_listings')}
-                </h3>
-                {products.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                        {latestProducts.map(product => (
-                            <div key={product.id} className="bg-gray-50 dark:bg-gray-700/50 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 group hover:shadow-md transition-all">
-                                <div className="aspect-square w-full overflow-hidden bg-gray-200 dark:bg-gray-600 relative">
-                                    {product.imageUrl && product.imageUrl.startsWith('http') ? (
-                                        <img 
-                                            src={product.imageUrl} 
-                                            alt={product.title} 
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                            onError={(e) => {
-                                                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300?text=No+Image';
-                                            }}
-                                        />
-                                    ) : (
-                                        <div className="flex items-center justify-center h-full text-gray-400">
-                                            <ImageIcon className="w-8 h-8" />
-                                        </div>
-                                    )}
-                                    <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md backdrop-blur-sm">
-                                        SEO: {healthScore === 'A+' ? '99' : product.seoScore}%
-                                    </div>
-                                </div>
-                                <div className="p-3">
-                                    <h4 className="font-medium text-gray-900 dark:text-white text-sm line-clamp-2 h-10 mb-1" title={product.title}>
-                                        {product.title}
-                                    </h4>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                        {product.tags.slice(0, 3).join(', ')}
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="text-center py-8 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-dashed border-gray-300 dark:border-gray-600">
-                        <Package className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                        <p className="text-gray-500 dark:text-gray-400">No listings found. Connect your Etsy shop to see your products.</p>
-                    </div>
-                )}
             </div>
 
         </div>
