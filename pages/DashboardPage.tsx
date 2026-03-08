@@ -156,7 +156,7 @@ const DashboardPage: React.FC = () => {
                             <button 
                                 onClick={handleFixAll}
                                 disabled={isFixing}
-                                className={`w-full lg:w-64 py-4 px-6 rounded-2xl font-bold text-white shadow-lg transition-all transform hover:scale-105 ${isFixing ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:shadow-indigo-500/50'}`}
+                                className={`w-full lg:w-64 py-4 px-6 rounded-2xl font-bold text-white shadow-lg transition-all transform hover:scale-105 ${isFixing ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-[#1A1A1A] to-[#404040] hover:shadow-gray-500/50'}`}
                             >
                                 {isFixing ? (
                                     <span className="flex items-center justify-center">
@@ -210,8 +210,8 @@ const DashboardPage: React.FC = () => {
                             <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.3}/>
-                                        <stop offset="95%" stopColor="#4F46E5" stopOpacity={0}/>
+                                        <stop offset="5%" stopColor="#525252" stopOpacity={0.3}/>
+                                        <stop offset="95%" stopColor="#525252" stopOpacity={0}/>
                                     </linearGradient>
                                     <linearGradient id="colorMissed" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor={healthScore === 'C-' ? "#EF4444" : "#10B981"} stopOpacity={0.3}/>
@@ -225,7 +225,7 @@ const DashboardPage: React.FC = () => {
                                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                     formatter={(value: number) => [`$${value}`, 'Revenue']}
                                 />
-                                <Area type="monotone" dataKey="actual" name="Current Revenue" stroke="#4F46E5" strokeWidth={3} fillOpacity={1} fill="url(#colorActual)" />
+                                <Area type="monotone" dataKey="actual" name="Current Revenue" stroke="#525252" strokeWidth={3} fillOpacity={1} fill="url(#colorActual)" />
                                 {healthScore === 'C-' && (
                                     <Area type="monotone" dataKey="missed" name="Potential Revenue" stroke="#EF4444" strokeWidth={2} strokeDasharray="5 5" fillOpacity={1} fill="url(#colorMissed)" />
                                 )}
@@ -237,17 +237,17 @@ const DashboardPage: React.FC = () => {
                 {/* Right Column: Alerts & Trends */}
                 <div className="col-span-1 flex flex-col gap-6">
                     {/* Competitor Alert */}
-                    <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 p-6 rounded-2xl border border-indigo-100 dark:border-indigo-800/50 shadow-sm">
+                    <div className="bg-gradient-to-br from-[#FAFAFA] to-[#F0F0F0] dark:from-[#1E1E1E] dark:to-[#2D2D2D] p-6 rounded-2xl border border-gray-200 dark:border-gray-700/50 shadow-sm">
                         <div className="flex items-center gap-3 mb-3">
-                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-800 text-indigo-600 dark:text-indigo-300">
+                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
                                 <Search className="w-4 h-4" />
                             </span>
                             <h3 className="font-bold text-gray-900 dark:text-white">Competitor Radar</h3>
                         </div>
                         <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
-                            <strong>@BohoJewelryCo</strong> just listed 3 new items using the tag <span className="inline-block bg-white dark:bg-gray-800 px-2 py-1 rounded text-xs border border-gray-200 dark:border-gray-700 mx-1 font-mono text-purple-600 dark:text-purple-400">chunky silver ring</span>.
+                            <strong>@BohoJewelryCo</strong> just listed 3 new items using the tag <span className="inline-block bg-white dark:bg-gray-800 px-2 py-1 rounded text-xs border border-gray-200 dark:border-gray-700 mx-1 font-mono text-gray-800 dark:text-gray-200">chunky silver ring</span>.
                         </p>
-                        <button className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors">
+                        <button className="w-full py-2 bg-[#2D2D2D] hover:bg-[#1A1A1A] dark:bg-gray-600 dark:hover:bg-gray-500 text-white text-sm font-semibold rounded-xl transition-colors">
                             Analyze Their SEO
                         </button>
                     </div>
