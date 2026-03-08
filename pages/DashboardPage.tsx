@@ -193,14 +193,14 @@ const DashboardPage: React.FC = () => {
                     <div className="flex justify-between items-center mb-6">
                         <div>
                             <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center">
-                                <DollarSign className="w-5 h-5 me-2 text-red-500"/>
+                                <DollarSign className="w-5 h-5 me-2 text-indigo-500"/>
                                 AI Revenue Forecast
                             </h3>
                             <p className="text-sm text-gray-500 dark:text-gray-400">Estimated impact of poor SEO on your sales</p>
                         </div>
                         <div className="text-right">
                             <p className="text-sm text-gray-500">Missed This Month</p>
-                            <p className={`text-2xl font-bold ${healthScore === 'C-' ? 'text-red-500' : 'text-green-500'}`}>
+                            <p className={`text-2xl font-bold ${healthScore === 'C-' ? 'text-indigo-500' : 'text-green-500'}`}>
                                 {healthScore === 'C-' ? '$2,450.00' : '$0.00'}
                             </p>
                         </div>
@@ -210,12 +210,12 @@ const DashboardPage: React.FC = () => {
                             <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#525252" stopOpacity={0.3}/>
-                                        <stop offset="95%" stopColor="#525252" stopOpacity={0}/>
+                                        <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.3}/>
+                                        <stop offset="95%" stopColor="#4F46E5" stopOpacity={0}/>
                                     </linearGradient>
                                     <linearGradient id="colorMissed" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor={healthScore === 'C-' ? "#EF4444" : "#10B981"} stopOpacity={0.3}/>
-                                        <stop offset="95%" stopColor={healthScore === 'C-' ? "#EF4444" : "#10B981"} stopOpacity={0}/>
+                                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
+                                        <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#374151" opacity={0.2} />
@@ -225,9 +225,9 @@ const DashboardPage: React.FC = () => {
                                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                     formatter={(value: number) => [`$${value}`, 'Revenue']}
                                 />
-                                <Area type="monotone" dataKey="actual" name="Current Revenue" stroke="#525252" strokeWidth={3} fillOpacity={1} fill="url(#colorActual)" />
+                                <Area type="monotone" dataKey="actual" name="Current Revenue" stroke="#4F46E5" strokeWidth={3} fillOpacity={1} fill="url(#colorActual)" />
                                 {healthScore === 'C-' && (
-                                    <Area type="monotone" dataKey="missed" name="Potential Revenue" stroke="#EF4444" strokeWidth={2} strokeDasharray="5 5" fillOpacity={1} fill="url(#colorMissed)" />
+                                    <Area type="monotone" dataKey="missed" name="Potential Revenue" stroke="#10B981" strokeWidth={2} strokeDasharray="5 5" fillOpacity={1} fill="url(#colorMissed)" />
                                 )}
                             </AreaChart>
                         </ResponsiveContainer>
