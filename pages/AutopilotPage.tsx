@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Bot, AlertTriangle, Loader2, Search, Wrench, Save, Zap } from 'lucide-react';
+import { Bot, AlertTriangle, Loader2, Search, Wrench, Save, Zap, RotateCcw, X } from 'lucide-react';
 import { useAppContext } from '../contexts/AppContext';
 import { Product } from '../types';
 import { useTranslation } from '../contexts/LanguageContext';
@@ -202,6 +202,33 @@ const AutopilotPage: React.FC = () => {
     }
   };
 
+  const cancelFix = (productId: string) => {
+    const p = products.find(x => x.id === productId);
+    if (p) {
+      const productIssues = scanProduct(p);
+      setIssues(prev => [...prev, ...productIssues]);
+    }
+    setFixPreview(prev => {
+      const copy = { ...prev };
+      delete copy[productId];
+      return copy;
+    });
+  };
+
+  const regenerateFix = async (productId: string) => {
+    const p = products.find(x => x.id === productId);
+    if (!p) return;
+    const tempIssue: Issue = {
+      id: `${p.id}-regen`,
+      productId: p.id,
+      productTitle: p.title,
+      type: 'seo',
+      severity: 'medium',
+      message: 'Regenerating optimization...'
+    };
+    await fixIssue(tempIssue);
+  };
+
   const handleAutopilotToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
     updateSettings({
       ...settings,
@@ -278,6 +305,25 @@ const AutopilotPage: React.FC = () => {
                     >
                       {savingProductId === productId ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                       {savingProductId === productId ? 'Saving...' : 'Save to Etsy'}
+                    </button>
+
+                    <button
+                      onClick={() => regenerateFix(productId)}
+                      disabled={fixingIssueId !== null || savingProductId !== null}
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-600 text-white text-sm disabled:opacity-60"
+                      title="Regenerate AI suggestion"
+                    >
+                      {fixingIssueId === `${productId}-regen` ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+                      Regenerate
+                    </button>
+
+                    <button
+                      onClick={() => cancelFix(productId)}
+                      disabled={savingProductId !== null}
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm disabled:opacity-60"
+                    >
+                      <X className="w-4 h-4" />
+                      Cancel
                     </button>
                   </div>
                 </div>
