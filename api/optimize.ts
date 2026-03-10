@@ -232,7 +232,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         
         // Initialize OpenAI
         const openai = new OpenAI({ apiKey: apiKey });
-        const model = "gpt-4o"; // Or "gpt-3.5-turbo" if needed for cost/speed
+        const model = "gpt-4o-mini"; // Switch to mini to save credits while maintaining high quality for SEO tasks
 
         let competitorInsights: CompetitorInsights | null = null;
         try {

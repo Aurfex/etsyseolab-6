@@ -88,8 +88,21 @@ const AutopilotPage: React.FC = () => {
     try {
       const allIssues = products.flatMap(scanProduct);
       setIssues(allIssues);
+      showToast({ tKey: 'toast_generic_success_with_message', options: { message: `Scan complete! Found ${allIssues.length} issues.` }, type: 'success' });
     } finally {
       setIsScanning(false);
+    }
+  };
+
+  const fixAllHighSeverity = async () => {
+    const highIssues = issues.filter(i => i.severity === 'high');
+    if (highIssues.length === 0) return;
+    
+    showToast({ tKey: 'toast_generic_info_with_message', options: { message: `Starting bulk fix for ${highIssues.length} products...` }, type: 'info' });
+    
+    // We process them sequentially to avoid rate limits
+    for (const issue of highIssues) {
+      await fixIssue(issue);
     }
   };
 
@@ -227,6 +240,16 @@ const AutopilotPage: React.FC = () => {
           <button onClick={runScan} disabled={isScanning} className="inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-60">
             {isScanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />} Scan Shop
           </button>
+          
+          {issues.some(i => i.severity === 'high') && (
+            <button 
+              onClick={fixAllHighSeverity} 
+              disabled={isScanning || fixingIssueId !== null} 
+              className="inline-flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg disabled:opacity-60"
+            >
+              {fixingIssueId ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />} Fix All High Priority
+            </button>
+          )}
         </div>
       </Card>
 
