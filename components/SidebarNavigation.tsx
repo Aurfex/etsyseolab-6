@@ -27,12 +27,14 @@ const SidebarNavigation: React.FC = () => {
             { id: 'image_seo', label: 'Image SEO', icon: ImageIcon, authRequired: true },
             { id: 'autopilot', label: t('nav_autopilot'), icon: Bot, authRequired: true },
             { id: 'competitor', label: t('nav_competitor'), icon: Radar, authRequired: true },
+            /* Hidden for MVP focus:
             { id: 'reviews', label: t('nav_reviews'), icon: MessageSquareDashed, authRequired: true },
             { id: 'faq', label: t('nav_faq'), icon: HelpCircle, authRequired: true },
             { id: 'assistant', label: t('nav_assistant'), icon: Mic, authRequired: true },
             { id: 'gift_finder', label: t('nav_gift_finder'), icon: Gift, authRequired: true },
             { id: 'loyalty', label: t('nav_loyalty'), icon: Trophy, authRequired: true },
             { id: 'story_magazine', label: t('nav_story_magazine'), icon: LayoutTemplate, authRequired: true },
+            */
         ];
         
         return allItems.map(item => ({
