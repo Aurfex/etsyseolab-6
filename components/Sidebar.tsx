@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Page, Language } from '../types';
-import { LayoutDashboard, SearchCheck, Zap, Bot, Radar, Settings, Sun, Moon, MessageSquareDashed, HelpCircle, Mic, Gift, ChevronLeft, ChevronRight, User, LogOut, Trophy, LayoutTemplate, PlusSquare, Lock, Calculator, ImageIcon } from 'lucide-react';
+import { LayoutDashboard, SearchCheck, Zap, Bot, Radar, Settings, Sun, Moon, HelpCircle, Mic, Gift, ChevronLeft, ChevronRight, User, LogOut, Trophy, LayoutTemplate, PlusSquare, Lock, Calculator, ImageIcon } from 'lucide-react';
 import { useTranslation } from '../contexts/LanguageContext';
 import { useAppContext } from '../contexts/AppContext';
 

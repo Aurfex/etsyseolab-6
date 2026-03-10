@@ -6,6 +6,9 @@
     "nav_autopilot": "Autopilot AI",
     "nav_competitor": "Competitor Radar",
     "nav_settings": "Settings",
+    "bot_title": "Hasti AI",
+    "bot_welcome": "Hi Dariush! I'm Hasti, your SEO Co-pilot. How can I help you grow your Etsy shop today?",
+    "bot_placeholder": "Ask Hasti...",
 
     "settings_title": "AI SEO Command Center",
     "settings_subtitle": "Autonomous optimization powered by artificial intelligence",
