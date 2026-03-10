@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Bot, AlertTriangle, Loader2, Search, Wrench, Save } from 'lucide-react';
+import { Bot, AlertTriangle, Loader2, Search, Wrench, Save, Zap } from 'lucide-react';
 import { useAppContext } from '../contexts/AppContext';
 import { Product } from '../types';
 import { useTranslation } from '../contexts/LanguageContext';
