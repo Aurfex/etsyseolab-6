@@ -33,24 +33,24 @@ const scanProduct = (p: Product): Issue[] => {
   const description = String(p.description || '');
   const tags = Array.isArray(p.tags) ? p.tags : [];
 
-  if (title.length < 90) {
-    issues.push({ id: `${p.id}-title-short`, productId: p.id, productTitle: p.title, type: 'title', severity: 'high', message: 'Title is short (target 90-140 chars).' });
+  // Loosen requirements for demo visibility
+  if (title.length < 110) {
+    issues.push({ id: `${p.id}-title-short`, productId: p.id, productTitle: p.title, type: 'title', severity: 'high', message: 'Title is below recommended length (110-140 chars).' });
   } else if (title.length > 140) {
-    issues.push({ id: `${p.id}-title-long`, productId: p.id, productTitle: p.title, type: 'title', severity: 'high', message: 'Title exceeds 140 chars.' });
+    issues.push({ id: `${p.id}-title-long`, productId: p.id, productTitle: p.title, type: 'title', severity: 'high', message: 'Title exceeds Etsy limit (140 chars).' });
   }
 
-  const duplicateTags = tags.length !== new Set(tags.map(t => t.toLowerCase().trim())).size;
-  const invalidTagLen = tags.some(t => String(t).trim().length > 20 || String(t).trim().length === 0);
-  if (tags.length < 10 || tags.length > 13 || duplicateTags || invalidTagLen) {
-    issues.push({ id: `${p.id}-tags`, productId: p.id, productTitle: p.title, type: 'tags', severity: 'high', message: 'Tags need optimization (count/duplicates/length).' });
+  const tagCount = tags.length;
+  if (tagCount < 13) {
+    issues.push({ id: `${p.id}-tags-count`, productId: p.id, productTitle: p.title, type: 'tags', severity: 'medium', message: `Only ${tagCount}/13 tags used. Etsy recommends using all 13 tags.` });
   }
 
-  if (description.length < 300) {
-    issues.push({ id: `${p.id}-desc-short`, productId: p.id, productTitle: p.title, type: 'description', severity: 'medium', message: 'Description is short (target 300+ chars).' });
+  if (description.length < 500) {
+    issues.push({ id: `${p.id}-desc-short`, productId: p.id, productTitle: p.title, type: 'description', severity: 'low', message: 'Description could be more detailed (target 500+ chars).' });
   }
 
-  if ((p.seoScore || 0) < 85) {
-    issues.push({ id: `${p.id}-seo`, productId: p.id, productTitle: p.title, type: 'seo', severity: 'low', message: 'SEO score is below target (85+).' });
+  if ((p.seoScore || 0) < 90) {
+    issues.push({ id: `${p.id}-seo`, productId: p.id, productTitle: p.title, type: 'seo', severity: 'medium', message: `SEO score (${p.seoScore}) is below optimum (90+).` });
   }
 
   return issues;
