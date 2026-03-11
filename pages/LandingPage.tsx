@@ -116,7 +116,7 @@ const LandingPage: React.FC = () => {
       <nav className="fixed top-0 w-full z-50 bg-white/60 dark:bg-gray-950/60 backdrop-blur-md border-b border-gray-100 dark:border-gray-900">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Zap className="h-7 w-7 text-purple-500 flex-shrink-0" />
+            <Zap className="h-7 w-7 text-[#F1641E] flex-shrink-0" />
             <span className="text-xl font-bold text-gray-900 dark:text-white tracking-tight uppercase">ETSY SEOLAB</span>
           </div>
           <div className="hidden md:flex items-center space-x-8 text-sm font-medium">
@@ -140,7 +140,7 @@ const LandingPage: React.FC = () => {
             <span>Powering 2,500+ Etsy Shops with AI</span>
           </div>
           <h1 className="text-5xl md:text-7xl font-black mb-12 leading-[1.3] animate-fade-in-up">
-            Dominate Etsy Search with <br />
+            Dominate <span className="text-[#F1641E]">Etsy</span> Search with <br />
             <span className="inline-block bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-500 mt-4 py-2">AI Intelligence.</span>
           </h1>
           <p className="text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto mb-4 animate-fade-in-up delay-100">

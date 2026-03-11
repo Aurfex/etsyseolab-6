@@ -95,10 +95,10 @@ const Sidebar: React.FC = () => {
         <aside className={`fixed top-0 left-0 z-20 flex flex-col h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'w-full md:w-20' : 'w-64'}`}>
             <div className={`flex items-center border-b border-gray-200 dark:border-gray-800 px-4 transition-all flex-shrink-0 ${isSidebarCollapsed ? 'h-16 justify-center' : 'h-16 justify-between'}`}>
                 <div className={`flex items-center gap-2 overflow-hidden ${isSidebarCollapsed ? 'hidden' : ''}`}>
-                    <Zap className="h-7 w-7 text-purple-500 flex-shrink-0" />
+                    <Zap className="h-7 w-7 text-[#F1641E] flex-shrink-0" />
                     <span className="text-xl font-bold text-gray-900 dark:text-white">ETSY SEOLAB</span>
                 </div>
-                 <Zap className={`h-7 w-7 text-purple-500 flex-shrink-0 ${isSidebarCollapsed ? '' : 'hidden'}`} />
+                 <Zap className={`h-7 w-7 text-[#F1641E] flex-shrink-0 ${isSidebarCollapsed ? '' : 'hidden'}`} />
                 <button onClick={toggleSidebar} className={'p-2 rounded-full hidden lg:block text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800 transition-colors'}>
                     {isSidebarCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
                 </button>
