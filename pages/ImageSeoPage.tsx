@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Download, ImageIcon, Loader2, Sparkles } from 'lucide-react';
 import JSZip from 'jszip';
 import { useAppContext } from '../contexts/AppContext';
+import { useTranslation } from '../contexts/LanguageContext';
 
 type RenamedImage = {
   file: File;
@@ -97,6 +98,7 @@ const sanitizeName = (name: string) =>
 
 const ImageSeoPage: React.FC = () => {
   const { showToast } = useAppContext();
+  const { t } = useTranslation();
   const [productTitle, setProductTitle] = useState('');
   const [keywords, setKeywords] = useState('');
   const [files, setFiles] = useState<File[]>([]);
@@ -196,35 +198,35 @@ const ImageSeoPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Image SEO</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">Generate SEO-friendly image names using product title, manual keywords, and AI image analysis.</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('image_seo_title')}</h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">{t('image_seo_desc')}</p>
       </div>
 
       <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card dark:shadow-card-dark space-y-4">
         <div>
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Product title</label>
-          <input value={productTitle} onChange={(e) => setProductTitle(e.target.value)} className="mt-1 w-full input-field" placeholder="e.g. Rose Gold Claddagh Ring" />
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('image_seo_product_title')}</label>
+          <input value={productTitle} onChange={(e) => setProductTitle(e.target.value)} className="mt-1 w-full input-field" placeholder={t("image_seo_product_title_placeholder")} />
         </div>
         <div>
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Manual keywords (optional)</label>
-          <input value={keywords} onChange={(e) => setKeywords(e.target.value)} className="mt-1 w-full input-field" placeholder="e.g. irish ring, wedding band, celtic" />
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('image_seo_manual_keywords')}</label>
+          <input value={keywords} onChange={(e) => setKeywords(e.target.value)} className="mt-1 w-full input-field" placeholder={t("image_seo_manual_keywords_placeholder")} />
         </div>
         <div>
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Images (up to 15)</label>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('image_seo_images_label')}</label>
           <input type="file" multiple accept="image/*" onChange={onFileChange} className="mt-1 w-full text-sm text-gray-700 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 dark:file:bg-purple-900/50 dark:file:text-purple-300" />
-          <p className="text-xs text-gray-500 mt-1">Selected: {files.length}</p>
+          <p className="text-xs text-gray-500 mt-1">{t('image_seo_selected')} {files.length}</p>
         </div>
 
         <button onClick={generateNames} disabled={!canRun || isProcessing} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 text-white font-semibold disabled:opacity-60">
           {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-          {isProcessing ? 'Generating...' : 'Generate SEO Names'}
+          {isProcessing ? t('image_seo_generating') : t('image_seo_generate_btn')}
         </button>
       </div>
 
       {results.length > 0 && (
         <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card dark:shadow-card-dark space-y-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2"><ImageIcon className="w-5 h-5" /> Results</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2"><ImageIcon className="w-5 h-5" /> {t('image_seo_results_title')}</h2>
             <button onClick={downloadRenamed} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold">
               <Download className="w-4 h-4" /> Download ZIP (2000x2000 WEBP)
             </button>
@@ -232,7 +234,7 @@ const ImageSeoPage: React.FC = () => {
 
           {timing && (
             <div className="text-xs p-3 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 text-indigo-800 dark:text-indigo-200">
-              Total: {timing.totalMs} ms | Avg/Image: {timing.avgMs} ms | Resized: {timing.resizedCount}/{results.length}
+              {t('image_seo_timing_total')} {timing.totalMs} {t('image_seo_timing_avg')} {timing.avgMs} {t('image_seo_timing_resized')} {timing.resizedCount}/{results.length}
             </div>
           )}
 
@@ -246,7 +248,7 @@ const ImageSeoPage: React.FC = () => {
                     <div className="font-semibold text-gray-900 dark:text-white truncate">{r.newName}</div>
                   </div>
                 </div>
-                <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{r.ms ?? 0} ms</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{r.ms ?? 0} {t('image_seo_ms')}</span>
               </div>
             ))}
           </div>

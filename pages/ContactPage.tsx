@@ -1,13 +1,15 @@
 import React from 'react';
 import { Mail, MessageSquare, MapPin, ArrowLeft, Send } from 'lucide-react';
 import { useAppContext } from '../contexts/AppContext';
+import { useTranslation } from '../contexts/LanguageContext';
 
 const ContactPage: React.FC = () => {
   const { setPage, auth, showToast } = useAppContext();
+  const { t } = useTranslation();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    showToast({ message: "Message sent! We'll get back to you soon. 😘", type: 'success' });
+    showToast({ message: t('contact_success_message'), type: 'success' });
     setTimeout(() => setPage(auth.isAuthenticated ? 'dashboard' : 'landing'), 1500);
   };
 
@@ -19,14 +21,14 @@ const ContactPage: React.FC = () => {
           className="flex items-center text-sm font-medium text-purple-600 mb-8 hover:opacity-80 transition-opacity"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Home
+          {t('contact_back')}
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           <div>
-            <h1 className="text-5xl font-black mb-6">Let's talk.</h1>
+            <h1 className="text-5xl font-black mb-6">{t('contact_title')}</h1>
             <p className="text-xl text-gray-500 dark:text-gray-400 mb-10">
-              Have questions about Hasti AI or need help scaling your Etsy shop? We're here for you.
+              {t('contact_subtitle')}
             </p>
 
             <div className="space-y-8">
@@ -35,8 +37,8 @@ const ContactPage: React.FC = () => {
                   <Mail className="w-6 h-6" />
                 </div>
                 <div>
-                  <h4 className="font-bold">Email Us</h4>
-                  <p className="text-gray-500">hello@aswesee.com</p>
+                  <h4 className="font-bold">{t('contact_email_title')}</h4>
+                  <p className="text-gray-500">{t('contact_email_value')}</p>
                 </div>
               </div>
               <div className="flex items-start space-x-4">
@@ -44,8 +46,8 @@ const ContactPage: React.FC = () => {
                   <MessageSquare className="w-6 h-6" />
                 </div>
                 <div>
-                  <h4 className="font-bold">Live Chat</h4>
-                  <p className="text-gray-500">Available Mon-Fri, 9am - 5pm EST</p>
+                  <h4 className="font-bold">{t('contact_chat_title')}</h4>
+                  <p className="text-gray-500">{t('contact_chat_value')}</p>
                 </div>
               </div>
               <div className="flex items-start space-x-4">
@@ -53,8 +55,8 @@ const ContactPage: React.FC = () => {
                   <MapPin className="w-6 h-6" />
                 </div>
                 <div>
-                  <h4 className="font-bold">Location</h4>
-                  <p className="text-gray-500">Sainte-Anne-des-Plaines, Quebec, Canada</p>
+                  <h4 className="font-bold">{t('contact_location_title')}</h4>
+                  <p className="text-gray-500">{t('contact_location_value')}</p>
                 </div>
               </div>
             </div>
@@ -64,21 +66,21 @@ const ContactPage: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-bold ml-1">Name</label>
-                  <input required type="text" className="w-full p-4 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-2xl focus:ring-2 focus:ring-purple-500 outline-none" placeholder="Dariush..." />
+                  <label className="text-sm font-bold ml-1">{t('contact_form_name')}</label>
+                  <input required type="text" className="w-full p-4 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-2xl focus:ring-2 focus:ring-purple-500 outline-none" placeholder={t('contact_form_name_placeholder')} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-bold ml-1">Email</label>
-                  <input required type="email" className="w-full p-4 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-2xl focus:ring-2 focus:ring-purple-500 outline-none" placeholder="hello@example.com" />
+                  <label className="text-sm font-bold ml-1">{t('contact_form_email')}</label>
+                  <input required type="email" className="w-full p-4 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-2xl focus:ring-2 focus:ring-purple-500 outline-none" placeholder={t('contact_form_email_placeholder')} />
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-bold ml-1">Message</label>
-                <textarea required rows={5} className="w-full p-4 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-2xl focus:ring-2 focus:ring-purple-500 outline-none resize-none" placeholder="How can we help?" />
+                <label className="text-sm font-bold ml-1">{t('contact_form_message')}</label>
+                <textarea required rows={5} className="w-full p-4 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-2xl focus:ring-2 focus:ring-purple-500 outline-none resize-none" placeholder={t('contact_form_message_placeholder')} />
               </div>
               <button type="submit" className="w-full py-4 bg-purple-600 text-white rounded-2xl font-bold text-lg hover:bg-purple-700 transition-all flex items-center justify-center space-x-2">
                 <Send className="w-5 h-5" />
-                <span>Send Message</span>
+                <span>{t('contact_form_submit')}</span>
               </button>
             </form>
           </div>

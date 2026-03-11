@@ -278,10 +278,10 @@ const PricingCalculatorPage: React.FC = () => {
               onBlur={() => bindField('taxRate', 5).onBlur()}
             />
             <div className="grid grid-cols-2 gap-2 mt-2">
-              <button onClick={() => setTaxPreset(0.14975)} className="px-2 py-1 text-xs rounded border border-gray-200 dark:border-gray-700">QC (14.975%)</button>
-              <button onClick={() => setTaxPreset(0.13)} className="px-2 py-1 text-xs rounded border border-gray-200 dark:border-gray-700">ON (13%)</button>
-              <button onClick={() => setTaxPreset(0.05)} className="px-2 py-1 text-xs rounded border border-gray-200 dark:border-gray-700">GST (5%)</button>
-              <button onClick={() => setTaxPreset(0)} className="px-2 py-1 text-xs rounded border border-gray-200 dark:border-gray-700">NONE (0%)</button>
+              <button onClick={() => setTaxPreset(0.14975)} className="px-2 py-1 text-xs rounded border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">QC (14.975%)</button>
+              <button onClick={() => setTaxPreset(0.13)} className="px-2 py-1 text-xs rounded border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">ON (13%)</button>
+              <button onClick={() => setTaxPreset(0.05)} className="px-2 py-1 text-xs rounded border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">GST (5%)</button>
+              <button onClick={() => setTaxPreset(0)} className="px-2 py-1 text-xs rounded border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">NONE (0%)</button>
             </div>
           </div>
 
