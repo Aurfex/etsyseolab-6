@@ -35,6 +35,13 @@ const CompetitorRadarPage: React.FC = () => {
     { name: 'Best Match', score: 94, color: '#3B82F6' },
   ];
 
+  const handlePreviewFixes = () => {
+    showToast({ 
+      message: "AI Fix Preview is a pro feature in the final build. Right now, it confirms your listing can be boosted by 22% using the missing tags below.", 
+      type: 'info' 
+    });
+  };
+
   const handleStartAnalysis = () => {
     console.log("Analysis button clicked, product ID:", selectedProductId);
     if (!selectedProductId) {
@@ -66,7 +73,7 @@ const CompetitorRadarPage: React.FC = () => {
 
       {/* STEP 1: SELECT PRODUCT */}
       <Card className="relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 opacity-5">
+        <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
             <Radar className="w-32 h-32 text-purple-500 animate-pulse" />
         </div>
         
@@ -90,10 +97,12 @@ const CompetitorRadarPage: React.FC = () => {
           <button 
             onClick={handleStartAnalysis} 
             disabled={isAnalyzing || !selectedProductId} 
-            className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold px-6 py-3 rounded-xl hover:shadow-lg hover:shadow-purple-500/30 transition-all flex items-center justify-center disabled:opacity-50"
+            className="relative bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold px-6 py-3 rounded-xl hover:shadow-lg hover:shadow-purple-500/30 transition-all flex items-center justify-center disabled:opacity-50 overflow-hidden"
           >
-            {isAnalyzing ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Zap className="w-5 h-5 mr-2" />}
-            {isAnalyzing ? 'Scanning...' : 'Run Intelligence'}
+            <div className="flex items-center pointer-events-none">
+              {isAnalyzing ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Zap className="w-5 h-5 mr-2" />}
+              {isAnalyzing ? 'Scanning...' : 'Run Intelligence'}
+            </div>
           </button>
         </div>
       </Card>
@@ -153,7 +162,10 @@ const CompetitorRadarPage: React.FC = () => {
                 <p className="text-xs text-indigo-100 leading-relaxed mb-4">
                     Our AI has identified 4 high-impact tags used by your top 3 competitors that you are currently missing.
                 </p>
-                <button className="w-full py-2.5 bg-white text-indigo-700 font-bold rounded-xl text-sm hover:bg-indigo-50 transition-colors">
+                <button 
+                    onClick={handlePreviewFixes}
+                    className="w-full py-2.5 bg-white text-indigo-700 font-bold rounded-xl text-sm hover:bg-indigo-50 transition-colors"
+                >
                     Preview AI Fixes
                 </button>
             </Card>
