@@ -1,20 +1,29 @@
 # ETSY SEOLAB - Project Status & Roadmap
-*Last Updated: 2026-03-10*
+*Last Updated: 2026-03-11*
 
-## Current State (Milestone Achieved: SaaS Packaging)
+## Current State (Milestone Achieved: SaaS Packaging & Strategic Modules)
 We have successfully evolved the project from a set of technical tools into a "Professional SaaS Product" package. The front-end now looks and feels like a premium AI co-pilot.
 
-### Key Achievements (2026-03-10)
-- **Hasti AI Branding:** The platform is now personalized. "OptimoBot" has been replaced by "Hasti AI" (Dariush's AI partner) across all UI elements and Farsi/English translations.
+### Key Achievements (2026-03-11)
+- **Hasti AI Branding & Landing Page Polish:** 
+    - The platform is entirely "Hasti AI" branded. 
+    - Added an interactive **Particle Background** (canvas-based, mouse-reactive) to the landing page.
+    - Replaced the generic laptop hero image with a custom "Hasti" AI persona image.
+    - Updated typography, spacing, and added the savage tagline: *"Hasti AI: Because your competitors need a reason to cry."*
+    - Unified the logo (Purple Zap) across the Landing Page and internal Dashboard.
+- **New Strategic Module: Shopify Migration (CSV Export):**
+    - Built a dedicated page (`ShopifyExportPage.tsx`) for users to export their Etsy listings into a Shopify-compatible CSV format.
+    - Features a multi-select table with product thumbnails for granular control.
+- **New Strategic Module: Sales Intelligence (PDF Reports):**
+    - Created `SalesReportPage.tsx` for generating performance summaries based on date ranges.
+    - Features UI mocks for "Total Sales," "SEO Impact," and functional mock PDF download mechanics.
+- **Dashboard Color Refinement:** Removed off-brand peach/pink/red gradients and aligned the "Store Health" section with the core Hasti AI Purple/Indigo theme.
+
+### Previous Achievements (2026-03-10)
 - **Competitor Radar Overhaul:**
-    - **Visual Intelligence:** Integrated `recharts` for dynamic SEO comparison against top sellers.
-    - **Scanning UX:** Added a high-fidelity "Run Intelligence" simulation that gathers market data.
-    - **Optimization Preview:** Added a side-by-side "AI Fixes" preview section allowing users to see proposed Title/Tag changes before they sync to Etsy.
-    - **Niche Insights:** Added market statistics (average niche price, search demand, estimated rank).
-- **Public Entry Point (Landing Page):**
-    - Built a modern, conversion-focused **Landing Page** featuring hero sections, product features, and tiered pricing structures (Free, Growth, Elite).
-    - Integrated public routing for **Privacy Policy**, **Terms of Service**, and **Contact Us** pages.
-- **UX Bug Squashing:** Fixed button responsiveness, redundant notifications, and chart sizing issues to ensure a smooth "Investor Demo" experience.
+    - Integrated `recharts` for dynamic SEO comparison against top sellers.
+    - Added a side-by-side "AI Fixes" preview section.
+- **Public Entry Point:** Built the foundational Landing Page with tiered pricing and legal pages (Privacy, Terms, Contact).
 
 ### ⚠️ IMPORTANT: Dashboard & Radar remain high-fidelity MOCKS
 - The "Store Health Score" and "Radar Analysis" results use deterministic mock data to ensure a "Wow Factor" during pitches without triggering live API errors or data inconsistencies.
