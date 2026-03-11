@@ -104,9 +104,9 @@ const LandingPage: React.FC = () => {
             <Rocket className="w-4 h-4" />
             <span>Powering 2,500+ Etsy Shops with AI</span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight animate-fade-in-up">
+          <h1 className="text-5xl md:text-7xl font-black mb-6 leading-[1.2] animate-fade-in-up">
             Dominate Etsy Search with <br />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-500">AI Intelligence.</span>
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-500 py-2">AI Intelligence.</span>
           </h1>
           <p className="text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto mb-4 animate-fade-in-up delay-100">
             Stop guessing your keywords. Use Hasti AI to analyze your competitors, optimize your listings, and scale your sales automatically.
