@@ -130,9 +130,9 @@ const LandingPage: React.FC = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-purple-500/30 to-transparent blur-3xl -z-10 rounded-full animate-pulse"></div>
             <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 shadow-2xl overflow-hidden p-2 backdrop-blur-sm bg-white/50 dark:bg-gray-900/50">
               <img 
-                src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=2426" 
-                alt="Dashboard Preview" 
-                className="rounded-2xl w-full grayscale-[0.2] dark:grayscale-0 opacity-90"
+                src="/hasti-hero.png" 
+                alt="Hasti AI Dashboard" 
+                className="rounded-2xl w-full grayscale-[0.1] dark:grayscale-0 opacity-100"
               />
             </div>
           </div>
