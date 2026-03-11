@@ -52,10 +52,10 @@ const LandingPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-white selection:bg-purple-500/30">
+    <div className="relative min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-white selection:bg-purple-500/30 overflow-x-hidden">
       <ParticleBackground />
       {/* NAVBAR */}
-      <nav className="fixed top-0 w-full z-50 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-900">
+      <nav className="fixed top-0 w-full z-50 bg-white/60 dark:bg-gray-950/60 backdrop-blur-md border-b border-gray-100 dark:border-gray-900">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <div className="w-10 h-10 bg-gradient-to-tr from-purple-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/20">
@@ -77,7 +77,7 @@ const LandingPage: React.FC = () => {
       </nav>
 
       {/* HERO SECTION */}
-      <section className="pt-40 pb-20 px-6">
+      <section className="relative pt-40 pb-20 px-6 bg-transparent">
         <div className="max-w-7xl mx-auto text-center">
           <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 text-xs font-bold mb-8 animate-fade-in">
             <Rocket className="w-4 h-4" />
@@ -118,7 +118,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* FEATURES SECTION */}
-      <section id="features" className="py-20 px-6 bg-gray-50 dark:bg-gray-900/30">
+      <section id="features" className="relative py-20 px-6 bg-gray-50/50 dark:bg-gray-900/20">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-black mb-4">Everything you need to <br /> scale on Etsy.</h2>

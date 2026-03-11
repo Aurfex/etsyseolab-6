@@ -88,6 +88,7 @@ const ParticleBackground: React.FC = () => {
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      console.log('Animating particles...');
       particles.forEach(p => {
         p.update();
         p.draw();
@@ -110,7 +111,16 @@ const ParticleBackground: React.FC = () => {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 -z-10 pointer-events-none opacity-80 dark:opacity-40"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        zIndex: 0,
+        pointerEvents: 'none',
+        background: 'transparent'
+      }}
     />
   );
 };
