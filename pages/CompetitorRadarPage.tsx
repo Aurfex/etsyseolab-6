@@ -36,12 +36,20 @@ const CompetitorRadarPage: React.FC = () => {
     { name: 'Best Match', score: 94, color: '#3B82F6' },
   ];
 
+  const handleSaveToEtsyMock = () => {
+    showToast({ 
+      message: "Syncing optimization to Etsy API... (Demo Mode)", 
+      type: 'success' 
+    });
+    setTimeout(() => {
+      showToast({ message: "Listing updated successfully on Etsy!", type: 'success' });
+      setShowFixPreview(false);
+    }, 1500);
+  };
+
   const handlePreviewFixes = () => {
     setShowFixPreview(true);
-    showToast({ 
-      message: "Generating AI optimization preview...", 
-      type: 'info' 
-    });
+    // Removed the toast that was popping up here to clean up the UI
   };
 
   const handleStartAnalysis = () => {
@@ -209,7 +217,10 @@ const CompetitorRadarPage: React.FC = () => {
                 </div>
 
                 <div className="mt-8 flex justify-end">
-                    <button className="px-8 py-3 bg-purple-600 text-white font-bold rounded-xl shadow-lg shadow-purple-500/20 hover:bg-purple-700 transition-all flex items-center">
+                    <button 
+                        onClick={handleSaveToEtsyMock}
+                        className="px-8 py-3 bg-purple-600 text-white font-bold rounded-xl shadow-lg shadow-purple-500/20 hover:bg-purple-700 transition-all flex items-center"
+                    >
                         <Save className="w-5 h-5 mr-2" />
                         Apply & Save to Etsy
                     </button>
