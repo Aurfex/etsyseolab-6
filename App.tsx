@@ -21,12 +21,14 @@ import StoryMagazinePage from './pages/StoryMagazinePage';
 import AddProductPage from './pages/AddProductPage';
 import PricingCalculatorPage from './pages/PricingCalculatorPage';
 import ImageSeoPage from './pages/ImageSeoPage';
+import LandingPage from './pages/LandingPage';
 
 const App: React.FC = () => {
   const { 
     page,
     toast,
     setToast,
+    auth,
     handleOAuthCallback // Get this from context
   } = useAppContext();
 
@@ -96,6 +98,16 @@ const App: React.FC = () => {
         return <DashboardPage />;
     }
   };
+
+  // If not authenticated, always show landing page
+  if (!auth.isAuthenticated) {
+    return (
+      <>
+        <LandingPage />
+        <Toast toast={toast} onClose={() => setToast(null)} />
+      </>
+    );
+  }
 
   return (
     <MainLayout>
