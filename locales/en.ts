@@ -5,6 +5,8 @@ const en: Translations = {
     "nav_dashboard": "Dashboard",
     "nav_optimizer": "SEO Optimizer",
     "nav_add_product": "Add Product",
+    "nav_pricing": "Pricing Calculator",
+    "nav_image_seo": "Image SEO",
     "nav_automation": "Automation",
     "nav_autopilot": "Autopilot AI",
     "nav_competitor": "Competitor Radar",
@@ -15,6 +17,8 @@ const en: Translations = {
     "nav_gift_finder": "Gift Finder",
     "nav_loyalty": "Loyalty Program",
     "nav_story_magazine": "Story Magazine",
+    "nav_shopify_export": "Shopify Migration",
+    "nav_sales_report": "Sales Reports",
 
     // Header
     "language_toggle_en": "EN",

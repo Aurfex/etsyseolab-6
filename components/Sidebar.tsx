@@ -64,12 +64,12 @@ const Sidebar: React.FC = () => {
             { id: 'dashboard', label: t('nav_dashboard'), icon: LayoutDashboard, authRequired: false },
             { id: 'optimizer', label: t('nav_optimizer'), icon: SearchCheck, authRequired: true },
             { id: 'add_product', label: t('nav_add_product'), icon: PlusSquare, authRequired: true },
-            { id: 'pricing', label: 'Pricing Calculator', icon: Calculator, authRequired: true },
-            { id: 'image_seo', label: 'Image SEO', icon: ImageIcon, authRequired: true },
+            { id: 'pricing', label: t('nav_pricing'), icon: Calculator, authRequired: true },
+            { id: 'image_seo', label: t('nav_image_seo'), icon: ImageIcon, authRequired: true },
             { id: 'autopilot', label: t('nav_autopilot'), icon: Bot, authRequired: true },
             { id: 'competitor', label: t('nav_competitor'), icon: Radar, authRequired: true },
-            { id: 'shopify_export', label: 'Shopify Migration', icon: FileJson, authRequired: true },
-            { id: 'sales_report', label: 'Sales Reports', icon: FileText, authRequired: true },
+            { id: 'shopify_export', label: t('nav_shopify_export'), icon: FileJson, authRequired: true },
+            { id: 'sales_report', label: t('nav_sales_report'), icon: FileText, authRequired: true },
         ];
 
         return allItems.map(item => ({

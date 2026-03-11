@@ -199,7 +199,7 @@ const DashboardPage: React.FC = () => {
                             <p className="text-sm text-gray-500 dark:text-gray-400">Estimated impact of poor SEO on your sales</p>
                         </div>
                         <div className="text-right">
-                            <p className="text-sm text-gray-500">Missed This Month</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Missed This Month</p>
                             <p className={`text-2xl font-bold ${healthScore === 'C-' ? 'text-indigo-500' : 'text-green-500'}`}>
                                 {healthScore === 'C-' ? '$2,450.00' : '$0.00'}
                             </p>
