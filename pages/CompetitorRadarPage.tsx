@@ -36,7 +36,11 @@ const CompetitorRadarPage: React.FC = () => {
   ];
 
   const handleStartAnalysis = () => {
-    if (!selectedProductId) return;
+    console.log("Analysis button clicked, product ID:", selectedProductId);
+    if (!selectedProductId) {
+      showToast({ message: "Please select a product first!", type: 'error' });
+      return;
+    }
     setIsAnalyzing(true);
     setShowAnalysis(false);
     
