@@ -108,8 +108,11 @@ const LandingPage: React.FC = () => {
             Dominate Etsy Search with <br />
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-500">AI Intelligence.</span>
           </h1>
-          <p className="text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto mb-10 animate-fade-in-up delay-100">
+          <p className="text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto mb-4 animate-fade-in-up delay-100">
             Stop guessing your keywords. Use Hasti AI to analyze your competitors, optimize your listings, and scale your sales automatically.
+          </p>
+          <p className="text-lg font-medium text-purple-600 dark:text-purple-400 mb-10 animate-fade-in-up delay-150 italic">
+            "Hasti AI: Because your competitors need a reason to cry."
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 animate-fade-in-up delay-200">
             <button 
