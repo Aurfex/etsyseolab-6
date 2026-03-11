@@ -6,8 +6,26 @@ const ShopifyExportPage: React.FC = () => {
     const { products } = useAppContext();
     const [isExporting, setIsExporting] = useState(false);
     const [exportComplete, setExportComplete] = useState(false);
+    const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+    const toggleSelectAll = () => {
+        if (selectedIds.length === products.length) {
+            setSelectedIds([]);
+        } else {
+            setSelectedIds(products.map(p => p.id));
+        }
+    };
+
+    const toggleSelect = (id: string) => {
+        setSelectedIds(prev => 
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
+    };
 
     const handleExport = () => {
+        const productsToExport = products.filter(p => selectedIds.includes(p.id));
+        if (productsToExport.length === 0) return;
+
         setIsExporting(true);
         setExportComplete(false);
 
@@ -26,8 +44,8 @@ const ShopifyExportPage: React.FC = () => {
             'Variant Weight Unit', 'Variant Tax Code', 'Cost per item', 'Price / International', 'Compare At Price / International', 'Status'
         ];
 
-        // Map Etsy Products to Shopify Format
-        const rows = products.map(p => {
+        // Map Selected Etsy Products to Shopify Format
+        const rows = productsToExport.map(p => {
             const handle = p.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
             return [
                 handle, // Handle
@@ -116,19 +134,19 @@ const ShopifyExportPage: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="flex flex-col items-center justify-center py-10 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-3xl">
+                <div className="flex flex-col items-center justify-center py-6 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-3xl mb-8">
                     <div className="text-center space-y-4">
                         <div className="text-4xl font-black text-gray-900 dark:text-white">
-                            {products.length} <span className="text-lg font-medium text-gray-500">Listings ready</span>
+                            {selectedIds.length} <span className="text-lg font-medium text-gray-500">Selected</span>
                         </div>
                         <p className="text-gray-500 dark:text-gray-400 max-w-xs mx-auto text-sm">
-                            Click below to generate your CSV. You can upload this file directly to your Shopify Admin.
+                            {selectedIds.length === 0 ? "Select products from the list below to export." : "Ready to generate your Shopify-compatible CSV."}
                         </p>
                         
                         <button
                             onClick={handleExport}
-                            disabled={isExporting || products.length === 0}
-                            className={`mt-6 px-10 py-4 rounded-2xl font-bold text-white shadow-lg transition-all flex items-center gap-2 mx-auto ${isExporting ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700 hover:scale-105'}`}
+                            disabled={isExporting || selectedIds.length === 0}
+                            className={`mt-4 px-10 py-4 rounded-2xl font-bold text-white shadow-lg transition-all flex items-center gap-2 mx-auto ${isExporting ? 'bg-gray-400' : selectedIds.length === 0 ? 'bg-gray-300 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 hover:scale-105'}`}
                         >
                             {isExporting ? (
                                 <>
@@ -143,10 +161,71 @@ const ShopifyExportPage: React.FC = () => {
                             ) : (
                                 <>
                                     <Download className="w-5 h-5" />
-                                    Export for Shopify
+                                    Export {selectedIds.length} Products
                                 </>
                             )}
                         </button>
+                    </div>
+                </div>
+
+                {/* PRODUCT SELECTION LIST */}
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
+                    <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50 flex justify-between items-center">
+                        <h3 className="font-bold text-gray-900 dark:text-white">Select Products</h3>
+                        <button 
+                            onClick={toggleSelectAll}
+                            className="text-xs font-bold text-purple-600 dark:text-purple-400 hover:underline"
+                        >
+                            {selectedIds.length === products.length ? 'Deselect All' : 'Select All'}
+                        </button>
+                    </div>
+                    <div className="max-h-[500px] overflow-y-auto">
+                        <table className="w-full text-left text-sm">
+                            <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0 z-10">
+                                <tr>
+                                    <th className="px-6 py-3 w-10"></th>
+                                    <th className="px-6 py-3">Product</th>
+                                    <th className="px-6 py-3">Tags</th>
+                                    <th className="px-6 py-3 text-right">Price</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                                {products.map(p => (
+                                    <tr 
+                                        key={p.id} 
+                                        onClick={() => toggleSelect(p.id)}
+                                        className={`hover:bg-purple-50/30 dark:hover:bg-purple-900/10 cursor-pointer transition-colors ${selectedIds.includes(p.id) ? 'bg-purple-50/50 dark:bg-purple-900/20' : ''}`}
+                                    >
+                                        <td className="px-6 py-4">
+                                            <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${selectedIds.includes(p.id) ? 'bg-purple-600 border-purple-600' : 'border-gray-300 dark:border-gray-600'}`}>
+                                                {selectedIds.includes(p.id) && <Check className="w-3 h-3 text-white" />}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-800 overflow-hidden border border-gray-100 dark:border-gray-700 shrink-0">
+                                                    <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover" />
+                                                </div>
+                                                <span className="font-medium text-gray-900 dark:text-white line-clamp-1">{p.title}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex gap-1 flex-wrap">
+                                                {p.tags.slice(0, 3).map((tag, idx) => (
+                                                    <span key={idx} className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-[10px] rounded-full text-gray-500">
+                                                        {tag}
+                                                    </span>
+                                                ))}
+                                                {p.tags.length > 3 && <span className="text-[10px] text-gray-400">+{p.tags.length - 3}</span>}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-right font-bold text-gray-900 dark:text-white">
+                                            ${p.price || '0.00'}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
