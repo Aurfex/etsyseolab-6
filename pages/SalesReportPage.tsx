@@ -8,11 +8,40 @@ const SalesReportPage: React.FC = () => {
     const [startDate, setStartDate] = useState('2026-03-01');
     const [endDate, setEndDate] = useState('2026-03-31');
 
+    const handleDownloadHistory = (reportName: string) => {
+        alert(`Downloading ${reportName}... (In a production environment, this would fetch the archived PDF from your storage).`);
+    };
+
     const handleGenerate = () => {
         setIsGenerating(true);
         setTimeout(() => {
             setIsGenerating(false);
-            alert('PDF Sales Report for ' + startDate + ' to ' + endDate + ' has been generated and downloaded.');
+            // Simulate PDF Generation with a text blob
+            const mockContent = `
+                ===================================
+                HASTI AI SALES INTELLIGENCE REPORT
+                ===================================
+                Period: ${startDate} to ${endDate}
+                
+                SUMMARY:
+                - Total Sales: $12,450.00
+                - Total Orders: 452
+                - Conversion Rate: 3.8%
+                - AI SEO Impact: +$1,280.00
+                
+                TOP PERFORMING TAGS:
+                1. "handmade jewelry" (+24% reach)
+                2. "custom gift for her" (+18% reach)
+                3. "minimalist silver ring" (+15% reach)
+                
+                Generated on: ${new Date().toLocaleString()}
+                ===================================
+            `;
+            const blob = new Blob([mockContent], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Hasti_Sales_Report_${startDate}.txt`;
+            link.click();
         }, 3000);
     };
 
@@ -143,7 +172,10 @@ const SalesReportPage: React.FC = () => {
                     Report History
                 </h3>
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/40 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
+                    <div 
+                        onClick={() => handleDownloadHistory('Sales Report - February 2026')}
+                        className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/40 rounded-xl hover:bg-purple-50 dark:hover:bg-purple-900/10 cursor-pointer transition-colors border border-transparent hover:border-purple-200 dark:hover:border-purple-800"
+                    >
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center border border-gray-200 dark:border-gray-700">
                                 <FileText className="w-5 h-5 text-gray-400" />
@@ -157,7 +189,10 @@ const SalesReportPage: React.FC = () => {
                             <ChevronRight className="w-5 h-5" />
                         </button>
                     </div>
-                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/40 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
+                    <div 
+                        onClick={() => handleDownloadHistory('Store Health Audit - Jan 2026')}
+                        className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/40 rounded-xl hover:bg-purple-50 dark:hover:bg-purple-900/10 cursor-pointer transition-colors border border-transparent hover:border-purple-200 dark:hover:border-purple-800"
+                    >
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center border border-gray-200 dark:border-gray-700">
                                 <FileText className="w-5 h-5 text-gray-400" />
