@@ -164,12 +164,12 @@ const ReviewCard: React.FC<{ reviewData: FullReviewData }> = ({ reviewData }) =>
                             <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400">{t('review_ai_suggested_response')}</h4>
                             <SentimentIndicator sentiment={response.sentiment} />
                         </div>
-                        <div className="bg-gray-100 dark:bg-gray-900/50 p-3 rounded-lg">
+                        <div className="bg-gray-100 dark:bg-gray-900/50 p-3 rounded-lg border border-transparent dark:border-gray-700">
                            {isEditing ? (
                                <textarea
                                 value={editedText}
                                 onChange={(e) => setEditedText(e.target.value)}
-                                className="w-full bg-transparent focus:outline-none text-gray-800 dark:text-gray-200"
+                                className="w-full bg-transparent focus:outline-none text-gray-800 dark:text-white placeholder-gray-400"
                                 rows={4}
                                 autoFocus
                                />
@@ -322,7 +322,7 @@ const ReviewsPage: React.FC = () => {
     const FilterButton: React.FC<{type: FilterType; label: string}> = ({ type, label }) => (
         <button 
             onClick={() => setFilter(type)}
-            className={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${filter === type ? 'bg-purple-600 text-white' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'} disabled:opacity-50 disabled:cursor-not-allowed`}
+            className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 border ${filter === type ? 'bg-purple-600 text-white border-purple-600 shadow-lg shadow-purple-500/20' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'} disabled:opacity-50 disabled:cursor-not-allowed`}
         >
             {label}
         </button>
