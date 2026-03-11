@@ -1,7 +1,25 @@
-import React from 'react';
-import { Sparkles, Zap, Shield, BarChart3, ArrowRight, CheckCircle2, Star, Rocket, Layout, Bot } from 'lucide-react';
+import React, { useState } from 'react';
+import { Zap, Shield, BarChart3, ArrowRight, CheckCircle2, Star, Rocket, Layout, Bot, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAppContext } from '../contexts/AppContext';
 import ParticleBackground from '../components/ParticleBackground';
+
+const FaqItem = ({ question, answer }: { question: string, answer: string }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div className="border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden mb-4 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm transition-all hover:border-purple-300 dark:hover:border-purple-700/50">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex justify-between items-center p-6 text-left focus:outline-none"
+      >
+        <span className="font-bold text-gray-900 dark:text-white text-lg pr-4">{question}</span>
+        {isOpen ? <ChevronUp className="w-5 h-5 text-purple-500 shrink-0" /> : <ChevronDown className="w-5 h-5 text-gray-400 shrink-0" />}
+      </button>
+      <div className={`px-6 overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 pb-6 opacity-100' : 'max-h-0 opacity-0'}`}>
+        <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{answer}</p>
+      </div>
+    </div>
+  );
+};
 
 const LandingPage: React.FC = () => {
   const { setPage, login } = useAppContext();
@@ -42,6 +60,25 @@ const LandingPage: React.FC = () => {
       icon: <Bot className="w-6 h-6 text-purple-500" />,
       title: "Hasti Autopilot",
       description: "Let our AI assistant manage your shop 24/7. It updates listings while you sleep."
+    }
+  ];
+
+  const faqs = [
+    {
+      question: "Is it safe to connect my Etsy shop?",
+      answer: "Absolutely. We use Etsy's official, secure OAuth 2.0 API. We never see your password, and you can revoke access at any time directly from your Etsy settings."
+    },
+    {
+      question: "Will Hasti AI change my listings without my permission?",
+      answer: "Only if you want it to! By default, Hasti acts as an advisor—you review and approve every change. If you trust the AI, you can enable 'Autopilot' to let it optimize in the background while you sleep."
+    },
+    {
+      question: "How is this different from eRank or Marmalead?",
+      answer: "Traditional tools give you overwhelming spreadsheets of raw data and expect you to do the hard work. Hasti AI is a generative co-pilot. We don't just show you the data; we actually write the optimized titles and tags for you."
+    },
+    {
+      question: "Do I need to be a tech expert to use this?",
+      answer: "Not at all. If you know how to click a button, you can use Hasti AI. Our interface is specifically designed for creative sellers, not coders or data scientists."
     }
   ];
 
@@ -225,6 +262,21 @@ const LandingPage: React.FC = () => {
                   {p.buttonText}
                 </button>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ SECTION */}
+      <section className="py-20 px-6 bg-gray-50 dark:bg-gray-900/30">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-black mb-4">Frequently Asked Questions</h2>
+            <p className="text-gray-500 dark:text-gray-400">Everything you need to know about Hasti AI.</p>
+          </div>
+          <div className="space-y-4">
+            {faqs.map((faq, i) => (
+              <FaqItem key={i} question={faq.question} answer={faq.answer} />
             ))}
           </div>
         </div>
