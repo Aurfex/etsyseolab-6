@@ -30,7 +30,7 @@ const FieldInput: React.FC<FieldInputProps> = ({ label, value, onChange, onBlur 
     <input
       type="text"
       inputMode="decimal"
-      className="mt-1 w-full p-2 rounded border bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700"
+      className="mt-1 w-full p-2 rounded border bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white"
       value={value}
       onChange={(e) => onChange(e.target.value)}
       onBlur={onBlur}
@@ -272,7 +272,7 @@ const PricingCalculatorPage: React.FC = () => {
             <input
               type="text"
               inputMode="decimal"
-              className="mt-1 w-full p-2 rounded border bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700"
+              className="mt-1 w-full p-2 rounded border bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white"
               value={draftInputs.taxRate}
               onChange={(e) => setDraftInputs((p) => ({ ...p, taxRate: e.target.value }))}
               onBlur={() => bindField('taxRate', 5).onBlur()}
