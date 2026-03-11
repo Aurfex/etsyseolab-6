@@ -34,7 +34,7 @@ const NavItem: React.FC<{
           <Lock className="w-4 h-4 ml-auto text-gray-500" />
       )}
 
-      {isActive && !disabled && <div className={`absolute top-1/2 -translate-y-1/2 h-6 w-1 bg-purple-600 rounded-full ${language === 'fa' ? 'right-0' : 'left-0'}`}></div>}
+      {isActive && !disabled && <div className={`absolute top-1/2 -translate-y-1/2 h-6 w-1 bg-purple-600 rounded-full left-0`}></div>}
        {!collapsed && (
         <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-30 lg:hidden">
             {label}
@@ -87,7 +87,7 @@ const Sidebar: React.FC = () => {
     };
 
     const toggleLanguage = () => {
-        const newLanguage = language === 'en' ? 'fa' : 'en';
+        const newLanguage = language === 'en' ? 'fr' : 'en';
         setLanguage(newLanguage);
     };
 

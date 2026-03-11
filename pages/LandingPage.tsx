@@ -180,7 +180,7 @@ const LandingPage: React.FC = () => {
       <section id="features" className="relative py-20 px-6 bg-gray-50/50 dark:bg-gray-900/20">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-black mb-4">Everything you need to <br /> scale on Etsy.</h2>
+            <h2 className="text-3xl md:text-5xl font-black mb-4 text-gray-900 dark:text-white">Everything you need to <br /> scale on Etsy.</h2>
             <p className="text-gray-500 dark:text-gray-400">Powered by the latest LLMs and real-time Etsy market data.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -189,7 +189,7 @@ const LandingPage: React.FC = () => {
                 <div className="w-14 h-14 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   {f.icon}
                 </div>
-                <h3 className="text-xl font-bold mb-3">{f.title}</h3>
+                <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">{f.title}</h3>
                 <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
                   {f.description}
                 </p>
@@ -203,7 +203,7 @@ const LandingPage: React.FC = () => {
       <section className="relative py-20 px-6 overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-black mb-4">Trusted by creators worldwide.</h2>
+            <h2 className="text-3xl md:text-5xl font-black mb-4 text-gray-900 dark:text-white">Trusted by creators worldwide.</h2>
             <p className="text-gray-500 dark:text-gray-400">Join 2,500+ Etsy sellers who have automated their growth.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -216,7 +216,7 @@ const LandingPage: React.FC = () => {
                 <div className="flex items-center space-x-3">
                   <img src={t.avatar} alt={t.name} className="w-10 h-10 rounded-full bg-gray-200" />
                   <div>
-                    <h4 className="font-bold text-sm">{t.name}</h4>
+                    <h4 className="font-bold text-sm text-gray-900 dark:text-white">{t.name}</h4>
                     <p className="text-xs text-purple-600 dark:text-purple-400">{t.shop}</p>
                   </div>
                 </div>
@@ -230,7 +230,7 @@ const LandingPage: React.FC = () => {
       <section id="pricing" className="py-20 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-black mb-4">Simple, transparent pricing.</h2>
+            <h2 className="text-3xl md:text-5xl font-black mb-4 text-gray-900 dark:text-white">Simple, transparent pricing.</h2>
             <p className="text-gray-500 dark:text-gray-400">Choose the plan that fits your growth stage.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -241,9 +241,9 @@ const LandingPage: React.FC = () => {
                     MOST POPULAR
                   </div>
                 )}
-                <h3 className="text-2xl font-bold mb-2">{p.name}</h3>
+                <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">{p.name}</h3>
                 <div className="flex items-baseline mb-4">
-                  <span className="text-4xl font-black">{p.price}</span>
+                  <span className="text-4xl font-black text-gray-900 dark:text-white">{p.price}</span>
                   {p.price !== 'Free' && <span className="text-gray-500 ml-1">/mo</span>}
                 </div>
                 <p className="text-sm text-gray-500 mb-8">{p.description}</p>
@@ -271,7 +271,7 @@ const LandingPage: React.FC = () => {
       <section className="py-20 px-6 bg-gray-50 dark:bg-gray-900/30">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-black mb-4">Frequently Asked Questions</h2>
+            <h2 className="text-3xl md:text-5xl font-black mb-4 text-gray-900 dark:text-white">Frequently Asked Questions</h2>
             <p className="text-gray-500 dark:text-gray-400">Everything you need to know about Hasti AI.</p>
           </div>
           <div className="space-y-4">

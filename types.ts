@@ -1,6 +1,6 @@
 export type Page = 'landing' | 'dashboard' | 'optimizer' | 'autopilot' | 'competitor' | 'settings' | 'reviews' | 'faq' | 'assistant' | 'gift_finder' | 'loyalty' | 'story_magazine' | 'add_product' | 'pricing' | 'image_seo' | 'shopify_export' | 'sales_report';
 export type Theme = 'light' | 'dark' | 'system';
-export type Language = 'en' | 'fa';
+export type Language = 'en' | 'fr';
 
 export interface Product {
   id: string;

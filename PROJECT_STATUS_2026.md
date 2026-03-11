@@ -7,8 +7,9 @@ We have successfully evolved the project from a set of technical tools into a "P
 ### Key Achievements (2026-03-11)
 - **Hasti AI Branding & Landing Page Polish:** 
     - The platform is entirely "Hasti AI" branded. 
-    - Added an interactive **Particle Background** (canvas-based, mouse-reactive) to the landing page.
-    - Replaced the generic laptop hero image with a custom "Hasti" AI persona image.
+    - Added an interactive **Particle Background** (canvas-based, sine-wave movement, mouse-reactive) focused on the hero area.
+    - Replaced the previous hero image with a new custom **"Hasti Jet Pilot"** persona image.
+    - Added an **Interactive FAQ Section** (Accordion style) to handle customer concerns about safety and automation.
     - Updated typography, spacing, and added the savage tagline: *"Hasti AI: Because your competitors need a reason to cry."*
     - Unified the logo (Purple Zap) across the Landing Page and internal Dashboard.
 - **New Strategic Module: Shopify Migration (CSV Export):**
@@ -17,7 +18,9 @@ We have successfully evolved the project from a set of technical tools into a "P
 - **New Strategic Module: Sales Intelligence (PDF Reports):**
     - Created `SalesReportPage.tsx` for generating performance summaries based on date ranges.
     - Features UI mocks for "Total Sales," "SEO Impact," and functional mock PDF download mechanics.
-- **Dashboard Color Refinement:** Removed off-brand peach/pink/red gradients and aligned the "Store Health" section with the core Hasti AI Purple/Indigo theme.
+- **UI/UX Refinement:**
+    - **Dashboard:** Removed off-brand peach/pink/red gradients; replaced black buttons with Hasti AI Purple buttons.
+    - **Business Documentation:** Generated core startup docs (`business_docs/`) including Pitch Deck Outline, Executive Summary, and Technical Architecture for IRAP/SUV.
 
 ### Previous Achievements (2026-03-10)
 - **Competitor Radar Overhaul:**

@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 import { Language, TFunction, Translations } from '../types';
 import { useAppContext } from './AppContext';
 import en from '../locales/en.ts';
-import fa from '../locales/fa.ts';
+import fr from '../locales/fr.ts';
 
 interface LanguageContextType {
   language: Language;
@@ -14,7 +14,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 const translationData: { [key in Language]: Translations } = {
   en,
-  fa,
+  fr,
 };
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -23,7 +23,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   useEffect(() => {
     document.documentElement.lang = language;
-    document.documentElement.dir = language === 'fa' ? 'rtl' : 'ltr';
+    document.documentElement.dir = 'ltr'; // French is LTR
   }, [language]);
 
   const t: TFunction = (key, options) => {
