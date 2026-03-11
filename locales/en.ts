@@ -22,7 +22,7 @@ const en: Translations = {
 
     // Header
     "language_toggle_en": "EN",
-    "language_toggle_fa": "FA",
+    "language_toggle_fa": "FR",
     "ai_active": "AI Active",
     "autopilot_on": "Autopilot ON",
 

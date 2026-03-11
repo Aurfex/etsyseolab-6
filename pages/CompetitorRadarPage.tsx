@@ -100,7 +100,7 @@ const CompetitorRadarPage: React.FC = () => {
           <select
             value={selectedProductId}
             onChange={(e) => setSelectedProductId(e.target.value)}
-            className="md:col-span-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl p-3 text-sm focus:ring-2 focus:ring-purple-500 outline-none transition-all"
+            className="md:col-span-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl p-3 text-sm focus:ring-2 focus:ring-purple-500 outline-none transition-all text-gray-900 dark:text-white"
           >
             <option value="">Select your product...</option>
             {products.map(p => (
