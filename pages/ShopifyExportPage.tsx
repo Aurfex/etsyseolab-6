@@ -181,7 +181,7 @@ const ShopifyExportPage: React.FC = () => {
                     </div>
                     <div className="max-h-[500px] overflow-y-auto">
                         <table className="w-full text-left text-sm">
-                            <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0 z-10">
+                            <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0 z-10 text-gray-700 dark:text-gray-300">
                                 <tr>
                                     <th className="px-6 py-3 w-10"></th>
                                     <th className="px-6 py-3">Product</th>
