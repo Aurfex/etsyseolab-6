@@ -1,33 +1,39 @@
 # ETSY SEOLAB - Project Status & Roadmap
-*Last Updated: 2026-03-08*
+*Last Updated: 2026-03-10*
 
-## Current State (What we just did)
-We added a **Store Health Dashboard** on the `DashboardPage.tsx` to act as the primary "Wow Factor" for investor and immigration pitches. 
+## Current State (Milestone Achieved: SaaS Packaging)
+We have successfully evolved the project from a set of technical tools into a "Professional SaaS Product" package. The front-end now looks and feels like a premium AI co-pilot.
 
-### ⚠️ IMPORTANT: Dashboard is currently a UI MOCK (Smoke & Mirrors)
-The "Store Health Score" and the "✨ Fix All with AI" button on the Dashboard are currently **frontend UI mocks**. 
-- When the user clicks "Fix All", it plays a 3-second loading animation and changes the score from C- to A+.
-- **It does NOT actually connect to the Etsy API or OpenAI to bulk-update the live store.**
-- This was done intentionally to have a safe, impressive demo for pitches without risking API rate limits or accidentally ruining the user's live Etsy store.
+### Key Achievements (2026-03-10)
+- **Hasti AI Branding:** The platform is now personalized. "OptimoBot" has been replaced by "Hasti AI" (Dariush's AI partner) across all UI elements and Farsi/English translations.
+- **Competitor Radar Overhaul:**
+    - **Visual Intelligence:** Integrated `recharts` for dynamic SEO comparison against top sellers.
+    - **Scanning UX:** Added a high-fidelity "Run Intelligence" simulation that gathers market data.
+    - **Optimization Preview:** Added a side-by-side "AI Fixes" preview section allowing users to see proposed Title/Tag changes before they sync to Etsy.
+    - **Niche Insights:** Added market statistics (average niche price, search demand, estimated rank).
+- **Public Entry Point (Landing Page):**
+    - Built a modern, conversion-focused **Landing Page** featuring hero sections, product features, and tiered pricing structures (Free, Growth, Elite).
+    - Integrated public routing for **Privacy Policy**, **Terms of Service**, and **Contact Us** pages.
+- **UX Bug Squashing:** Fixed button responsiveness, redundant notifications, and chart sizing issues to ensure a smooth "Investor Demo" experience.
+
+### ⚠️ IMPORTANT: Dashboard & Radar remain high-fidelity MOCKS
+- The "Store Health Score" and "Radar Analysis" results use deterministic mock data to ensure a "Wow Factor" during pitches without triggering live API errors or data inconsistencies.
 
 ## Working Modules (Real Functionality)
-The following modules have real, working logic connected to their respective APIs (though some may still use mocked local state depending on the `.env` setup):
-- **Add Product:** Image upload, AI text generation (via OpenAI Vision/Gemini), variations, pricing CSV import, and direct Etsy API publish.
-- **Autopilot AI (Phase 1.5):** Scans for issues, allows user to review AI suggestions, and requires manual "Save" (Human-in-the-loop).
-- **Competitor Radar:** Keyword tracking and competitor listing comparison.
-- **Image SEO:** WEBP conversion, 2000x2000 resizing, and AI-based file naming.
-- **Pricing Calculator:** Calculates complex variations (Size x Material) and exports CSV.
+The following modules have real, working logic connected to their respective APIs:
+- **Add Product:** Image upload, AI text generation (OpenAI/Gemini), variations, pricing CSV import, and direct Etsy API publish.
+- **Autopilot AI:** Scans listings for issues and generates real AI suggestions for human review.
+- **Image SEO:** Automatic WEBP conversion, 2000x2000 resizing, and AI-based file naming.
+- **Pricing Calculator:** Complex variation matrix calculation and CSV export.
 
 ## Next Steps (To-Do List)
-To evolve this project from an MVP/Demo into a fully scalable product:
+To move towards the IRAP/SUV grant application and real-world launch:
 
-### 1. Pitch Prep (Business Side)
-- Finalize the company name (`dXb Tech`).
-- Create a "Coming Soon / Join Waitlist" landing page.
-- Draft the Pitch Deck for IRAP/SUV, highlighting the "AI Co-pilot" feature and the need for a CTO (Dariush's brother) to scale the backend architecture.
+### 1. Business Side (dXb Tech)
+- **Waitlist Integration:** Connect the Landing Page buttons to a real mailing list (Mailchimp/ConvertKit) to gather early users.
+- **Pitch Deck Update:** Include the new "Hasti AI" branding and "Competitor Radar" visual screenshots as core USP (Unique Selling Points).
 
-### 2. Technical Roadmap (Engineering Side)
-- **Make the Dashboard Real:** Connect the Dashboard's "Store Health" to an actual backend service that securely fetches Etsy listings, runs an AI audit in the background, and returns real scores.
-- **Backend Scaling:** Move heavy AI operations (like bulk image processing and bulk SEO updates) to background queues (e.g., Redis/Celery or Vercel background functions) to prevent frontend timeouts.
-- **API Resilience:** Implement robust error handling, retry logic, and queueing to respect Etsy and OpenAI's strict rate limits.
-- **Database:** Replace local/mock states with a real database (PostgreSQL/Supabase) to store user profiles, scan histories, and AI generation credits.
+### 2. Technical Roadmap
+- **Database Integration:** Move from `sessionStorage` and local state to a permanent database (Supabase/PostgreSQL) to store user settings and audit history.
+- **Real-Time Market Data:** Replace the Radar's mock charts with live data scraped/fetched from Etsy niche results.
+- **Stripe Integration:** Add a real "Subscribe" flow to the pricing table.
