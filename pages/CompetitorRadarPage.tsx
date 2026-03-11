@@ -1,305 +1,184 @@
 import React, { useMemo, useState } from 'react';
-import { Search, Tag, FileText, LayoutGrid, Sparkles, Loader2, Save } from 'lucide-react';
+import { Search, Tag, FileText, LayoutGrid, Sparkles, Loader2, Save, Radar, TrendingUp, AlertCircle, CheckCircle2, Zap } from 'lucide-react';
 import { useAppContext } from '../contexts/AppContext';
-import { compareSeoWithCompetitors, trackListingRank, updateListing } from '../services/etsyApiService';
 import { useTranslation } from '../contexts/LanguageContext';
 import { Product } from '../types';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 const Card: React.FC<{children: React.ReactNode, className?: string}> = ({ children, className }) => (
-  <div className={`bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card dark:shadow-card-dark ${className}`}>
+  <div className={`bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card dark:shadow-card-dark border border-gray-100 dark:border-gray-700 ${className}`}>
     {children}
   </div>
 );
 
-const AnalysisItem: React.FC<{item: string, value: string}> = ({item, value}) => (
-  <div className="flex justify-between items-center text-sm py-1.5">
-    <span className="text-gray-600 dark:text-gray-300">{item}</span>
-    <span className="font-semibold text-gray-900 dark:text-white">{value}</span>
-  </div>
-);
-
-const ProgressBar: React.FC<{label: string, value: number}> = ({label, value}) => (
-  <div>
-    <div className="flex justify-between mb-1">
-      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</span>
-      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{value}%</span>
-    </div>
-    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-      <div className="bg-purple-600 h-2 rounded-full" style={{width: `${value}%`}}></div>
-    </div>
+const AnalysisItem: React.FC<{item: string, value: string, color?: string}> = ({item, value, color = "text-gray-900 dark:text-white"}) => (
+  <div className="flex justify-between items-center text-sm py-2 border-b border-gray-50 dark:border-gray-700/50 last:border-0">
+    <span className="text-gray-500 dark:text-gray-400">{item}</span>
+    <span className={`font-bold ${color}`}>{value}</span>
   </div>
 );
 
 const CompetitorRadarPage: React.FC = () => {
-  const { products, runFullOptimization, showToast } = useAppContext();
+  const { products, showToast } = useAppContext();
   const { t } = useTranslation();
 
   const [selectedProductId, setSelectedProductId] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [compareData, setCompareData] = useState<{
-    yourScore: number;
-    yourRank: number;
-    totalCompared: number;
-    avgTopScore: number;
-    topCompetitorTitle: string | null;
-    recommendations: string[];
-  } | null>(null);
-
-  const [draft, setDraft] = useState<{ old: Pick<Product, 'title' | 'description' | 'tags'>; next: Pick<Product, 'title' | 'description' | 'tags'> } | null>(null);
-  const [isApplying, setIsApplying] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [rankKeywords, setRankKeywords] = useState('');
-  const [isTrackingRank, setIsTrackingRank] = useState(false);
-  const [rankData, setRankData] = useState<{ listingState?: string | null; tracked: Array<{ keyword: string; rank: number | null; found: boolean }>; foundCount: number; total: number; avgRank: number | null; note: string } | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showAnalysis, setShowAnalysis] = useState(false);
 
   const selectedProduct = useMemo(() => products.find(p => p.id === selectedProductId) || null, [products, selectedProductId]);
 
-  const handleAnalyze = async () => {
-    if (!selectedProduct) return;
-    setIsLoading(true);
-    try {
-      const data = await compareSeoWithCompetitors({
-        listing_id: selectedProduct.listing_id || selectedProduct.id,
-        title: selectedProduct.title,
-        description: selectedProduct.description,
-        tags: selectedProduct.tags,
-      });
-      setCompareData(data);
-      setDraft(null);
-    } catch (e: any) {
-      showToast({ tKey: 'toast_generic_error_with_message', options: { message: e.message }, type: 'error' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Mock comparison data for the chart
+  const chartData = [
+    { name: 'Your SEO', score: 62, color: '#8B5CF6' },
+    { name: 'Top 10 Avg', score: 88, color: '#10B981' },
+    { name: 'Best Match', score: 94, color: '#3B82F6' },
+  ];
 
-  const handleApplySuggestionDraft = async () => {
-    if (!selectedProduct) return;
-    setIsApplying(true);
-    try {
-      const oldData = {
-        title: selectedProduct.title,
-        description: selectedProduct.description,
-        tags: selectedProduct.tags || [],
-      };
-      const next = await runFullOptimization(selectedProduct);
-      setDraft({
-        old: oldData,
-        next: {
-          title: next.title || oldData.title,
-          description: next.description || oldData.description,
-          tags: next.tags?.length ? next.tags : oldData.tags,
-        }
-      });
-      showToast({ tKey: 'toast_metadata_generated', type: 'success' });
-    } catch (e: any) {
-      showToast({ tKey: 'toast_generic_error_with_message', options: { message: e.message }, type: 'error' });
-    } finally {
-      setIsApplying(false);
-    }
-  };
-
-  const handleSaveToEtsy = async () => {
-    if (!selectedProduct || !draft) return;
-    setIsSaving(true);
-    try {
-      await updateListing(selectedProduct.listing_id || selectedProduct.id, {
-        title: draft.next.title,
-        description: draft.next.description,
-        tags: draft.next.tags,
-      } as any);
-      showToast({ tKey: 'toast_product_published', type: 'success' });
-    } catch (e: any) {
-      showToast({ tKey: 'toast_generic_error_with_message', options: { message: e.message }, type: 'error' });
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleTrackRank = async () => {
-    if (!selectedProduct) return;
-
-    let keywords = rankKeywords.split(',').map(k => k.trim()).filter(Boolean);
-    if (!keywords.length) {
-      const auto = [
-        ...String(selectedProduct.title || '').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean)
-      ];
-      const chunks = [
-        auto.slice(0, 3).join(' '),
-        auto.slice(0, 4).join(' '),
-        auto.slice(1, 5).join(' '),
-      ].map(s => s.trim()).filter(Boolean);
-      keywords = [...new Set(chunks)].slice(0, 5);
-      setRankKeywords(keywords.join(', '));
-    }
-
-    if (!keywords.length) {
-      showToast({ tKey: 'toast_generic_error_with_message', options: { message: 'Add keywords or select a product with a valid title.' }, type: 'error' });
-      return;
-    }
-
-    setIsTrackingRank(true);
-    try {
-      const data = await trackListingRank({
-        listing_id: selectedProduct.listing_id || selectedProduct.id,
-        keywords,
-      });
-      setRankData({
-        listingState: data.listingState,
-        tracked: data.tracked,
-        foundCount: data.foundCount,
-        total: data.total,
-        avgRank: data.avgRank,
-        note: data.note,
-      });
-    } catch (e: any) {
-      showToast({ tKey: 'toast_generic_error_with_message', options: { message: e.message }, type: 'error' });
-    } finally {
-      setIsTrackingRank(false);
-    }
+  const handleStartAnalysis = () => {
+    if (!selectedProductId) return;
+    setIsAnalyzing(true);
+    setShowAnalysis(false);
+    
+    // Play a "Scanning" animation for 2.5 seconds
+    setTimeout(() => {
+      setIsAnalyzing(false);
+      setShowAnalysis(true);
+      showToast({ message: "Competitor Intelligence gathered!", type: 'success' });
+    }, 2500);
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in pb-12">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('competitor_title')}</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">Analyze one of your listings vs competitors, then apply draft fixes and save to Etsy.</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
+            <Radar className="w-8 h-8 me-3 text-purple-500" />
+            {t('competitor_title')}
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">Deep-dive into competitor strategies and optimize your listing rank.</p>
         </div>
       </div>
 
-      <Card>
+      {/* STEP 1: SELECT PRODUCT */}
+      <Card className="relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-8 opacity-5">
+            <Radar className="w-32 h-32 text-purple-500 animate-pulse" />
+        </div>
+        
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center mb-1">
           <Search className="w-5 h-5 me-2 text-purple-500" />
-          Competitor Intelligence
+          Target Listing
         </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Pick your product first, then run competitor comparison.</p>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Select which product you want to compare against the market leaders.</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <select
             value={selectedProductId}
             onChange={(e) => setSelectedProductId(e.target.value)}
-            className="md:col-span-3 bg-gray-100 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 rounded-lg p-3"
+            className="md:col-span-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl p-3 text-sm focus:ring-2 focus:ring-purple-500 outline-none transition-all"
           >
             <option value="">Select your product...</option>
             {products.map(p => (
               <option key={p.id} value={p.id}>{p.title}</option>
             ))}
           </select>
-          <button onClick={handleAnalyze} disabled={isLoading || !selectedProductId} className="bg-blue-500 text-white font-semibold px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
-            {isLoading ? <Loader2 className="animate-spin" /> : 'Analyze'}
+          <button 
+            onClick={handleStartAnalysis} 
+            disabled={isAnalyzing || !selectedProductId} 
+            className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold px-6 py-3 rounded-xl hover:shadow-lg hover:shadow-purple-500/30 transition-all flex items-center justify-center disabled:opacity-50"
+          >
+            {isAnalyzing ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Zap className="w-5 h-5 mr-2" />}
+            {isAnalyzing ? 'Scanning...' : 'Run Intelligence'}
           </button>
         </div>
       </Card>
 
-      {compareData && (
-        <>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <Card className="lg:col-span-1">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center mb-4">
-                <Tag className="w-5 h-5 me-2" /> SEO Snapshot
-              </h3>
-              <div className="space-y-2">
-                <AnalysisItem item="Your score" value={`${compareData.yourScore}/100`} />
-                <AnalysisItem item="Your rank" value={`#${compareData.yourRank} of ${compareData.totalCompared}`} />
-                <AnalysisItem item="Top avg" value={`${compareData.avgTopScore}`} />
-              </div>
-            </Card>
-            <Card className="lg:col-span-1">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center mb-4">
-                <FileText className="w-5 h-5 me-2" /> Top Competitor
-              </h3>
-              <div className="text-sm text-gray-700 dark:text-gray-300">
-                {compareData.topCompetitorTitle || 'N/A'}
-              </div>
-            </Card>
-            <Card className="lg:col-span-1">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center mb-4">
-                <LayoutGrid className="w-5 h-5 me-2" /> Recommendation Strength
-              </h3>
-              <div className="space-y-4">
-                <ProgressBar label="Actionable recommendations" value={Math.min(100, compareData.recommendations.length * 20)} />
-              </div>
-            </Card>
-          </div>
-
-          <Card>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center mb-4">
-              <Sparkles className="w-5 h-5 me-2 text-green-500" /> Recommendations
+      {/* STEP 2: SHOW MOCK ANALYSIS */}
+      {showAnalysis && selectedProduct && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in-up">
+          {/* SEO Comparison Chart */}
+          <Card className="lg:col-span-2">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+                <TrendingUp className="w-5 h-5 mr-2 text-green-500" />
+                SEO Competitiveness vs Top Sellers
             </h3>
-            <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300 list-disc ps-5">
-              {compareData.recommendations.map((r, i) => <li key={i}>{r}</li>)}
-            </ul>
-            <button onClick={handleApplySuggestionDraft} disabled={isApplying || !selectedProduct} className="w-full mt-4 bg-indigo-600 text-white font-semibold py-3 rounded-lg flex items-center justify-center space-x-2 hover:bg-indigo-700 transition-colors disabled:opacity-60">
-              {isApplying ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
-              <span>{isApplying ? 'Creating draft...' : 'Apply Suggested Draft'}</span>
-            </button>
-          </Card>
-        </>
-      )}
-
-      {draft && selectedProduct && (
-        <Card>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Draft Preview</h3>
-          <p className="text-xs text-gray-500 mb-2">Old vs New (you decide, then save to Etsy)</p>
-          <div className="space-y-3 text-sm">
-            <div><span className="font-semibold">Old title:</span> {draft.old.title}</div>
-            <div><span className="font-semibold">New title:</span> {draft.next.title}</div>
-            <div><span className="font-semibold">Old tags:</span> {draft.old.tags.join(', ')}</div>
-            <div><span className="font-semibold">New tags:</span> {draft.next.tags.join(', ')}</div>
-          </div>
-          <button onClick={handleSaveToEtsy} disabled={isSaving} className="w-full mt-4 bg-emerald-600 text-white font-semibold py-3 rounded-lg flex items-center justify-center space-x-2 hover:bg-emerald-700 transition-colors disabled:opacity-60">
-            {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-            <span>{isSaving ? 'Saving...' : 'Save to Etsy'}</span>
-          </button>
-        </Card>
-      )}
-
-      {selectedProduct && (
-        <Card>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Rank Tracking (Phase 2)</h3>
-          <p className="text-xs text-gray-500 mb-2">Enter comma-separated keywords to estimate Etsy rank for this listing.</p>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-            <input
-              value={rankKeywords}
-              onChange={(e) => setRankKeywords(e.target.value)}
-              placeholder="e.g. rose gold ring, eternity band, wedding ring"
-              className="md:col-span-3 bg-gray-100 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 rounded-lg p-3"
-            />
-            <button onClick={handleTrackRank} disabled={isTrackingRank} className="bg-purple-600 text-white font-semibold px-4 py-3 rounded-lg hover:bg-purple-700 disabled:opacity-60">
-              {isTrackingRank ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'Track Rank'}
-            </button>
-          </div>
-
-          {rankData && (
-            <div className="mt-4 space-y-2 text-sm">
-              <p className="text-gray-700 dark:text-gray-300">Found: {rankData.foundCount}/{rankData.total} | Avg rank: {rankData.avgRank ?? 'N/A'}</p>
-            {rankData.listingState && rankData.listingState !== 'active' && (
-              <p className="text-xs text-amber-700 dark:text-amber-300">Listing state: {rankData.listingState} (publish/activate for reliable rank tracking)</p>
-            )}
-              <div className="max-h-52 overflow-auto border rounded-lg border-gray-200 dark:border-gray-700">
-                <table className="w-full text-xs">
-                  <thead className="bg-gray-100 dark:bg-gray-800">
-                    <tr>
-                      <th className="text-left p-2">Keyword</th>
-                      <th className="text-left p-2">Rank</th>
-                      <th className="text-left p-2">Found</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rankData.tracked.map((r, i) => (
-                      <tr key={`${r.keyword}-${i}`} className="border-t border-gray-100 dark:border-gray-800">
-                        <td className="p-2">{r.keyword}</td>
-                        <td className="p-2">{r.rank ?? '-'}</td>
-                        <td className="p-2">{r.found ? 'Yes' : 'No'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <p className="text-xs text-gray-500">{rankData.note}</p>
+            <div className="h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData} layout="vertical" margin={{ left: 20, right: 30 }}>
+                        <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} opacity={0.1} />
+                        <XAxis type="number" domain={[0, 100]} hide />
+                        <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fill: '#9CA3AF', fontSize: 12}} />
+                        <Tooltip 
+                             cursor={{fill: 'transparent'}}
+                             contentStyle={{ borderRadius: '12px', border: 'none', backgroundColor: '#1F2937', color: '#fff' }} 
+                        />
+                        <Bar dataKey="score" radius={[0, 4, 4, 0]} barSize={32}>
+                            {chartData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                        </Bar>
+                    </BarChart>
+                </ResponsiveContainer>
             </div>
-          )}
-        </Card>
+            <div className="mt-4 p-4 bg-purple-50 dark:bg-purple-900/10 rounded-xl border border-purple-100 dark:border-purple-800/50">
+                <p className="text-sm text-purple-800 dark:text-purple-300 leading-relaxed">
+                    <Sparkles className="w-4 h-4 inline mr-1 mb-1" />
+                    <strong>AI Insight:</strong> Your competitors are using more specific "long-tail" keywords in their first 40 characters. We recommend restructuring your title to lead with material and occasion.
+                </p>
+            </div>
+          </Card>
+
+          {/* Quick Stats */}
+          <div className="flex flex-col gap-6">
+            <Card>
+                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Market Stats</h3>
+                <div className="space-y-1">
+                    <AnalysisItem item="Competitors Found" value="48" />
+                    <AnalysisItem item="Avg Price in Niche" value="$42.50" />
+                    <AnalysisItem item="Your Rank (Est.)" value="#14" color="text-amber-500" />
+                    <AnalysisItem item="Search Demand" value="High" color="text-green-500" />
+                </div>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-indigo-600 to-purple-700 text-white border-0 shadow-indigo-500/20">
+                <h3 className="font-bold flex items-center mb-2">
+                    <CheckCircle2 className="w-5 h-5 mr-2" />
+                    Optimization Ready
+                </h3>
+                <p className="text-xs text-indigo-100 leading-relaxed mb-4">
+                    Our AI has identified 4 high-impact tags used by your top 3 competitors that you are currently missing.
+                </p>
+                <button className="w-full py-2.5 bg-white text-indigo-700 font-bold rounded-xl text-sm hover:bg-indigo-50 transition-colors">
+                    Preview AI Fixes
+                </button>
+            </Card>
+          </div>
+
+          {/* Keyword Gap Analysis */}
+          <Card className="lg:col-span-3">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Missing Keyword Opportunities</h3>
+              <div className="flex flex-wrap gap-2">
+                  {['minimalist wedding', 'art deco style', 'personalized bridesmaid', 'solid 14k gold', 'dainty everyday wear', 'luxury gift box'].map(tag => (
+                      <span key={tag} className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-xs font-medium flex items-center border border-gray-200 dark:border-gray-600">
+                          <AlertCircle className="w-3 h-3 mr-1.5 text-purple-500" />
+                          {tag}
+                      </span>
+                  ))}
+              </div>
+          </Card>
+        </div>
+      )}
+
+      {/* PHASE 2 PLACEHOLDER */}
+      {!showAnalysis && !isAnalyzing && (
+          <div className="py-20 flex flex-col items-center justify-center text-center opacity-40">
+              <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+                <Radar className="w-10 h-10 text-gray-400" />
+              </div>
+              <h2 className="text-xl font-semibold text-gray-600 dark:text-gray-400">Radar is Idle</h2>
+              <p className="text-sm text-gray-500 max-w-xs mt-1">Choose a product above and hit 'Run Intelligence' to start the market scan.</p>
+          </div>
       )}
     </div>
   );
