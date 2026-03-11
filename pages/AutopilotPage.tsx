@@ -343,7 +343,7 @@ const AutopilotPage: React.FC = () => {
             <button
               key={k}
               onClick={() => setFilterType(k)}
-              className={`px-2 py-1 rounded border ${filterType === k ? 'bg-purple-600 text-white border-purple-600' : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700'}`}
+              className={`px-3 py-1.5 rounded-lg border font-medium transition-colors ${filterType === k ? 'bg-purple-600 text-white border-purple-600' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
             >
               {k === 'all' ? 'All' : k}
             </button>
@@ -351,9 +351,9 @@ const AutopilotPage: React.FC = () => {
         </div>
 
         {issues.length === 0 ? (
-          <p className="text-sm text-gray-500">No issues yet. Run Scan Shop.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">No issues yet. Run Scan Shop.</p>
         ) : visibleIssues.length === 0 ? (
-          <p className="text-sm text-gray-500">No issues in this filter.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">No issues in this filter.</p>
         ) : (
           <div className="space-y-3">
             {visibleIssues.map(issue => (
