@@ -6,6 +6,27 @@ import ParticleBackground from '../components/ParticleBackground';
 const LandingPage: React.FC = () => {
   const { setPage, login } = useAppContext();
 
+  const testimonials = [
+    {
+      name: "Sarah Jenkins",
+      shop: "VintageVibePrints",
+      content: "Hasti AI changed my life. My sales doubled in two weeks after optimizing my titles. It's like having a full-time SEO expert for pennies.",
+      avatar: "https://i.pravatar.cc/150?u=sarah"
+    },
+    {
+      name: "Marco Rossi",
+      shop: "TheLeatherCraft",
+      content: "The Competitor Radar is insane. I finally understand why my competitors were outranking me. Now I'm the one leading the niche.",
+      avatar: "https://i.pravatar.cc/150?u=marco"
+    },
+    {
+      name: "Elena Petrova",
+      shop: "PetrovaJewelry",
+      content: "I was skeptical about AI, but Etsyseolab is so intuitive. The automation saves me hours every day. Simply brilliant.",
+      avatar: "https://i.pravatar.cc/150?u=elena"
+    }
+  ];
+
   const features = [
     {
       icon: <Zap className="w-6 h-6 text-yellow-500" />,
@@ -134,6 +155,33 @@ const LandingPage: React.FC = () => {
                 <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
                   {f.description}
                 </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* TESTIMONIALS SECTION */}
+      <section className="relative py-20 px-6 overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-black mb-4">Trusted by creators worldwide.</h2>
+            <p className="text-gray-500 dark:text-gray-400">Join 2,500+ Etsy sellers who have automated their growth.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {testimonials.map((t, i) => (
+              <div key={i} className="p-8 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-all">
+                <div className="flex items-center space-x-1 mb-4">
+                  {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
+                </div>
+                <p className="text-gray-700 dark:text-gray-300 italic mb-6">"{t.content}"</p>
+                <div className="flex items-center space-x-3">
+                  <img src={t.avatar} alt={t.name} className="w-10 h-10 rounded-full bg-gray-200" />
+                  <div>
+                    <h4 className="font-bold text-sm">{t.name}</h4>
+                    <p className="text-xs text-purple-600 dark:text-purple-400">{t.shop}</p>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
