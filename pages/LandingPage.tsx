@@ -79,10 +79,8 @@ const LandingPage: React.FC = () => {
       <nav className="fixed top-0 w-full z-50 bg-white/60 dark:bg-gray-950/60 backdrop-blur-md border-b border-gray-100 dark:border-gray-900">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-gradient-to-tr from-purple-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/20">
-              <Sparkles className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-xl font-black tracking-tight">ETSY<span className="text-purple-600">SEOLAB</span></span>
+            <Zap className="h-7 w-7 text-purple-500 flex-shrink-0" />
+            <span className="text-xl font-bold text-gray-900 dark:text-white tracking-tight uppercase">ETSY SEOLAB</span>
           </div>
           <div className="hidden md:flex items-center space-x-8 text-sm font-medium">
             <a href="#features" className="hover:text-purple-600 transition-colors">Features</a>
@@ -236,8 +234,8 @@ const LandingPage: React.FC = () => {
       <footer className="py-20 px-6 border-t border-gray-100 dark:border-gray-900">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0">
           <div className="flex items-center space-x-2">
-            <Sparkles className="w-6 h-6 text-purple-600" />
-            <span className="text-lg font-black tracking-tight">ETSY<span className="text-purple-600">SEOLAB</span></span>
+            <Zap className="h-7 w-7 text-purple-600" />
+            <span className="text-lg font-bold tracking-tight text-gray-900 dark:text-white uppercase">ETSY SEOLAB</span>
           </div>
           <div className="flex space-x-8 text-sm text-gray-500">
             <button onClick={() => setPage('privacy')} className="hover:text-purple-600 transition-colors">Privacy Policy</button>
