@@ -156,7 +156,7 @@ const DashboardPage: React.FC = () => {
                             <button 
                                 onClick={handleFixAll}
                                 disabled={isFixing}
-                                className={`w-full lg:w-64 py-4 px-6 rounded-2xl font-bold text-white shadow-lg transition-all transform hover:scale-105 ${isFixing ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-[#1A1A1A] to-[#404040] hover:shadow-gray-500/50'}`}
+                                className={`w-full lg:w-64 py-4 px-6 rounded-2xl font-bold text-white shadow-lg transition-all transform hover:scale-105 ${isFixing ? 'bg-gray-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700 hover:shadow-purple-500/50'}`}
                             >
                                 {isFixing ? (
                                     <span className="flex items-center justify-center">
@@ -247,7 +247,7 @@ const DashboardPage: React.FC = () => {
                         <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
                             <strong>@BohoJewelryCo</strong> just listed 3 new items using the tag <span className="inline-block bg-white dark:bg-gray-800 px-2 py-1 rounded text-xs border border-gray-200 dark:border-gray-700 mx-1 font-mono text-gray-800 dark:text-gray-200">chunky silver ring</span>.
                         </p>
-                        <button className="w-full py-2 bg-[#2D2D2D] hover:bg-[#1A1A1A] dark:bg-gray-600 dark:hover:bg-gray-500 text-white text-sm font-semibold rounded-xl transition-colors">
+                        <button className="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-md shadow-purple-500/20">
                             Analyze Their SEO
                         </button>
                     </div>
