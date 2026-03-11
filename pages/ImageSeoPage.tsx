@@ -211,7 +211,7 @@ const ImageSeoPage: React.FC = () => {
         </div>
         <div>
           <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Images (up to 15)</label>
-          <input type="file" multiple accept="image/*" onChange={onFileChange} className="mt-1 w-full text-sm" />
+          <input type="file" multiple accept="image/*" onChange={onFileChange} className="mt-1 w-full text-sm text-gray-700 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 dark:file:bg-purple-900/50 dark:file:text-purple-300" />
           <p className="text-xs text-gray-500 mt-1">Selected: {files.length}</p>
         </div>
 
@@ -242,11 +242,11 @@ const ImageSeoPage: React.FC = () => {
                 <div className="flex items-center gap-3 min-w-0">
                   <img src={URL.createObjectURL(r.file)} alt={r.file.name} className="w-12 h-12 object-cover rounded border border-gray-200 dark:border-gray-700" />
                   <div className="min-w-0">
-                    <div className="text-gray-500 truncate">{r.file.name}</div>
+                    <div className="text-gray-500 dark:text-gray-400 truncate">{r.file.name}</div>
                     <div className="font-semibold text-gray-900 dark:text-white truncate">{r.newName}</div>
                   </div>
                 </div>
-                <span className="text-xs text-gray-500 whitespace-nowrap">{r.ms ?? 0} ms</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{r.ms ?? 0} ms</span>
               </div>
             ))}
           </div>

@@ -124,8 +124,8 @@ const Step1: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
                  <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_is_supply_label')}</label>
                     <div className="mt-2 flex gap-4">
-                        <label className="flex items-center"><input type="radio" name="is_supply" value="false" checked={newProductData.is_supply === false} onChange={handleChange} className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300" /> <span className="ml-2">{t('add_product_no')}</span></label>
-                        <label className="flex items-center"><input type="radio" name="is_supply" value="true" checked={newProductData.is_supply === true} onChange={handleChange} className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300" /> <span className="ml-2">{t('add_product_yes')}</span></label>
+                        <label className="flex items-center text-gray-700 dark:text-gray-300"><input type="radio" name="is_supply" value="false" checked={newProductData.is_supply === false} onChange={handleChange} className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300" /> <span className="ml-2">{t('add_product_no')}</span></label>
+                        <label className="flex items-center text-gray-700 dark:text-gray-300"><input type="radio" name="is_supply" value="true" checked={newProductData.is_supply === true} onChange={handleChange} className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300" /> <span className="ml-2">{t('add_product_yes')}</span></label>
                     </div>
                 </div>
             </div>
@@ -346,8 +346,8 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h3 className="text-lg font-bold">Upload Images + Analyze</h3>
-                    <p className="text-sm text-gray-500">Upload photos, then click Analyze to auto-fill listing basics.</p>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">Upload Images + Analyze</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Upload photos, then click Analyze to auto-fill listing basics.</p>
                 </div>
                 <button
                     onClick={handleAnalyze}
@@ -363,7 +363,7 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
                 className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md ${isDragging ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' : 'border-gray-300 dark:border-gray-600'}`}>
                 <div className="space-y-1 text-center">
                     <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
-                    <label htmlFor="file-upload" className="relative cursor-pointer bg-white dark:bg-gray-800 rounded-md font-medium text-purple-600 hover:text-purple-500 focus-within:outline-none">
+                    <label htmlFor="file-upload" className="relative cursor-pointer bg-transparent rounded-md font-medium text-purple-600 hover:text-purple-500 focus-within:outline-none">
                         <span>{t('add_product_image_upload_cta')}</span>
                         <input id="file-upload" name="file-upload" type="file" multiple accept="image/png, image/jpeg" className="sr-only" onChange={(e) => handleFileChange(e.target.files)} />
                     </label>
@@ -432,8 +432,8 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
                 <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_is_supply_label')}</label>
                     <div className="mt-2 flex gap-4">
-                        <label className="flex items-center"><input type="radio" name="is_supply" value="false" checked={newProductData.is_supply === false} onChange={handleChange} className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300" /> <span className="ml-2">{t('add_product_no')}</span></label>
-                        <label className="flex items-center"><input type="radio" name="is_supply" value="true" checked={newProductData.is_supply === true} onChange={handleChange} className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300" /> <span className="ml-2">{t('add_product_yes')}</span></label>
+                        <label className="flex items-center text-gray-700 dark:text-gray-300"><input type="radio" name="is_supply" value="false" checked={newProductData.is_supply === false} onChange={handleChange} className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300" /> <span className="ml-2">{t('add_product_no')}</span></label>
+                        <label className="flex items-center text-gray-700 dark:text-gray-300"><input type="radio" name="is_supply" value="true" checked={newProductData.is_supply === true} onChange={handleChange} className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300" /> <span className="ml-2">{t('add_product_yes')}</span></label>
                     </div>
                 </div>
             </div>

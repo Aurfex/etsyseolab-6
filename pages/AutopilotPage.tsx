@@ -255,7 +255,7 @@ const AutopilotPage: React.FC = () => {
           <div>
             <p className="font-semibold text-green-800 dark:text-green-300">{settings.autopilot.enabled ? 'Enabled' : 'Disabled'}</p>
             <p className="text-sm text-green-700 dark:text-green-400">Products: {stats.totalProducts} | Issues found: {stats.totalIssues} (High: {stats.high})</p>
-            <p className="text-xs text-green-700 dark:text-green-400 mt-1">Title: {stats.byType.title} | Tags: {stats.byType.tags} | Description: {stats.byType.description} | SEO: {stats.byType.seo}</p>
+            <p className="text-xs text-green-700 dark:text-green-400 mt-1 uppercase tracking-tighter">Title: {stats.byType.title} | Tags: {stats.byType.tags} | Description: {stats.byType.description} | SEO: {stats.byType.seo}</p>
           </div>
           <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
             <input type="checkbox" id="autopilot-toggle" checked={settings.autopilot.enabled} onChange={handleAutopilotToggle} className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
