@@ -187,9 +187,9 @@ const LandingPage: React.FC = () => {
             <span className="text-lg font-black tracking-tight">ETSY<span className="text-purple-600">SEOLAB</span></span>
           </div>
           <div className="flex space-x-8 text-sm text-gray-500">
-            <a href="#" className="hover:text-purple-600 transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-purple-600 transition-colors">Terms of Service</a>
-            <a href="#" className="hover:text-purple-600 transition-colors">Contact</a>
+            <button onClick={() => setPage('privacy')} className="hover:text-purple-600 transition-colors">Privacy Policy</button>
+            <button onClick={() => setPage('terms')} className="hover:text-purple-600 transition-colors">Terms of Service</button>
+            <button onClick={() => setPage('contact')} className="hover:text-purple-600 transition-colors">Contact</button>
           </div>
           <div className="text-sm text-gray-500">
             © 2026 dXb Tech. Built with ❤️ for Etsy Sellers.

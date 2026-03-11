@@ -22,6 +22,9 @@ import AddProductPage from './pages/AddProductPage';
 import PricingCalculatorPage from './pages/PricingCalculatorPage';
 import ImageSeoPage from './pages/ImageSeoPage';
 import LandingPage from './pages/LandingPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsOfServicePage from './pages/TermsOfServicePage';
+import ContactPage from './pages/ContactPage';
 
 const App: React.FC = () => {
   const { 
@@ -93,17 +96,32 @@ const App: React.FC = () => {
         return <ImageSeoPage />;
       case 'settings':
         return <SettingsPage />;
+      case 'privacy':
+        return <PrivacyPolicyPage />;
+      case 'terms':
+        return <TermsOfServicePage />;
+      case 'contact':
+        return <ContactPage />;
       case 'dashboard':
       default:
         return <DashboardPage />;
     }
   };
 
-  // If not authenticated, always show landing page
+  // If not authenticated, allow Landing and legal/contact pages
   if (!auth.isAuthenticated) {
+    const renderPublicPage = () => {
+      switch (page) {
+        case 'privacy': return <PrivacyPolicyPage />;
+        case 'terms': return <TermsOfServicePage />;
+        case 'contact': return <ContactPage />;
+        default: return <LandingPage />;
+      }
+    };
+
     return (
       <>
-        <LandingPage />
+        {renderPublicPage()}
         <Toast toast={toast} onClose={() => setToast(null)} />
       </>
     );
