@@ -51,17 +51,23 @@ const ParticleBackground: React.FC = () => {
       }
 
       update() {
-        // Move randomly
-        this.x += this.speedX;
-        this.y += this.speedY;
+        // Continuous organic movement with a "sine" wave influence for life
+        this.x += this.speedX + Math.sin(Date.now() * 0.001 + this.x) * 0.1;
+        this.y += this.speedY + Math.cos(Date.now() * 0.001 + this.y) * 0.1;
 
-        // Subtle drift towards the center-top (Hero area)
+        // Subtle pull towards center-top, but with a "limit" so they don't clump
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 3;
-        this.x += (centerX - this.x) * 0.0005;
-        this.y += (centerY - this.y) * 0.0005;
+        const dxCenter = centerX - this.x;
+        const dyCenter = centerY - this.y;
+        const distCenter = Math.sqrt(dxCenter * dxCenter + dyCenter * dyCenter);
 
-        // Mouse interaction
+        if (distCenter > 100) { // Only pull if they are far away
+            this.x += dxCenter * 0.0003;
+            this.y += dyCenter * 0.0003;
+        }
+
+        // Mouse interaction (Stronger but shorter range for a "poke" feel)
         const dx = mouse.x - this.x;
         const dy = mouse.y - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
@@ -70,11 +76,12 @@ const ParticleBackground: React.FC = () => {
           const forceDirectionX = dx / distance;
           const forceDirectionY = dy / distance;
           const force = (mouse.radius - distance) / mouse.radius;
-          const directionX = forceDirectionX * force * 0.4; 
-          const directionY = forceDirectionY * force * 0.4;
+          // Push away slightly if too close, pull if medium
+          const directionX = forceDirectionX * force * 0.8; 
+          const directionY = forceDirectionY * force * 0.8;
 
-          this.x += directionX;
-          this.y += directionY;
+          this.x -= directionX; // Change to repulsion for a "liquid" feel
+          this.y -= directionY;
         }
 
         // Fade out as they go lower on the screen
