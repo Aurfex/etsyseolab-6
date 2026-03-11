@@ -369,9 +369,9 @@ const en: Translations = {
     "settings_mock_mode_desc": "Use mock data instead of real API calls. Useful for development.",
 
     // OptimoBot
-    "bot_title": "OptimoBot",
-    "bot_welcome": "Hello! I'm OptimoBot. How can I help you optimize your Etsy store today?",
-    "bot_placeholder": "Ask me anything...",
+    "bot_title": "Hasti AI",
+    "bot_welcome": "Hi Dariush! I'm Hasti, your SEO Co-pilot. How can I help you grow your Etsy shop today?",
+    "bot_placeholder": "Ask Hasti...",
 
     // Toasts
     "toast_login_success": "Logged in successfully!",
