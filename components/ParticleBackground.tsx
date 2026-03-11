@@ -64,8 +64,8 @@ const ParticleBackground: React.FC = () => {
           const forceDirectionX = dx / distance;
           const forceDirectionY = dy / distance;
           const force = (mouse.radius - distance) / mouse.radius;
-          const directionX = forceDirectionX * force * 2;
-          const directionY = forceDirectionY * force * 2;
+          const directionX = forceDirectionX * force * 0.6; // Reduced force for subtler attraction
+          const directionY = forceDirectionY * force * 0.6;
 
           this.x += directionX;
           this.y += directionY;
