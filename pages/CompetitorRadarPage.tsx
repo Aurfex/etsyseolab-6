@@ -26,15 +26,16 @@ const CompetitorRadarPage: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [showFixPreview, setShowFixPreview] = useState(false);
+  const [isOptimized, setIsOptimized] = useState(false);
 
   const selectedProduct = useMemo(() => products.find(p => p.id === selectedProductId) || null, [products, selectedProductId]);
 
   // Mock comparison data for the chart
-  const chartData = [
-    { name: 'Your SEO', score: 62, color: '#8B5CF6' },
+  const chartData = useMemo(() => [
+    { name: 'Your SEO', score: isOptimized ? 91 : 62, color: '#8B5CF6' },
     { name: 'Top 10 Avg', score: 88, color: '#10B981' },
     { name: 'Best Match', score: 94, color: '#3B82F6' },
-  ];
+  ], [isOptimized]);
 
   const handleSaveToEtsyMock = () => {
     showToast({ 
@@ -43,13 +44,13 @@ const CompetitorRadarPage: React.FC = () => {
     });
     setTimeout(() => {
       showToast({ message: "Listing updated successfully on Etsy!", type: 'success' });
+      setIsOptimized(true);
       setShowFixPreview(false);
     }, 1500);
   };
 
   const handlePreviewFixes = () => {
     setShowFixPreview(true);
-    // Removed the toast that was popping up here to clean up the UI
   };
 
   const handleStartAnalysis = () => {
@@ -61,6 +62,7 @@ const CompetitorRadarPage: React.FC = () => {
     setIsAnalyzing(true);
     setShowAnalysis(false);
     setShowFixPreview(false);
+    setIsOptimized(false);
     
     // Play a "Scanning" animation for 2.5 seconds
     setTimeout(() => {
