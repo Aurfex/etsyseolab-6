@@ -12,16 +12,26 @@ const ParticleBackground: React.FC = () => {
 
     let animationFrameId: number;
     let particles: Particle[] = [];
-    const particleCount = 60;
+    const mouse = { x: 0, y: 0, radius: 150 };
+    const particleCount = 80;
 
     const resize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     };
 
+    const handleMouseMove = (e: MouseEvent) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+
     class Particle {
       x: number;
       y: number;
+      baseX: number;
+      baseY: number;
       size: number;
       speedX: number;
       speedY: number;
@@ -30,18 +40,36 @@ const ParticleBackground: React.FC = () => {
       constructor() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
+        this.baseX = this.x;
+        this.baseY = this.y;
         this.size = Math.random() * 2 + 1;
         this.speedX = (Math.random() - 0.5) * 0.5;
         this.speedY = (Math.random() - 0.5) * 0.5;
         
-        // Hasti AI Theme Colors: Purples and Indigos
         const colors = ['#9333ea', '#a855f7', '#6366f1', '#4f46e5'];
         this.color = colors[Math.floor(Math.random() * colors.length)];
       }
 
       update() {
+        // Move randomly
         this.x += this.speedX;
         this.y += this.speedY;
+
+        // Mouse interaction
+        const dx = mouse.x - this.x;
+        const dy = mouse.y - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance < mouse.radius) {
+          const forceDirectionX = dx / distance;
+          const forceDirectionY = dy / distance;
+          const force = (mouse.radius - distance) / mouse.radius;
+          const directionX = forceDirectionX * force * 2;
+          const directionY = forceDirectionY * force * 2;
+
+          this.x += directionX;
+          this.y += directionY;
+        }
 
         if (this.x > canvas.width) this.x = 0;
         else if (this.x < 0) this.x = canvas.width;
@@ -104,6 +132,7 @@ const ParticleBackground: React.FC = () => {
 
     return () => {
       window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', handleMouseMove);
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
