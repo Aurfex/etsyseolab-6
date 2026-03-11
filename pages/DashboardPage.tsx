@@ -95,8 +95,8 @@ const DashboardPage: React.FC = () => {
             {/* dY" WOW FACTOR: Store Health Dashboard dY" */}
             <div className="relative overflow-hidden bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-card dark:shadow-card-dark border border-gray-100 dark:border-gray-700">
                 {/* Decorative background glow */}
-                <div className={`absolute -top-24 -right-24 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-20 transition-all duration-1000 ${healthScore === 'C-' ? 'bg-red-400' : 'bg-green-400'}`}></div>
-                <div className={`absolute -bottom-24 -left-24 w-72 h-72 rounded-full mix-blend-multiply filter blur-3xl opacity-20 transition-all duration-1000 ${healthScore === 'C-' ? 'bg-orange-400' : 'bg-teal-400'}`}></div>
+                <div className={`absolute -top-24 -right-24 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-20 transition-all duration-1000 ${healthScore === 'C-' ? 'bg-purple-400' : 'bg-green-400'}`}></div>
+                <div className={`absolute -bottom-24 -left-24 w-72 h-72 rounded-full mix-blend-multiply filter blur-3xl opacity-20 transition-all duration-1000 ${healthScore === 'C-' ? 'bg-indigo-400' : 'bg-teal-400'}`}></div>
 
                 <div className="relative z-10 flex flex-col lg:flex-row gap-8 items-center">
                     {/* Left: Score Circle */}
@@ -106,7 +106,7 @@ const DashboardPage: React.FC = () => {
                                 <circle cx="80" cy="80" r="70" className="stroke-current text-gray-200 dark:text-gray-700" strokeWidth="12" fill="transparent" />
                                 <circle 
                                     cx="80" cy="80" r="70" 
-                                    className={`stroke-current transition-all duration-1000 ease-out ${healthScore === 'C-' ? 'text-red-500' : 'text-green-500'}`} 
+                                    className={`stroke-current transition-all duration-1000 ease-out ${healthScore === 'C-' ? 'text-purple-600' : 'text-green-500'}`} 
                                     strokeWidth="12" fill="transparent" 
                                     strokeDasharray="440" 
                                     strokeDashoffset={healthScore === 'C-' ? "220" : "40"} 
@@ -115,7 +115,7 @@ const DashboardPage: React.FC = () => {
                             </svg>
                             <div className="absolute flex flex-col items-center justify-center">
                                 <span className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Health Score</span>
-                                <span className={`text-5xl font-black ${healthScore === 'C-' ? 'text-red-500' : 'text-green-500'}`}>
+                                <span className={`text-5xl font-black ${healthScore === 'C-' ? 'text-purple-600' : 'text-green-500'}`}>
                                     {healthScore}
                                 </span>
                             </div>
@@ -129,20 +129,20 @@ const DashboardPage: React.FC = () => {
                         </h2>
                         
                         <div className="space-y-3">
-                            <div className={`flex items-center p-3 rounded-xl border ${healthScore === 'C-' ? 'bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-800/50' : 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800/50'}`}>
-                                {healthScore === 'C-' ? <AlertTriangle className="w-5 h-5 text-red-500 mr-3" /> : <Check className="w-5 h-5 text-green-500 mr-3" />}
+                            <div className={`flex items-center p-3 rounded-xl border ${healthScore === 'C-' ? 'bg-purple-50 dark:bg-purple-900/20 border-purple-100 dark:border-purple-800/50' : 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800/50'}`}>
+                                {healthScore === 'C-' ? <AlertTriangle className="w-5 h-5 text-purple-500 mr-3" /> : <Check className="w-5 h-5 text-green-500 mr-3" />}
                                 <span className="text-gray-700 dark:text-gray-300 font-medium">
                                     {healthScore === 'C-' ? `${missingTagsCount} listings missing tags` : 'All tags are optimized'}
                                 </span>
                             </div>
-                            <div className={`flex items-center p-3 rounded-xl border ${healthScore === 'C-' ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-800/50' : 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800/50'}`}>
-                                {healthScore === 'C-' ? <AlertCircle className="w-5 h-5 text-orange-500 mr-3" /> : <Check className="w-5 h-5 text-green-500 mr-3" />}
+                            <div className={`flex items-center p-3 rounded-xl border ${healthScore === 'C-' ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-800/50' : 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800/50'}`}>
+                                {healthScore === 'C-' ? <AlertCircle className="w-5 h-5 text-indigo-500 mr-3" /> : <Check className="w-5 h-5 text-green-500 mr-3" />}
                                 <span className="text-gray-700 dark:text-gray-300 font-medium">
                                     {healthScore === 'C-' ? `${lowSeoCount} listings have low SEO scores` : 'SEO scores are excellent'}
                                 </span>
                             </div>
-                            <div className={`flex items-center p-3 rounded-xl border ${healthScore === 'C-' ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-100 dark:border-yellow-800/50' : 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800/50'}`}>
-                                {healthScore === 'C-' ? <ImageIcon className="w-5 h-5 text-yellow-600 mr-3" /> : <Check className="w-5 h-5 text-green-500 mr-3" />}
+                            <div className={`flex items-center p-3 rounded-xl border ${healthScore === 'C-' ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800/50' : 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800/50'}`}>
+                                {healthScore === 'C-' ? <ImageIcon className="w-5 h-5 text-blue-600 mr-3" /> : <Check className="w-5 h-5 text-green-500 mr-3" />}
                                 <span className="text-gray-700 dark:text-gray-300 font-medium">
                                     {healthScore === 'C-' ? `${poorImagesCount} listings need Image SEO` : 'All images are WEBP optimized'}
                                 </span>
