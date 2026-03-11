@@ -1,6 +1,7 @@
 import React from 'react';
 import { Sparkles, Zap, Shield, BarChart3, ArrowRight, CheckCircle2, Star, Rocket, Layout, Bot } from 'lucide-react';
 import { useAppContext } from '../contexts/AppContext';
+import ParticleBackground from '../components/ParticleBackground';
 
 const LandingPage: React.FC = () => {
   const { setPage, login } = useAppContext();
@@ -52,6 +53,7 @@ const LandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-white selection:bg-purple-500/30">
+      <ParticleBackground />
       {/* NAVBAR */}
       <nav className="fixed top-0 w-full z-50 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-900">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -83,7 +85,7 @@ const LandingPage: React.FC = () => {
           </div>
           <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight animate-fade-in-up">
             Dominate Etsy Search with <br />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-500">AI Intelligence.</span>
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-500">Hasti AI.</span>
           </h1>
           <p className="text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto mb-10 animate-fade-in-up delay-100">
             Stop guessing your keywords. Use Hasti AI to analyze your competitors, optimize your listings, and scale your sales automatically.
@@ -103,12 +105,12 @@ const LandingPage: React.FC = () => {
 
           {/* Floating UI Mockup */}
           <div className="mt-20 relative max-w-5xl mx-auto animate-fade-in delay-300">
-            <div className="absolute inset-0 bg-gradient-to-t from-purple-500/20 to-transparent blur-3xl -z-10 rounded-full"></div>
-            <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 shadow-2xl overflow-hidden p-2">
+            <div className="absolute inset-0 bg-gradient-to-t from-purple-500/30 to-transparent blur-3xl -z-10 rounded-full animate-pulse"></div>
+            <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 shadow-2xl overflow-hidden p-2 backdrop-blur-sm bg-white/50 dark:bg-gray-900/50">
               <img 
                 src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=2426" 
                 alt="Dashboard Preview" 
-                className="rounded-2xl w-full grayscale-[0.5] dark:grayscale-0 opacity-80"
+                className="rounded-2xl w-full grayscale-[0.2] dark:grayscale-0 opacity-90"
               />
             </div>
           </div>
