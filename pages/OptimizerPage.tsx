@@ -423,35 +423,35 @@ const OptimizerPage: React.FC = () => {
             className={`flex items-center px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'title' ? 'text-purple-600 border-purple-600 bg-white dark:bg-gray-800 dark:text-purple-400' : 'text-gray-500 border-transparent hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
           >
             <Type className="w-4 h-4 mr-2" />
-            Title
+            {t('optimizer_tab_title')}
           </button>
           <button 
             onClick={() => setActiveTab('description')}
             className={`flex items-center px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'description' ? 'text-purple-600 border-purple-600 bg-white dark:bg-gray-800 dark:text-purple-400' : 'text-gray-500 border-transparent hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
           >
             <FileText className="w-4 h-4 mr-2" />
-            Description
+            {t('optimizer_tab_description')}
           </button>
           <button 
             onClick={() => setActiveTab('altText')}
             className={`flex items-center px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'altText' ? 'text-purple-600 border-purple-600 bg-white dark:bg-gray-800 dark:text-purple-400' : 'text-gray-500 border-transparent hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
           >
             <ImageIcon className="w-4 h-4 mr-2" />
-            Alt Text
+            {t('optimizer_tab_alt_text')}
           </button>
           <button 
             onClick={() => setActiveTab('tags')}
             className={`flex items-center px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'tags' ? 'text-purple-600 border-purple-600 bg-white dark:bg-gray-800 dark:text-purple-400' : 'text-gray-500 border-transparent hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
           >
             <Tag className="w-4 h-4 mr-2" />
-            Tags
+            {t('optimizer_tab_tags')}
           </button>
           <button 
             onClick={() => setActiveTab('prices')}
             className={`flex items-center px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'prices' ? 'text-purple-600 border-purple-600 bg-white dark:bg-gray-800 dark:text-purple-400' : 'text-gray-500 border-transparent hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
           >
             <DollarSign className="w-4 h-4 mr-2" />
-            Prices
+            {t('optimizer_tab_prices')}
           </button>
         </div>
 
@@ -481,7 +481,7 @@ const OptimizerPage: React.FC = () => {
                                     value={optimizedData.title} 
                                     onChange={(e) => setOptimizedData({...optimizedData, title: e.target.value})}
                                     rows={3}
-                                    className="w-full bg-gray-50 dark:bg-gray-900 p-4 rounded-lg pr-12 text-gray-900 dark:text-gray-200 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 outline-none resize-none" 
+                                    className="w-full bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg pr-12 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 outline-none resize-none" 
                                 />
                                 <button onClick={() => handleCopyToClipboard(optimizedData.title)} className="absolute right-3 top-3 p-2 text-gray-400 hover:text-purple-500 bg-white dark:bg-gray-800 rounded-md shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
                                     <Copy className="w-4 h-4" />
@@ -513,7 +513,7 @@ const OptimizerPage: React.FC = () => {
                                     value={optimizedData.description} 
                                     onChange={(e) => setOptimizedData({...optimizedData, description: e.target.value})}
                                     rows={10}
-                                    className="w-full bg-gray-50 dark:bg-gray-900 p-4 rounded-lg pr-12 text-gray-900 dark:text-gray-200 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 outline-none resize-none text-sm" 
+                                    className="w-full bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg pr-12 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 outline-none resize-none text-sm" 
                                 />
                                 <button onClick={() => handleCopyToClipboard(optimizedData.description)} className="absolute right-3 top-3 p-2 text-gray-400 hover:text-purple-500 bg-white dark:bg-gray-800 rounded-md shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
                                     <Copy className="w-4 h-4" />
@@ -535,7 +535,7 @@ const OptimizerPage: React.FC = () => {
                                     value={optimizedData.altText || "No alt text generated."} 
                                     readOnly 
                                     rows={3}
-                                    className="w-full bg-gray-50 dark:bg-gray-900 p-4 rounded-lg pr-12 text-gray-900 dark:text-gray-200 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 outline-none resize-none" 
+                                    className="w-full bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg pr-12 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 outline-none resize-none" 
                                 />
                                 <button onClick={() => handleCopyToClipboard(optimizedData.altText || "")} className="absolute right-3 top-3 p-2 text-gray-400 hover:text-purple-500 bg-white dark:bg-gray-800 rounded-md shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
                                     <Copy className="w-4 h-4" />
