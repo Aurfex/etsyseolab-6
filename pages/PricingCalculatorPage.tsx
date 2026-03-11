@@ -303,15 +303,15 @@ const PricingCalculatorPage: React.FC = () => {
                 <th className="p-2">Profit (CAD)</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="text-gray-900 dark:text-gray-200">
               {rows.map((r, i) => (
-                <tr key={i} className="border-b border-gray-100 dark:border-gray-800">
+                <tr key={i} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                   <td className="p-2">{r.size}</td>
                   <td className="p-2">{r.material}</td>
                   <td className="p-2">{r.adjustedWeight ? r.adjustedWeight.toFixed(2) : 'N/A'}</td>
                   <td className="p-2">${r.materialCost.toFixed(2)}</td>
                   <td className="p-2">${r.totalCostWithTax.toFixed(2)}</td>
-                  <td className="p-2 font-semibold">${r.finalPrice.toFixed(2)}</td>
+                  <td className="p-2 font-bold text-gray-900 dark:text-white">${r.finalPrice.toFixed(2)}</td>
                   <td className="p-2">${r.profitAmount.toFixed(2)}</td>
                 </tr>
               ))}
