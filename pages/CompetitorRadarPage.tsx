@@ -25,6 +25,7 @@ const CompetitorRadarPage: React.FC = () => {
   const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [showFixPreview, setShowFixPreview] = useState(false);
 
   const selectedProduct = useMemo(() => products.find(p => p.id === selectedProductId) || null, [products, selectedProductId]);
 
@@ -36,8 +37,9 @@ const CompetitorRadarPage: React.FC = () => {
   ];
 
   const handlePreviewFixes = () => {
+    setShowFixPreview(true);
     showToast({ 
-      message: "AI Fix Preview is a pro feature in the final build. Right now, it confirms your listing can be boosted by 22% using the missing tags below.", 
+      message: "Generating AI optimization preview...", 
       type: 'info' 
     });
   };
@@ -50,6 +52,7 @@ const CompetitorRadarPage: React.FC = () => {
     }
     setIsAnalyzing(true);
     setShowAnalysis(false);
+    setShowFixPreview(false);
     
     // Play a "Scanning" animation for 2.5 seconds
     setTimeout(() => {
@@ -97,12 +100,10 @@ const CompetitorRadarPage: React.FC = () => {
           <button 
             onClick={handleStartAnalysis} 
             disabled={isAnalyzing || !selectedProductId} 
-            className="relative bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold px-6 py-3 rounded-xl hover:shadow-lg hover:shadow-purple-500/30 transition-all flex items-center justify-center disabled:opacity-50 overflow-hidden"
+            className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold px-6 py-3 rounded-xl hover:shadow-lg hover:shadow-purple-500/30 transition-all flex items-center justify-center disabled:opacity-50"
           >
-            <div className="flex items-center pointer-events-none">
-              {isAnalyzing ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Zap className="w-5 h-5 mr-2" />}
-              {isAnalyzing ? 'Scanning...' : 'Run Intelligence'}
-            </div>
+            {isAnalyzing ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Zap className="w-5 h-5 mr-2" />}
+            {isAnalyzing ? 'Scanning...' : 'Run Intelligence'}
           </button>
         </div>
       </Card>
@@ -116,8 +117,8 @@ const CompetitorRadarPage: React.FC = () => {
                 <TrendingUp className="w-5 h-5 mr-2 text-green-500" />
                 SEO Competitiveness vs Top Sellers
             </h3>
-            <div className="h-64 w-full">
-                <ResponsiveContainer width="100%" height="100%">
+            <div className="h-64 w-full min-w-0 overflow-hidden">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                     <BarChart data={chartData} layout="vertical" margin={{ left: 20, right: 30 }}>
                         <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} opacity={0.1} />
                         <XAxis type="number" domain={[0, 100]} hide />
@@ -170,6 +171,51 @@ const CompetitorRadarPage: React.FC = () => {
                 </button>
             </Card>
           </div>
+
+          {/* AI Fix Preview Section */}
+          {showFixPreview && (
+            <Card className="lg:col-span-3 border-2 border-dashed border-purple-400 dark:border-purple-500/50 animate-pulse-subtle bg-purple-50/30 dark:bg-purple-900/5">
+                <div className="flex justify-between items-start mb-6">
+                    <div>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+                            <Sparkles className="w-6 h-6 mr-2 text-purple-500" />
+                            AI Optimization Preview
+                        </h3>
+                        <p className="text-sm text-gray-500">Proposed changes to outperform the top 10% of competitors.</p>
+                    </div>
+                    <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold rounded-full">
+                        +22% Rank Potential
+                    </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-4">
+                        <h4 className="text-xs font-bold text-gray-400 uppercase">Title Optimization</h4>
+                        <div className="p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-700">
+                            <div className="text-xs text-red-500 line-through mb-1">{selectedProduct.title}</div>
+                            <div className="text-sm font-semibold text-green-600 dark:text-green-400">
+                                Luxury {selectedProduct.title} - Minimalist Art Deco Wedding Jewelry
+                            </div>
+                        </div>
+                    </div>
+                    <div className="space-y-4">
+                        <h4 className="text-xs font-bold text-gray-400 uppercase">Tag Replacements</h4>
+                        <div className="flex flex-wrap gap-2">
+                            <span className="px-2 py-1 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs rounded line-through">jewelry</span>
+                            <span className="px-2 py-1 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-xs rounded font-bold">minimalist wedding</span>
+                            <span className="px-2 py-1 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-xs rounded font-bold">art deco style</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mt-8 flex justify-end">
+                    <button className="px-8 py-3 bg-purple-600 text-white font-bold rounded-xl shadow-lg shadow-purple-500/20 hover:bg-purple-700 transition-all flex items-center">
+                        <Save className="w-5 h-5 mr-2" />
+                        Apply & Save to Etsy
+                    </button>
+                </div>
+            </Card>
+          )}
 
           {/* Keyword Gap Analysis */}
           <Card className="lg:col-span-3">
