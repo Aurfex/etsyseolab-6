@@ -25,6 +25,8 @@ import LandingPage from './pages/LandingPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import TermsOfServicePage from './pages/TermsOfServicePage';
 import ContactPage from './pages/ContactPage';
+import ShopifyExportPage from './pages/ShopifyExportPage';
+import SalesReportPage from './pages/SalesReportPage';
 
 const App: React.FC = () => {
   const { 
@@ -94,6 +96,10 @@ const App: React.FC = () => {
         return <PricingCalculatorPage />;
       case 'image_seo':
         return <ImageSeoPage />;
+      case 'shopify_export':
+        return <ShopifyExportPage />;
+      case 'sales_report':
+        return <SalesReportPage />;
       case 'settings':
         return <SettingsPage />;
       case 'privacy':

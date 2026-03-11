@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Page, Language } from '../types';
-import { LayoutDashboard, SearchCheck, Zap, Bot, Radar, Settings, Sun, Moon, HelpCircle, Mic, Gift, ChevronLeft, ChevronRight, User, LogOut, Trophy, LayoutTemplate, PlusSquare, Lock, Calculator, ImageIcon } from 'lucide-react';
+import { LayoutDashboard, SearchCheck, Zap, Bot, Radar, Settings, Sun, Moon, HelpCircle, Mic, Gift, ChevronLeft, ChevronRight, User, LogOut, Trophy, LayoutTemplate, PlusSquare, Lock, Calculator, ImageIcon, FileJson, FileText } from 'lucide-react';
 import { useTranslation } from '../contexts/LanguageContext';
 import { useAppContext } from '../contexts/AppContext';
 
@@ -68,6 +68,8 @@ const Sidebar: React.FC = () => {
             { id: 'image_seo', label: 'Image SEO', icon: ImageIcon, authRequired: true },
             { id: 'autopilot', label: t('nav_autopilot'), icon: Bot, authRequired: true },
             { id: 'competitor', label: t('nav_competitor'), icon: Radar, authRequired: true },
+            { id: 'shopify_export', label: 'Shopify Migration', icon: FileJson, authRequired: true },
+            { id: 'sales_report', label: 'Sales Reports', icon: FileText, authRequired: true },
         ];
 
         return allItems.map(item => ({
