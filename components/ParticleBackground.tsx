@@ -75,7 +75,7 @@ const ParticleBackground: React.FC = () => {
 
           if (distance < 150) {
             const opacity = 1 - distance / 150;
-            ctx.strokeStyle = `rgba(147, 51, 234, ${opacity * 0.2})`;
+            ctx.strokeStyle = `rgba(147, 51, 234, ${opacity * 0.4})`;
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(particles[a].x, particles[a].y);
@@ -110,7 +110,7 @@ const ParticleBackground: React.FC = () => {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 -z-10 pointer-events-none opacity-50 dark:opacity-30"
+      className="fixed inset-0 -z-10 pointer-events-none opacity-80 dark:opacity-40"
     />
   );
 };
