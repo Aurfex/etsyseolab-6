@@ -192,9 +192,12 @@ const LandingPage: React.FC = () => {
                 {t('landing_hero_cta')}
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
-              <button className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl font-bold text-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
+              <a 
+                href="#features"
+                className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl font-bold text-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-center"
+              >
                 {t('landing_hero_secondary_cta')}
-              </button>
+              </a>
             </div>
           </div>
 
@@ -320,7 +323,7 @@ const LandingPage: React.FC = () => {
 
       {/* CTA SECTION */}
       <section className="py-20 px-6">
-        <div className="max-w-5xl mx-auto bg-gradient-to-br from-purple-600 to-indigo-700 rounded-[3rem] p-12 md:p-20 text-center text-white relative overflow-hidden shadow-2xl">
+        <div className="max-w-5xl mx-auto bg-gradient-to-br from-purple-600/40 to-indigo-700/40 backdrop-blur-xl border border-white/10 rounded-[3rem] p-12 md:p-20 text-center text-white relative overflow-hidden shadow-2xl">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-900/30 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl"></div>
           
