@@ -13,7 +13,7 @@ const ParticleBackground: React.FC = () => {
     let animationFrameId: number;
     let particles: Particle[] = [];
     const mouse = { x: 0, y: 0, radius: 180 };
-    const particleCount = 200; // Even more particles
+    const particleCount = 150; 
     const centerAttraction = 0.05; 
 
     const resize = () => {
@@ -83,8 +83,8 @@ const ParticleBackground: React.FC = () => {
           this.y -= directionY;
         }
 
-        // Keep alpha high throughout the page for glassmorphism sections
-        this.alpha = 0.8;
+        // Keep alpha subtle since it's on top
+        this.alpha = 0.4;
 
         if (this.x > canvas.width) this.x = 0;
         else if (this.x < 0) this.x = canvas.width;
@@ -164,7 +164,7 @@ const ParticleBackground: React.FC = () => {
         left: 0,
         width: '100%',
         height: '100%',
-        zIndex: 0,
+        zIndex: 9999, // NUCLEAR OPTION: Put it on top of EVERYTHING
         pointerEvents: 'none',
         background: 'transparent'
       }}
