@@ -47,27 +47,27 @@ const LandingPage: React.FC = () => {
 
   const pricing = [
     {
-      name: "Starter",
-      price: "Free",
-      description: "Perfect for new Etsy sellers.",
-      features: ["5 AI Optimizations / month", "Basic Competitor Analysis", "Standard Support"],
-      buttonText: "Get Started",
+      name: t('landing_price_1_name'),
+      price: t('landing_price_1_price'),
+      description: t('landing_price_1_desc'),
+      features: [t('landing_price_1_feat_1'), t('landing_price_1_feat_2'), t('landing_price_1_feat_3')],
+      buttonText: t('landing_price_1_btn'),
       highlight: false
     },
     {
-      name: "Growth",
-      price: "$19",
-      description: "Best for growing businesses.",
-      features: ["Unlimited AI Optimizations", "Deep Competitor Radar", "Priority AI Queue", "Image SEO Tools"],
-      buttonText: "Go Pro",
+      name: t('landing_price_2_name'),
+      price: t('landing_price_2_price'),
+      description: t('landing_price_2_desc'),
+      features: [t('landing_price_2_feat_1'), t('landing_price_2_feat_2'), t('landing_price_2_feat_3'), t('landing_price_2_feat_4')],
+      buttonText: t('landing_price_2_btn'),
       highlight: true
     },
     {
-      name: "Elite",
-      price: "$49",
-      description: "For serious power users.",
-      features: ["Full Shop Automation", "Multi-shop Support", "Custom AI Voice Assistant", "White-glove Setup"],
-      buttonText: "Contact Sales",
+      name: t('landing_price_3_name'),
+      price: t('landing_price_3_price'),
+      description: t('landing_price_3_desc'),
+      features: [t('landing_price_3_feat_1'), t('landing_price_3_feat_2'), t('landing_price_3_feat_3'), t('landing_price_3_feat_4')],
+      buttonText: t('landing_price_3_btn'),
       highlight: false
     }
   ];
