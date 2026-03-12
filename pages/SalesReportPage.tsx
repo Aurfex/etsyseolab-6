@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { FileText, Download, Calendar, Search, TrendingUp, DollarSign, Filter, RefreshCw, ChevronRight, FileDown } from 'lucide-react';
 import { useAppContext } from '../contexts/AppContext';
+import { useTranslation } from '../contexts/LanguageContext';
 
 const SalesReportPage: React.FC = () => {
     const { activityLogs } = useAppContext();
+    const { t } = useTranslation();
     const [isGenerating, setIsGenerating] = useState(false);
     const [startDate, setStartDate] = useState('2026-03-01');
     const [endDate, setEndDate] = useState('2026-03-31');
@@ -54,8 +56,8 @@ const SalesReportPage: React.FC = () => {
                         <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Sales & SEO Intelligence</h1>
-                        <p className="text-gray-500 dark:text-gray-400">Generate professional PDF reports of your store performance.</p>
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('sales_title')}</h1>
+                        <p className="text-gray-500 dark:text-gray-400">{t('sales_desc')}</p>
                     </div>
                 </div>
                 
@@ -84,35 +86,35 @@ const SalesReportPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
                     <div className="flex justify-between items-start mb-2">
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Sales</span>
+                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t('sales_stats_total_sales')}</span>
                         <DollarSign className="w-4 h-4 text-green-500" />
                     </div>
                     <div className="text-2xl font-black text-gray-900 dark:text-white">$12,450.00</div>
-                    <div className="text-xs text-green-500 font-bold mt-1">+12.5% vs last period</div>
+                    <div className="text-xs text-green-500 font-bold mt-1">+12.5% {t('sales_stats_vs_last')}</div>
                 </div>
                 <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
                     <div className="flex justify-between items-start mb-2">
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Orders</span>
+                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t('sales_stats_total_orders')}</span>
                         <TrendingUp className="w-4 h-4 text-blue-500" />
                     </div>
                     <div className="text-2xl font-black text-gray-900 dark:text-white">452</div>
-                    <div className="text-xs text-green-500 font-bold mt-1">+8% vs last period</div>
+                    <div className="text-xs text-green-500 font-bold mt-1">+8% {t('sales_stats_vs_last')}</div>
                 </div>
                 <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
                     <div className="flex justify-between items-start mb-2">
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">SEO Impact</span>
+                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t('sales_stats_seo_impact')}</span>
                         <RefreshCw className="w-4 h-4 text-purple-500" />
                     </div>
                     <div className="text-2xl font-black text-gray-900 dark:text-white">+$1,280</div>
-                    <div className="text-xs text-purple-500 font-bold mt-1">Revenue from AI optimizations</div>
+                    <div className="text-xs text-purple-500 font-bold mt-1">{t('sales_stats_ai_desc')}</div>
                 </div>
                 <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
                     <div className="flex justify-between items-start mb-2">
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Conversion Rate</span>
+                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t('sales_stats_conv_rate')}</span>
                         <Filter className="w-4 h-4 text-orange-500" />
                     </div>
                     <div className="text-2xl font-black text-gray-900 dark:text-white">3.8%</div>
-                    <div className="text-xs text-red-500 font-bold mt-1">-0.4% vs last period</div>
+                    <div className="text-xs text-red-500 font-bold mt-1">-0.4% {t('sales_stats_vs_last')}</div>
                 </div>
             </div>
 
@@ -140,9 +142,9 @@ const SalesReportPage: React.FC = () => {
                 </div>
                 
                 <div className="mt-10 text-center space-y-4">
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">Professional PDF Ready</h3>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">{t('sales_pdf_ready_title')}</h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
-                        Your report will include a detailed breakdown of revenue, top-selling items, and SEO performance metrics.
+                        {t('sales_pdf_ready_desc')}
                     </p>
                     
                     <button
@@ -153,12 +155,12 @@ const SalesReportPage: React.FC = () => {
                         {isGenerating ? (
                             <>
                                 <RefreshCw className="w-5 h-5 animate-spin" />
-                                Processing Data...
+                                {t('sales_btn_processing')}
                             </>
                         ) : (
                             <>
                                 <FileDown className="w-5 h-5" />
-                                Download Full Report
+                                {t('sales_btn_download')}
                             </>
                         )}
                     </button>
@@ -169,11 +171,11 @@ const SalesReportPage: React.FC = () => {
             <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card dark:shadow-card-dark border border-gray-100 dark:border-gray-700">
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
                     <Download className="w-5 h-5 text-gray-400" />
-                    Report History
+                    {t('sales_history_title')}
                 </h3>
                 <div className="space-y-4">
                     <div 
-                        onClick={() => handleDownloadHistory('Sales Report - February 2026')}
+                        onClick={() => handleDownloadHistory(t('sales_report_name_feb'))}
                         className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/40 rounded-xl hover:bg-purple-50 dark:hover:bg-purple-900/10 cursor-pointer transition-colors border border-transparent hover:border-purple-200 dark:hover:border-purple-800"
                     >
                         <div className="flex items-center gap-4">
@@ -181,8 +183,8 @@ const SalesReportPage: React.FC = () => {
                                 <FileText className="w-5 h-5 text-gray-400" />
                             </div>
                             <div>
-                                <h4 className="text-sm font-bold text-gray-900 dark:text-white">Sales Report - February 2026</h4>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Generated on Mar 01, 2026 • 2.4 MB</p>
+                                <h4 className="text-sm font-bold text-gray-900 dark:text-white">{t('sales_report_name_feb')}</h4>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('sales_history_generated_on', { date: 'Mar 01, 2026', size: '2.4' })}</p>
                             </div>
                         </div>
                         <button className="p-2 text-gray-400 hover:text-blue-500 transition-colors">
@@ -190,7 +192,7 @@ const SalesReportPage: React.FC = () => {
                         </button>
                     </div>
                     <div 
-                        onClick={() => handleDownloadHistory('Store Health Audit - Jan 2026')}
+                        onClick={() => handleDownloadHistory(t('sales_report_name_jan'))}
                         className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/40 rounded-xl hover:bg-purple-50 dark:hover:bg-purple-900/10 cursor-pointer transition-colors border border-transparent hover:border-purple-200 dark:hover:border-purple-800"
                     >
                         <div className="flex items-center gap-4">
@@ -198,8 +200,8 @@ const SalesReportPage: React.FC = () => {
                                 <FileText className="w-5 h-5 text-gray-400" />
                             </div>
                             <div>
-                                <h4 className="text-sm font-bold text-gray-900 dark:text-white">Store Health Audit - Jan 2026</h4>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Generated on Feb 01, 2026 • 1.8 MB</p>
+                                <h4 className="text-sm font-bold text-gray-900 dark:text-white">{t('sales_report_name_jan')}</h4>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('sales_history_generated_on', { date: 'Feb 01, 2026', size: '1.8' })}</p>
                             </div>
                         </div>
                         <button className="p-2 text-gray-400 hover:text-blue-500 transition-colors">

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Download, FileJson, Check, AlertCircle, Loader2, ExternalLink } from 'lucide-react';
 import { useAppContext } from '../contexts/AppContext';
+import { useTranslation } from '../contexts/LanguageContext';
 
 const ShopifyExportPage: React.FC = () => {
     const { products } = useAppContext();
+    const { t } = useTranslation();
     const [isExporting, setIsExporting] = useState(false);
     const [exportComplete, setExportComplete] = useState(false);
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -115,8 +117,8 @@ const ShopifyExportPage: React.FC = () => {
                         <FileJson className="w-6 h-6 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Shopify Migration Tool</h1>
-                        <p className="text-gray-500 dark:text-gray-400">Export your Etsy listings as a Shopify-compatible CSV file.</p>
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('shopify_title')}</h1>
+                        <p className="text-gray-500 dark:text-gray-400">{t('shopify_desc')}</p>
                     </div>
                 </div>
 
@@ -124,11 +126,11 @@ const ShopifyExportPage: React.FC = () => {
                     <div className="flex gap-3">
                         <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                         <div className="text-sm text-blue-800 dark:text-blue-200">
-                            <p className="font-bold mb-1">How it works:</p>
+                            <p className="font-bold mb-1">{t('shopify_how_it_works')}</p>
                             <ul className="list-disc ml-4 space-y-1">
-                                <li>We map your Etsy Titles, Descriptions, and Tags to Shopify standards.</li>
-                                <li>Image URLs are preserved so Shopify can import them directly.</li>
-                                <li>SEO metadata is automatically generated from your listing content.</li>
+                                <li>{t('shopify_hw_1')}</li>
+                                <li>{t('shopify_hw_2')}</li>
+                                <li>{t('shopify_hw_3')}</li>
                             </ul>
                         </div>
                     </div>
@@ -137,10 +139,10 @@ const ShopifyExportPage: React.FC = () => {
                 <div className="flex flex-col items-center justify-center py-6 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-3xl mb-8">
                     <div className="text-center space-y-4">
                         <div className="text-4xl font-black text-gray-900 dark:text-white">
-                            {selectedIds.length} <span className="text-lg font-medium text-gray-500">Selected</span>
+                            {selectedIds.length} <span className="text-lg font-medium text-gray-500">{t('shopify_selected')}</span>
                         </div>
                         <p className="text-gray-500 dark:text-gray-400 max-w-xs mx-auto text-sm">
-                            {selectedIds.length === 0 ? "Select products from the list below to export." : "Ready to generate your Shopify-compatible CSV."}
+                            {selectedIds.length === 0 ? t('shopify_select_prompt') : t('shopify_ready_prompt')}
                         </p>
                         
                         <button
@@ -151,17 +153,17 @@ const ShopifyExportPage: React.FC = () => {
                             {isExporting ? (
                                 <>
                                     <Loader2 className="w-5 h-5 animate-spin" />
-                                    Generating CSV...
+                                    {t('shopify_generating')}
                                 </>
                             ) : exportComplete ? (
                                 <>
                                     <Check className="w-5 h-5" />
-                                    Exported Successfully
+                                    {t('shopify_exported')}
                                 </>
                             ) : (
                                 <>
                                     <Download className="w-5 h-5" />
-                                    Export {selectedIds.length} Products
+                                    {t('shopify_export_btn').replace('{count}', selectedIds.length.toString())}
                                 </>
                             )}
                         </button>
@@ -171,12 +173,12 @@ const ShopifyExportPage: React.FC = () => {
                 {/* PRODUCT SELECTION LIST */}
                 <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
                     <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50 flex justify-between items-center">
-                        <h3 className="font-bold text-gray-900 dark:text-white">Select Products</h3>
+                        <h3 className="font-bold text-gray-900 dark:text-white">{t('shopify_select_products')}</h3>
                         <button 
                             onClick={toggleSelectAll}
                             className="text-xs font-bold text-purple-600 dark:text-purple-400 hover:underline"
                         >
-                            {selectedIds.length === products.length ? 'Deselect All' : 'Select All'}
+                            {selectedIds.length === products.length ? t('shopify_deselect_all') : t('shopify_select_all')}
                         </button>
                     </div>
                     <div className="max-h-[500px] overflow-y-auto">
@@ -184,9 +186,9 @@ const ShopifyExportPage: React.FC = () => {
                             <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0 z-10 text-gray-700 dark:text-gray-300">
                                 <tr>
                                     <th className="px-6 py-3 w-10"></th>
-                                    <th className="px-6 py-3">Product</th>
-                                    <th className="px-6 py-3">Tags</th>
-                                    <th className="px-6 py-3 text-right">Price</th>
+                                    <th className="px-6 py-3">{t('shopify_col_product')}</th>
+                                    <th className="px-6 py-3">{t('shopify_col_tags')}</th>
+                                    <th className="px-6 py-3 text-right">{t('shopify_col_price')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -235,7 +237,7 @@ const ShopifyExportPage: React.FC = () => {
                             <div className="w-8 h-8 bg-green-200 dark:bg-green-800 rounded-full flex items-center justify-center">
                                 <Check className="w-4 h-4 text-green-700 dark:text-green-300" />
                             </div>
-                            <span className="text-sm font-medium text-green-800 dark:text-green-200">Your file is ready! Go to Shopify &gt; Products &gt; Import to start.</span>
+                            <span className="text-sm font-medium text-green-800 dark:text-green-200">{t('shopify_ready_file_msg')}</span>
                         </div>
                         <a 
                             href="https://help.shopify.com/en/manual/products/import-export/import-products" 
@@ -243,7 +245,7 @@ const ShopifyExportPage: React.FC = () => {
                             rel="noopener noreferrer"
                             className="text-xs text-green-700 dark:text-green-400 flex items-center gap-1 hover:underline"
                         >
-                            View Guide <ExternalLink className="w-3 h-3" />
+                            {t('shopify_view_guide')} <ExternalLink className="w-3 h-3" />
                         </a>
                     </div>
                 )}
