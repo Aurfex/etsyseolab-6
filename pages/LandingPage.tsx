@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Zap, Shield, BarChart3, ArrowRight, CheckCircle2, Star, Rocket, Layout, Bot, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAppContext } from '../contexts/AppContext';
+import { useTranslation } from '../contexts/LanguageContext';
 import ParticleBackground from '../components/ParticleBackground';
 
 const FaqItem = ({ question, answer }: { question: string, answer: string }) => {
@@ -22,64 +23,26 @@ const FaqItem = ({ question, answer }: { question: string, answer: string }) => 
 };
 
 const LandingPage: React.FC = () => {
+  const { t } = useTranslation();
   const { setPage, login } = useAppContext();
 
   const testimonials = [
-    {
-      name: "Sarah Jenkins",
-      shop: "VintageVibePrints",
-      content: "Hasti AI changed my life. My sales doubled in two weeks after optimizing my titles. It's like having a full-time SEO expert for pennies.",
-      avatar: "https://i.pravatar.cc/150?u=sarah"
-    },
-    {
-      name: "Marco Rossi",
-      shop: "TheLeatherCraft",
-      content: "The Competitor Radar is insane. I finally understand why my competitors were outranking me. Now I'm the one leading the niche.",
-      avatar: "https://i.pravatar.cc/150?u=marco"
-    },
-    {
-      name: "Elena Petrova",
-      shop: "PetrovaJewelry",
-      content: "I was skeptical about AI, but Etsyseolab is so intuitive. The automation saves me hours every day. Simply brilliant.",
-      avatar: "https://i.pravatar.cc/150?u=elena"
-    }
+    { name: t('landing_testi_1_name'), shop: "VintageVibePrints", content: t('landing_testi_1_content'), avatar: "https://i.pravatar.cc/150?u=sarah" },
+    { name: t('landing_testi_2_name'), shop: "TheLeatherCraft", content: t('landing_testi_2_content'), avatar: "https://i.pravatar.cc/150?u=marco" },
+    { name: t('landing_testi_3_name'), shop: "PetrovaJewelry", content: t('landing_testi_3_content'), avatar: "https://i.pravatar.cc/150?u=elena" }
   ];
 
   const features = [
-    {
-      icon: <Zap className="w-6 h-6 text-yellow-500" />,
-      title: "AI-Powered SEO",
-      description: "Automatically optimize your Etsy titles, tags, and descriptions with high-converting keywords."
-    },
-    {
-      icon: <BarChart3 className="w-6 h-6 text-blue-500" />,
-      title: "Competitor Radar",
-      description: "Spy on top sellers in your niche. See their keywords, pricing strategies, and rank potential."
-    },
-    {
-      icon: <Bot className="w-6 h-6 text-purple-500" />,
-      title: "Hasti Autopilot",
-      description: "Let our AI assistant manage your shop 24/7. It updates listings while you sleep."
-    }
+    { icon: <Zap className="w-6 h-6 text-yellow-500" />, title: t('landing_feat_ai_title'), description: t('landing_feat_ai_desc') },
+    { icon: <BarChart3 className="w-6 h-6 text-blue-500" />, title: t('landing_feat_radar_title'), description: t('landing_feat_radar_desc') },
+    { icon: <Bot className="w-6 h-6 text-purple-500" />, title: t('landing_feat_auto_title'), description: t('landing_feat_auto_desc') }
   ];
 
   const faqs = [
-    {
-      question: "Is it safe to connect my Etsy shop?",
-      answer: "Absolutely. We use Etsy's official, secure OAuth 2.0 API. We never see your password, and you can revoke access at any time directly from your Etsy settings."
-    },
-    {
-      question: "Will Hasti AI change my listings without my permission?",
-      answer: "Only if you want it to! By default, Hasti acts as an advisor—you review and approve every change. If you trust the AI, you can enable 'Autopilot' to let it optimize in the background while you sleep."
-    },
-    {
-      question: "How is this different from eRank or Marmalead?",
-      answer: "Traditional tools give you overwhelming spreadsheets of raw data and expect you to do the hard work. Hasti AI is a generative co-pilot. We don't just show you the data; we actually write the optimized titles and tags for you."
-    },
-    {
-      question: "Do I need to be a tech expert to use this?",
-      answer: "Not at all. If you know how to click a button, you can use Hasti AI. Our interface is specifically designed for creative sellers, not coders or data scientists."
-    }
+    { question: t('landing_faq_1_q'), answer: t('landing_faq_1_a') },
+    { question: t('landing_faq_2_q'), answer: t('landing_faq_2_a') },
+    { question: t('landing_faq_3_q'), answer: t('landing_faq_3_a') },
+    { question: t('landing_faq_4_q'), answer: t('landing_faq_4_a') }
   ];
 
   const pricing = [
@@ -152,7 +115,7 @@ const LandingPage: React.FC = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 animate-fade-in-up delay-200">
             <button 
               onClick={login}
-              className="w-full sm:w-auto px-8 py-4 bg-purple-600 text-white rounded-2xl font-bold text-lg hover:bg-purple-700 hover:shadow-xl hover:shadow-purple-500/30 transition-all flex items-center justify-center group"
+              className="w-full sm:w-auto px-8 py-4 bg-[#F1641E] text-white rounded-2xl font-bold text-lg hover:bg-[#d4551a] hover:shadow-xl hover:shadow-orange-500/30 transition-all flex items-center justify-center group"
             >
               Start Your Free Audit
               <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -271,7 +234,7 @@ const LandingPage: React.FC = () => {
       <section className="py-20 px-6 bg-gray-50 dark:bg-gray-900/30">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-black mb-4 text-gray-900 dark:text-white">Frequently Asked Questions</h2>
+            <h2 className="text-3xl md:text-5xl font-black mb-4 text-gray-900 dark:text-white">{t('landing_faq_title')}</h2>
             <p className="text-gray-500 dark:text-gray-400">Everything you need to know about Hasti AI.</p>
           </div>
           <div className="space-y-4">
@@ -292,7 +255,7 @@ const LandingPage: React.FC = () => {
           <div className="flex space-x-8 text-sm text-gray-500">
             <button onClick={() => setPage('privacy')} className="hover:text-purple-600 transition-colors">Privacy Policy</button>
             <button onClick={() => setPage('terms')} className="hover:text-purple-600 transition-colors">Terms of Service</button>
-            <button onClick={() => setPage('contact')} className="hover:text-purple-600 transition-colors">Contact</button>
+            <button onClick={() => setPage('contact')} className="hover:text-purple-600 transition-colors">{t('landing_nav_contact')}</button>
           </div>
           <div className="text-sm text-gray-500">
             © 2026 dXb Tech. Built with ❤️ for Etsy Sellers.
