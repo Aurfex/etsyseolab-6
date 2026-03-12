@@ -17,10 +17,10 @@ const AddProductPage: React.FC = () => {
     const { t } = useTranslation();
     const [currentStep, setCurrentStep] = useState(1);
     const steps = [
-        'Analyze + Basics',
-        'AI SEO',
-        'Variants + Pricing CSV',
-        'Review & Publish',
+        t('add_product_step_basics'),
+        t('add_product_step_seo'),
+        t('add_product_step_pricing'),
+        t('add_product_step_review'),
     ];
 
     return (
@@ -346,8 +346,8 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">Upload Images + Analyze</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Upload photos, then click Analyze to auto-fill listing basics.</p>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">{t('add_product_upload_analyze_title')}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{t('add_product_upload_analyze_desc')}</p>
                 </div>
                 <button
                     onClick={handleAnalyze}
@@ -355,7 +355,7 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-white bg-purple-600 hover:bg-purple-700 shadow-sm transition disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                     {isAnalyzing ? <Loader2 className="w-4 h-4 animate-spin"/> : <Sparkles className="w-4 h-4"/>}
-                    {isAnalyzing ? 'Analyzing...' : 'Analyze with AI'}
+                    {isAnalyzing ? t('add_product_btn_analyzing') : t('add_product_btn_analyze')}
                 </button>
             </div>
 
@@ -377,7 +377,7 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
                         <div key={index} className="relative group border border-gray-200 dark:border-gray-700 rounded-md p-2">
                             <img src={URL.createObjectURL(file)} alt={`preview ${index}`} className="h-24 w-24 object-cover rounded-md" />
                             <button onClick={() => removeImage(index)} className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3" /></button>
-                            <input type="text" value={(newProductData.imageAltTexts || [])[index] || ''} onChange={(e) => updateImageAlt(index, e.target.value)} placeholder="Image alt text (required)" className="mt-2 block w-full input-field text-xs" maxLength={140} />
+                            <input type="text" value={(newProductData.imageAltTexts || [])[index] || ''} onChange={(e) => updateImageAlt(index, e.target.value)} placeholder={t('add_product_alt_text_placeholder')} className="mt-2 block w-full input-field text-xs" maxLength={140} />
                         </div>
                     ))}
                 </div>
@@ -385,17 +385,17 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                 <div className="md:col-span-2">
-                    <label htmlFor="ai_keywords" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Manual keywords for AI (optional)</label>
+                    <label htmlFor="ai_keywords" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_manual_keywords_label')}</label>
                     <input
                         type="text"
                         name="ai_keywords"
                         id="ai_keywords"
                         value={newProductData.ai_keywords || ''}
                         onChange={handleChange}
-                        placeholder="e.g. irish claddagh ring, rose gold, wedding band, celtic"
+                        placeholder={t('add_product_manual_keywords_placeholder')}
                         className="mt-1 block w-full input-field"
                     />
-                    <p className="text-xs text-gray-500 mt-1">AI will use these keywords together with uploaded images to generate title/description/tags.</p>
+                    <p className="text-xs text-gray-500 mt-1">{t('add_product_manual_keywords_desc')}</p>
                 </div>
                 <div>
                     <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_title_label')}</label>
@@ -445,12 +445,12 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
                         return (
                             <>
                                 <div className="flex items-center justify-between">
-                                    <h4 className="font-semibold text-purple-800 dark:text-purple-200">Etsy SEO Score</h4>
+                                    <h4 className="font-semibold text-purple-800 dark:text-purple-200">{t('add_product_seo_insight_title')}</h4>
                                     <span className="text-sm font-bold text-purple-700 dark:text-purple-300">{seoInsight.yourScore}/100</span>
                                 </div>
-                                <p className="text-sm text-gray-700 dark:text-gray-300">Rank: #{seoInsight.yourRank} of {seoInsight.totalCompared} | Top avg: {seoInsight.avgTopScore}</p>
+                                <p className="text-sm text-gray-700 dark:text-gray-300">{t('add_product_rank_label', { rank: seoInsight.yourRank, total: seoInsight.totalCompared, avg: seoInsight.avgTopScore })}</p>
                                 {seoInsight.topCompetitorTitle && (
-                                    <p className="text-xs text-gray-600 dark:text-gray-400">Top competitor: {seoInsight.topCompetitorTitle}</p>
+                                    <p className="text-xs text-gray-600 dark:text-gray-400">{t('add_product_top_competitor_prefix')} {seoInsight.topCompetitorTitle}</p>
                                 )}
                                 {englishOnly.length > 0 && (
                                     <ul className="text-xs list-disc ps-5 text-gray-700 dark:text-gray-300 space-y-1">
@@ -465,7 +465,7 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
                                         className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed"
                                     >
                                         {isImprovingSeo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                                        {isImprovingSeo ? 'Improving SEO...' : 'Apply Suggestions & Re-score'}
+                                        {isImprovingSeo ? t('add_product_btn_improving_seo') : t('add_product_btn_apply_suggestions')}
                                     </button>
                                 </div>
                             </>
@@ -534,11 +534,11 @@ const Step3: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNext, onP
                 <div>
                     <h3 className="text-lg font-bold">{t('add_product_ai_seo_title')}</h3>
                     <p className="text-sm text-gray-500">{t('add_product_ai_seo_subtitle')}</p>
-                    <p className="text-xs text-purple-600 mt-1">Images are analyzed in step 1. Here you can regenerate/refine SEO text if needed.</p>
+                    <p className="text-xs text-purple-600 mt-1">{t('add_product_ai_seo_regeneration_desc')}</p>
                 </div>
                  <button onClick={handleGenerate} disabled={isGenerating || !(newProductData.images && newProductData.images.length)} className="btn-primary flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
                     {isGenerating ? <Loader2 className="w-5 h-5 animate-spin"/> : <Sparkles className="w-5 h-5"/>}
-                    {isGenerating ? t('add_product_generating_button') : 'Generate from uploaded images'}
+                    {isGenerating ? t('add_product_generating_button') : t('add_product_btn_generate_from_images')}
                  </button>
             </div>
              <div>
@@ -663,78 +663,78 @@ const StepPricing: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNex
     return (
         <div className="space-y-6">
             <div>
-                <h3 className="text-lg font-bold">Variants + Pricing CSV</h3>
-                <p className="text-sm text-gray-500">Upload your generated pricing CSV for 7 sizes × 3 materials, then fill key Etsy fields.</p>
+                <h3 className="text-lg font-bold">{t('add_product_pricing_csv_title')}</h3>
+                <p className="text-sm text-gray-500">{t('add_product_pricing_csv_desc')}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700">
-                    <div className="font-semibold mb-1">Sizes</div>
+                    <div className="font-semibold mb-1">{t('add_product_sizes_label')}</div>
                     <div>{sizes.join(', ')}</div>
                 </div>
                 <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700">
-                    <div className="font-semibold mb-1">Materials</div>
+                    <div className="font-semibold mb-1">{t('add_product_materials_label')}</div>
                     <div>{materials.join(', ')}</div>
                 </div>
             </div>
 
             <div className="p-4 rounded-lg border border-dashed border-indigo-300 dark:border-indigo-700 bg-indigo-50/50 dark:bg-indigo-900/20">
-                <label className="block text-sm font-medium mb-2">Upload pricing CSV</label>
+                <label className="block text-sm font-medium mb-2">{t('add_product_upload_csv_label')}</label>
                 <input type="file" accept=".csv,.xlsx,.xls" onChange={onFileChange} className="block w-full text-sm" />
-                <p className="text-xs text-gray-500 mt-2">Use the same pricing export format as Optimizer Prices tab: Size, Material, Final Price (CAD).</p>
+                <p className="text-xs text-gray-500 mt-2">{t('add_product_upload_csv_desc')}</p>
                 {csvStatus && <p className="text-xs mt-2 text-indigo-700 dark:text-indigo-300">{csvStatus}</p>}
-                <p className="text-xs mt-1 text-gray-600 dark:text-gray-400">Rows loaded: {newProductData.pricing_rows?.length || 0}</p>
+                <p className="text-xs mt-1 text-gray-600 dark:text-gray-400">{t('add_product_rows_loaded', { count: newProductData.pricing_rows?.length || 0 })}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-sm font-medium">Item type</label>
+                    <label className="block text-sm font-medium">{t('add_product_item_type_label')}</label>
                     <select name="item_type" value={newProductData.item_type || 'physical'} onChange={handleField} className="mt-1 block w-full input-field">
-                        <option value="physical">Physical</option>
-                        <option value="digital">Digital</option>
+                        <option value="physical">{t('add_product_type_physical')}</option>
+                        <option value="digital">{t('add_product_type_digital')}</option>
                     </select>
                 </div>
                 <div>
-                    <label className="block text-sm font-medium">Production type</label>
+                    <label className="block text-sm font-medium">{t('add_product_production_type_label')}</label>
                     <select name="production_type" value={newProductData.production_type || 'made_to_order'} onChange={handleField} className="mt-1 block w-full input-field">
-                        <option value="made_to_order">Made to order</option>
-                        <option value="finished">Finished product</option>
+                        <option value="made_to_order">{t('add_product_type_made_to_order')}</option>
+                        <option value="finished">{t('add_product_type_finished')}</option>
                     </select>
                 </div>
                 <div>
-                    <label className="block text-sm font-medium">Shipping profile ID</label>
+                    <label className="block text-sm font-medium">{t('add_product_shipping_profile_label')}</label>
                     <input name="shipping_profile_id" value={newProductData.shipping_profile_id || ''} onChange={handleField} className="mt-1 block w-full input-field" />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium">Return policy ID</label>
+                    <label className="block text-sm font-medium">{t('add_product_return_policy_label')}</label>
                     <input name="return_policy_id" value={newProductData.return_policy_id || ''} onChange={handleField} className="mt-1 block w-full input-field" />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium">Processing profile ID</label>
+                    <label className="block text-sm font-medium">{t('add_product_processing_profile_label')}</label>
                     <input name="processing_profile_id" value={newProductData.processing_profile_id || ''} onChange={handleField} className="mt-1 block w-full input-field" />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium">Shop section ID (optional)</label>
+                    <label className="block text-sm font-medium">{t('add_product_shop_section_label')}</label>
                     <input name="shop_section_id" value={newProductData.shop_section_id || ''} onChange={handleField} className="mt-1 block w-full input-field" />
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="personalization_enabled" checked={Boolean(newProductData.personalization_enabled)} onChange={handleField} /> Personalization enabled</label>
-                <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="personalization_optional" checked={Boolean(newProductData.personalization_optional)} onChange={handleField} /> Personalization optional</label>
+                <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="personalization_enabled" checked={Boolean(newProductData.personalization_enabled)} onChange={handleField} /> {t('add_product_personalization_enabled')}</label>
+                <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="personalization_optional" checked={Boolean(newProductData.personalization_optional)} onChange={handleField} /> {t('add_product_personalization_optional')}</label>
                 <div className="md:col-span-2">
-                    <label className="block text-sm font-medium">Personalization instructions (max 256)</label>
+                    <label className="block text-sm font-medium">{t('add_product_personalization_instructions_label')}</label>
                     <textarea name="personalization_instructions" maxLength={256} value={newProductData.personalization_instructions || ''} onChange={handleField} className="mt-1 block w-full input-field" rows={2} />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium">Buyer character limit (1-1024)</label>
+                    <label className="block text-sm font-medium">{t('add_product_buyer_limit_label')}</label>
                     <input type="number" min={1} max={1024} name="personalization_buyer_limit" value={newProductData.personalization_buyer_limit || 256} onChange={handleField} className="mt-1 block w-full input-field" />
                 </div>
             </div>
 
             <div className="flex justify-between">
-                <button onClick={onPrev} className="btn-secondary flex items-center"><ArrowLeft className="w-4 h-4 me-2"/>Previous Step</button>
-                <button onClick={handleNext} className="btn-primary">Validate & Continue</button>
+                <button onClick={onPrev} className="btn-secondary flex items-center"><ArrowLeft className="w-4 h-4 me-2"/>{t('add_product_prev_step')}</button>
+                <button onClick={handleNext} className="btn-primary">{t('add_product_btn_validate_continue')}</button>
             </div>
         </div>
     );
@@ -771,7 +771,7 @@ const Step4: React.FC<{onPrev: () => void}> = ({ onPrev }) => {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                     <p><strong className="text-gray-500">{t('add_product_quantity_label')}:</strong> {newProductData.quantity}</p>
                     <p><strong className="text-gray-500">{t('add_product_category_label')}:</strong> {categoryName}</p>
-                    <p><strong className="text-gray-500">Pricing rows:</strong> {newProductData.pricing_rows?.length || 0}</p>
+                    <p><strong className="text-gray-500">{t('add_product_rows_loaded', { count: '' })}</strong> {newProductData.pricing_rows?.length || 0}</p>
                 </div>
                  <div>
                     <strong className="text-gray-500 text-sm">{t('add_product_description_label')}:</strong>
@@ -795,16 +795,16 @@ const Step4: React.FC<{onPrev: () => void}> = ({ onPrev }) => {
                 </div>
                 {newProductData.pricing_rows && newProductData.pricing_rows.length > 0 && (
                     <div>
-                        <strong className="text-gray-500 text-sm">Variant pricing preview:</strong>
+                        <strong className="text-gray-500 text-sm">{t('add_product_pricing_preview_label')}</strong>
                         <div className="mt-2 max-h-56 overflow-auto border rounded-lg border-gray-200 dark:border-gray-700">
                             <table className="w-full text-xs">
                                 <thead className="bg-gray-100 dark:bg-gray-800 sticky top-0">
                                     <tr>
-                                        <th className="text-left p-2">Size</th>
-                                        <th className="text-left p-2">Material</th>
-                                        <th className="text-left p-2">Price</th>
-                                        <th className="text-left p-2">Qty</th>
-                                        <th className="text-left p-2">SKU</th>
+                                        <th className="text-left p-2">{t('add_product_col_size')}</th>
+                                        <th className="text-left p-2">{t('add_product_col_material')}</th>
+                                        <th className="text-left p-2">{t('add_product_col_price')}</th>
+                                        <th className="text-left p-2">{t('add_product_col_qty')}</th>
+                                        <th className="text-left p-2">{t('add_product_col_sku')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>

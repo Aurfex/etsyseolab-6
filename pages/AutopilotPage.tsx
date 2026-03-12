@@ -243,19 +243,19 @@ const AutopilotPage: React.FC = () => {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('autopilot_page_title')}</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">Phase 1: Scan listings, detect SEO issues, and apply one-click fixes.</p>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">{t('auto_phase_desc')}</p>
       </div>
 
       <Card>
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center mb-2">
           <Bot className="w-5 h-5 me-2 text-purple-500" />
-          Autopilot Status
+          {t('auto_status_title')}
         </h3>
         <div className="mt-2 bg-green-50 dark:bg-green-900/20 p-4 rounded-lg flex justify-between items-center">
           <div>
-            <p className="font-semibold text-green-800 dark:text-green-300">{settings.autopilot.enabled ? 'Enabled' : 'Disabled'}</p>
-            <p className="text-sm text-green-700 dark:text-green-400">Products: {stats.totalProducts} | Issues found: {stats.totalIssues} (High: {stats.high})</p>
-            <p className="text-xs text-green-700 dark:text-green-400 mt-1 uppercase tracking-tighter">Title: {stats.byType.title} | Tags: {stats.byType.tags} | Description: {stats.byType.description} | SEO: {stats.byType.seo}</p>
+            <p className="font-semibold text-green-800 dark:text-green-300">{settings.autopilot.enabled ? t('auto_status_enabled') : t('auto_status_disabled')}</p>
+            <p className="text-sm text-green-700 dark:text-green-400">{t('auto_stats_products')}: {stats.totalProducts} | {t('auto_stats_issues')}: {stats.totalIssues} ({t('auto_stats_high')}: {stats.high})</p>
+            <p className="text-xs text-green-700 dark:text-green-400 mt-1 uppercase tracking-tighter">{t('auto_stats_title')}: {stats.byType.title} | {t('auto_stats_tags')}: {stats.byType.tags} | {t('auto_stats_description')}: {stats.byType.description} | {t('auto_stats_seo')}: {stats.byType.seo}</p>
           </div>
           <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
             <input type="checkbox" id="autopilot-toggle" checked={settings.autopilot.enabled} onChange={handleAutopilotToggle} className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
@@ -265,7 +265,7 @@ const AutopilotPage: React.FC = () => {
 
         <div className="mt-4 flex gap-3">
           <button onClick={runScan} disabled={isScanning} className="inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-60">
-            {isScanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />} Scan Shop
+            {isScanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />} {t('auto_btn_scan')}
           </button>
           
           {issues.some(i => i.severity === 'high') && (
@@ -274,7 +274,7 @@ const AutopilotPage: React.FC = () => {
               disabled={isScanning || fixingIssueId !== null} 
               className="inline-flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg disabled:opacity-60"
             >
-              {fixingIssueId ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />} Fix All High Priority
+              {fixingIssueId ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />} {t('auto_btn_fix_high')}
             </button>
           )}
         </div>
@@ -282,17 +282,17 @@ const AutopilotPage: React.FC = () => {
 
       {Object.keys(fixPreview).length > 0 && (
         <Card>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Fix Preview (before saving to Etsy)</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">{t('auto_preview_title')}</h3>
           <div className="space-y-4">
             {Object.entries(fixPreview).map(([productId, preview]) => {
               const p = products.find(x => x.id === productId);
               return (
                 <div key={productId} className="p-3 rounded-lg border border-gray-200 dark:border-gray-700">
                   <p className="font-semibold text-gray-900 dark:text-white">{p?.title || productId}</p>
-                  <p className="text-xs text-gray-500 mt-1">Title (new): {preview.next.title}</p>
-                  <p className="text-xs text-gray-500">Tags (new): {preview.next.tags.join(', ')}</p>
+                  <p className="text-xs text-gray-500 mt-1">{t('auto_preview_title_new')}: {preview.next.title}</p>
+                  <p className="text-xs text-gray-500">{t('auto_preview_tags_new')}: {preview.next.tags.join(', ')}</p>
                   <p className={`text-xs ${preview.gate.passed ? 'text-emerald-700 dark:text-emerald-300' : 'text-amber-700 dark:text-amber-300'}`}>
-                    Quality Gate: Score {preview.gate.beforeScore} → {preview.gate.afterScore} | Rank #{preview.gate.beforeRank} → #{preview.gate.afterRank} {preview.gate.passed ? '✓' : '⚠'}
+                    {t('auto_quality_gate', { beforeScore: preview.gate.beforeScore, afterScore: preview.gate.afterScore, beforeRank: preview.gate.beforeRank, afterRank: preview.gate.afterRank })} {preview.gate.passed ? '✓' : '⚠'}
                   </p>
                   {!preview.gate.passed && preview.gate.reason && (
                     <p className="text-xs text-amber-700 dark:text-amber-300">{preview.gate.reason}</p>
@@ -304,7 +304,7 @@ const AutopilotPage: React.FC = () => {
                       className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-600 text-white text-sm disabled:opacity-60"
                     >
                       {savingProductId === productId ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                      {savingProductId === productId ? 'Saving...' : 'Save to Etsy'}
+                      {savingProductId === productId ? t('opt_btn_saving') : t('auto_btn_save')}
                     </button>
 
                     <button
@@ -314,7 +314,7 @@ const AutopilotPage: React.FC = () => {
                       title="Regenerate AI suggestion"
                     >
                       {fixingIssueId === `${productId}-regen` ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
-                      Regenerate
+                      {t('auto_btn_regenerate')}
                     </button>
 
                     <button
@@ -323,7 +323,7 @@ const AutopilotPage: React.FC = () => {
                       className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm disabled:opacity-60"
                     >
                       <X className="w-4 h-4" />
-                      Cancel
+                      {t('auto_btn_cancel')}
                     </button>
                   </div>
                 </div>
@@ -335,7 +335,7 @@ const AutopilotPage: React.FC = () => {
 
       <Card>
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center">
-          <AlertTriangle className="w-5 h-5 me-2 text-yellow-500" /> Detected Issues
+          <AlertTriangle className="w-5 h-5 me-2 text-yellow-500" /> {t('auto_issues_title')}
         </h3>
 
         <div className="mb-3 flex flex-wrap gap-2 text-xs">
@@ -345,15 +345,15 @@ const AutopilotPage: React.FC = () => {
               onClick={() => setFilterType(k)}
               className={`px-3 py-1.5 rounded-lg border font-medium transition-colors ${filterType === k ? 'bg-purple-600 text-white border-purple-600' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
             >
-              {k === 'all' ? 'All' : k}
+              {k === 'all' ? t('auto_filter_all') : t(`auto_filter_${k}`)}
             </button>
           ))}
         </div>
 
         {issues.length === 0 ? (
-          <p className="text-sm text-gray-500 dark:text-gray-400">No issues yet. Run Scan Shop.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{t('auto_no_issues')}</p>
         ) : visibleIssues.length === 0 ? (
-          <p className="text-sm text-gray-500 dark:text-gray-400">No issues in this filter.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{t('auto_no_filter_issues')}</p>
         ) : (
           <div className="space-y-3">
             {visibleIssues.map(issue => (
@@ -370,7 +370,7 @@ const AutopilotPage: React.FC = () => {
                     className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm disabled:opacity-60"
                   >
                     {fixingIssueId === issue.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wrench className="w-4 h-4" />}
-                    {fixingIssueId === issue.id ? 'Fixing...' : 'Fix'}
+                    {fixingIssueId === issue.id ? t('add_product_btn_analyzing') : t('auto_btn_fix')}
                   </button>
                 </div>
               </div>

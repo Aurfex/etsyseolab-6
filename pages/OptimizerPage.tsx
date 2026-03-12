@@ -208,13 +208,13 @@ const OptimizerPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('optimizer_title')}</h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1">Select a product to optimize its SEO.</p>
+                    <p className="text-gray-500 dark:text-gray-400 mt-1">{t('opt_select_product_desc')}</p>
                 </div>
                 <div className="relative w-full sm:w-64">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input 
                         type="text" 
-                        placeholder="Search products..." 
+                        placeholder={t('opt_search_placeholder')} 
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
@@ -235,7 +235,7 @@ const OptimizerPage: React.FC = () => {
                              {isOptimized && (
                                 <div className="absolute top-2 left-2 z-10 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center shadow-sm">
                                     <CheckCircle className="w-3 h-3 mr-1" />
-                                    OPTIMIZED
+                                    {t('opt_status_optimized')}
                                 </div>
                             )}
 
@@ -290,7 +290,7 @@ const OptimizerPage: React.FC = () => {
             className="flex items-center text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
         >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Products
+            {t('opt_btn_back')}
         </button>
         
         {(optimizedData || (priceToSave !== null && priceToSave > 0) || pricingRows.length > 0) && (
@@ -300,7 +300,7 @@ const OptimizerPage: React.FC = () => {
                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium flex items-center transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-sm"
              >
                 {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-                {isSaving ? 'Saving...' : 'Save Changes to Etsy'}
+                {isSaving ? t('opt_btn_saving') : t('opt_btn_save_etsy')}
              </button>
         )}
       </div>
@@ -308,7 +308,7 @@ const OptimizerPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('optimizer_title')}</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">Optimizing: <span className="font-medium text-gray-900 dark:text-gray-200">{productToOptimize.title}</span></p>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">{t('opt_optimizing_for_prefix')} <span className="font-medium text-gray-900 dark:text-gray-200">{productToOptimize.title}</span></p>
         </div>
       </div>
 
@@ -396,16 +396,16 @@ const OptimizerPage: React.FC = () => {
                 className="w-full mt-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-semibold py-2.5 rounded-lg flex items-center justify-center space-x-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all disabled:opacity-50"
             >
                 {isComparing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-                <span>{isComparing ? 'Comparing...' : 'Compare With Competitors'}</span>
+                <span>{isComparing ? t('opt_btn_comparing') : t('opt_btn_compare')}</span>
             </button>
 
             {compareResult && (
               <div className="mt-4 p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 text-sm">
-                <div className="flex justify-between"><span>Your rank</span><b>{compareResult.yourRank}/{compareResult.totalCompared}</b></div>
-                <div className="flex justify-between mt-1"><span>Your score</span><b>{compareResult.yourScore}</b></div>
-                <div className="flex justify-between mt-1"><span>Top avg</span><b>{compareResult.avgTopScore}</b></div>
-                <p className="mt-2 text-xs text-gray-500">Keyword seed: {compareResult.keywords}</p>
-                {compareResult.topCompetitorTitle && <p className="mt-1 text-xs text-gray-500">Top competitor: {compareResult.topCompetitorTitle}</p>}
+                <div className="flex justify-between"><span>{t('opt_rank_label')}</span><b>{compareResult.yourRank}/{compareResult.totalCompared}</b></div>
+                <div className="flex justify-between mt-1"><span>{t('opt_score_label')}</span><b>{compareResult.yourScore}</b></div>
+                <div className="flex justify-between mt-1"><span>{t('opt_top_avg_label')}</span><b>{compareResult.avgTopScore}</b></div>
+                <p className="mt-2 text-xs text-gray-500">{t('opt_keyword_seed_prefix')} {compareResult.keywords}</p>
+                {compareResult.topCompetitorTitle && <p className="mt-1 text-xs text-gray-500">{t('opt_top_competitor_prefix')} {compareResult.topCompetitorTitle}</p>}
                 <ul className="mt-2 list-disc pl-5 space-y-1 text-xs text-gray-600 dark:text-gray-300">
                   {compareResult.recommendations.map((r, i) => <li key={i}>{r}</li>)}
                 </ul>
@@ -459,14 +459,14 @@ const OptimizerPage: React.FC = () => {
             {!optimizedData && !isLoading && activeTab !== 'prices' && (
                 <div className="flex flex-col items-center justify-center text-gray-400 py-8">
                     <Sparkles className="w-12 h-12 mb-3 text-gray-300 dark:text-gray-600" />
-                    <p>Click "Optimize Now" to generate content.</p>
+                    <p>{t('opt_click_optimize_desc')}</p>
                 </div>
             )}
 
             {isLoading && (
                 <div className="flex flex-col items-center justify-center py-12">
                      <Loader2 className="w-8 h-8 animate-spin text-purple-500 mb-2" />
-                     <p className="text-gray-500">Generating best-in-class SEO content...</p>
+                     <p className="text-gray-500">{t('opt_generating_best_seo_desc')}</p>
                 </div>
             )}
 
@@ -475,7 +475,7 @@ const OptimizerPage: React.FC = () => {
                     {/* TITLE TAB */}
                     {activeTab === 'title' && (
                         <div className="animate-fadeIn">
-                            <label className="text-sm font-medium text-gray-900 dark:text-white mb-2 block">Optimized Product Title</label>
+                            <label className="text-sm font-medium text-gray-900 dark:text-white mb-2 block">{t('opt_optimized_title_label')}</label>
                             <div className="relative group">
                                 <textarea 
                                     value={optimizedData.title} 
@@ -489,7 +489,7 @@ const OptimizerPage: React.FC = () => {
                             </div>
                             <p className="text-xs text-gray-500 mt-2 flex items-center">
                                 <Info className="w-3 h-3 mr-1" />
-                                Contains high-value keywords for Etsy search algorithm.
+                                {t('opt_ai_insight_desc')}
                             </p>
                         </div>
                     )}
@@ -498,14 +498,14 @@ const OptimizerPage: React.FC = () => {
                     {activeTab === 'description' && (
                         <div className="animate-fadeIn">
                             <div className="flex justify-between items-center mb-2">
-                                <label className="text-sm font-medium text-gray-900 dark:text-white block">Optimized Product Description</label>
+                                <label className="text-sm font-medium text-gray-900 dark:text-white block">{t('opt_optimized_desc_label')}</label>
                                 <button 
                                     onClick={handleGenerateDescription}
                                     disabled={isGeneratingItem === 'description'}
                                     className="text-xs flex items-center bg-purple-100 hover:bg-purple-200 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 px-3 py-1.5 rounded transition-colors"
                                 >
                                     {isGeneratingItem === 'description' ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Sparkles className="w-3 h-3 mr-1" />}
-                                    Regenerate Description
+                                    {t('opt_btn_regenerate_desc')}
                                 </button>
                             </div>
                             <div className="relative group">
@@ -521,7 +521,7 @@ const OptimizerPage: React.FC = () => {
                             </div>
                             <p className="text-xs text-gray-500 mt-2 flex items-center">
                                 <Info className="w-3 h-3 mr-1" />
-                                Optimized for readability and keyword density.
+                                {t('opt_readability_insight_desc')}
                             </p>
                         </div>
                     )}
@@ -529,7 +529,7 @@ const OptimizerPage: React.FC = () => {
                     {/* ALT TEXT TAB */}
                     {activeTab === 'altText' && (
                         <div className="animate-fadeIn">
-                             <label className="text-sm font-medium text-gray-900 dark:text-white mb-2 block">Optimized Image Alt Text</label>
+                             <label className="text-sm font-medium text-gray-900 dark:text-white mb-2 block">{t('opt_optimized_alt_label')}</label>
                              <div className="relative group">
                                 <textarea 
                                     value={optimizedData.altText || "No alt text generated."} 
@@ -543,7 +543,7 @@ const OptimizerPage: React.FC = () => {
                             </div>
                             <p className="text-xs text-gray-500 mt-2 flex items-center">
                                 <Info className="w-3 h-3 mr-1" />
-                                Improves accessibility and Google Images ranking.
+                                {t('opt_alt_insight_desc')}
                             </p>
                         </div>
                     )}
@@ -552,7 +552,7 @@ const OptimizerPage: React.FC = () => {
                     {activeTab === 'tags' && (
                         <div className="animate-fadeIn">
                              <div className="flex justify-between items-center mb-3">
-                                <label className="text-sm font-medium text-gray-900 dark:text-white">Generated Tags ({optimizedData.tags.length})</label>
+                                <label className="text-sm font-medium text-gray-900 dark:text-white">{t('opt_generated_tags_label', { count: optimizedData.tags.length })}</label>
                                 <div className="flex items-center gap-2">
                                     <button 
                                         onClick={handleGenerateTags}
@@ -560,10 +560,10 @@ const OptimizerPage: React.FC = () => {
                                         className="text-xs flex items-center bg-purple-100 hover:bg-purple-200 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 px-3 py-1.5 rounded transition-colors"
                                     >
                                         {isGeneratingItem === 'tags' ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Sparkles className="w-3 h-3 mr-1" />}
-                                        Regenerate Tags
+                                        {t('opt_btn_regenerate_tags')}
                                     </button>
                                     <button onClick={() => handleCopyToClipboard(optimizedData.tags.join(', '))} className="text-xs text-purple-600 hover:text-purple-700 flex items-center px-3 py-1.5">
-                                        <Copy className="w-3 h-3 mr-1" /> Copy All
+                                        <Copy className="w-3 h-3 mr-1" /> {t('opt_btn_copy_all')}
                                     </button>
                                 </div>
                              </div>
@@ -578,7 +578,7 @@ const OptimizerPage: React.FC = () => {
                              </div>
                              <p className="text-xs text-gray-500 mt-2 flex items-center">
                                 <Info className="w-3 h-3 mr-1" />
-                                13 tags optimized for Etsy's matching algorithm.
+                                {t('opt_tags_insight_desc')}
                             </p>
                         </div>
                     )}
@@ -589,10 +589,10 @@ const OptimizerPage: React.FC = () => {
 
             {activeTab === 'prices' && !isLoading && (
               <div className="animate-fadeIn space-y-4">
-                <label className="text-sm font-medium text-gray-900 dark:text-white block">Pricing Import (dXb-pricing CSV/XLSX)</label>
+                <label className="text-sm font-medium text-gray-900 dark:text-white block">{t('opt_pricing_import_label')}</label>
                 <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900">
                   <Upload className="w-4 h-4" />
-                  <span className="text-sm">Upload pricing file</span>
+                  <span className="text-sm">{t('opt_btn_upload_pricing')}</span>
                   <input
                     type="file"
                     accept=".csv,.xlsx,.xls"
@@ -605,7 +605,7 @@ const OptimizerPage: React.FC = () => {
                 </label>
 
                 <div>
-                  <label className="text-xs text-gray-500">Price to save on Etsy (base listing price)</label>
+                  <label className="text-xs text-gray-500">{t('opt_base_price_label')}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -615,7 +615,7 @@ const OptimizerPage: React.FC = () => {
                     className="mt-1 w-full bg-gray-50 dark:bg-gray-900 p-3 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 outline-none"
                     placeholder="e.g. 249.99"
                   />
-                  <p className="text-xs text-gray-500 mt-2">This tab sends only Size, Material, and Final Price (CAD) rows to Etsy inventory variations, and can also save a base listing price.</p>
+                  <p className="text-xs text-gray-500 mt-2">{t('opt_pricing_tab_desc')}</p>
                 </div>
 
                 {pricingRows.length > 0 && (
@@ -623,9 +623,9 @@ const OptimizerPage: React.FC = () => {
                     <table className="w-full text-xs">
                       <thead className="bg-gray-100 dark:bg-gray-800 sticky top-0">
                         <tr>
-                          <th className="text-left p-2">Size</th>
-                          <th className="text-left p-2">Material</th>
-                          <th className="text-left p-2">Price</th>
+                          <th className="text-left p-2">{t('add_product_col_size')}</th>
+                          <th className="text-left p-2">{t('add_product_col_material')}</th>
+                          <th className="text-left p-2">{t('add_product_col_price')}</th>
                         </tr>
                       </thead>
                       <tbody>
