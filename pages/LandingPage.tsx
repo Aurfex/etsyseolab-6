@@ -253,8 +253,8 @@ const LandingPage: React.FC = () => {
             <span className="text-lg font-bold tracking-tight text-gray-900 dark:text-white uppercase">ETSY SEOLAB</span>
           </div>
           <div className="flex space-x-8 text-sm text-gray-500">
-            <button onClick={() => setPage('privacy')} className="hover:text-purple-600 transition-colors">Privacy Policy</button>
-            <button onClick={() => setPage('terms')} className="hover:text-purple-600 transition-colors">Terms of Service</button>
+            <button onClick={() => setPage('privacy')} className="hover:text-purple-600 transition-colors">{t('landing_nav_privacy')}</button>
+            <button onClick={() => setPage('terms')} className="hover:text-purple-600 transition-colors">{t('landing_nav_terms')}</button>
             <button onClick={() => setPage('contact')} className="hover:text-purple-600 transition-colors">{t('landing_nav_contact')}</button>
           </div>
           <div className="text-sm text-gray-500">
