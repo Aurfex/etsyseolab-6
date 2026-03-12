@@ -10,6 +10,7 @@ html, body, #root {
 
 body {
   font-family: 'Inter', sans-serif;
+  @apply bg-white dark:bg-gray-950;
 }
 
 /* Optional custom scrollbar */

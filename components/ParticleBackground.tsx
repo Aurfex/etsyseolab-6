@@ -40,11 +40,11 @@ const ParticleBackground: React.FC = () => {
       constructor() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 1.5 + 0.5;
-        this.speedX = (Math.random() - 0.5) * 0.3;
-        this.speedY = (Math.random() - 0.5) * 0.3;
+        this.size = Math.random() * 2 + 1; // Bigger particles
+        this.speedX = (Math.random() - 0.5) * 0.4;
+        this.speedY = (Math.random() - 0.5) * 0.4;
         
-        const colors = ['#9333ea', '#a855f7', '#6366f1', '#4f46e5'];
+        const colors = ['#a855f7', '#818cf8', '#6366f1', '#fbbf24']; // Added some gold for contrast
         this.color = colors[Math.floor(Math.random() * colors.length)];
         this.alpha = 1;
       }
@@ -118,9 +118,9 @@ const ParticleBackground: React.FC = () => {
           const dy = particles[a].y - particles[b].y;
           const distance = Math.sqrt(dx * dx + dy * dy);
 
-          if (distance < 120) { // Slightly shorter lines for cleaner look
-            const opacity = (1 - distance / 120) * particles[a].alpha * particles[b].alpha;
-            ctx.strokeStyle = `rgba(147, 51, 234, ${opacity * 0.3})`;
+          if (distance < 150) { // Slightly longer lines
+            const opacity = (1 - distance / 150) * 0.5;
+            ctx.strokeStyle = `rgba(168, 85, 247, ${opacity})`;
             ctx.lineWidth = 0.5;
             ctx.beginPath();
             ctx.moveTo(particles[a].x, particles[a].y);
@@ -163,7 +163,7 @@ const ParticleBackground: React.FC = () => {
         left: 0,
         width: '100%',
         height: '100%',
-        zIndex: 0,
+        zIndex: -1,
         pointerEvents: 'none',
         background: 'transparent'
       }}

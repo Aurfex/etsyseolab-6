@@ -141,7 +141,7 @@ const LandingPage: React.FC = () => {
   ];
 
   return (
-    <div className="relative min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-white selection:bg-purple-500/30 overflow-x-hidden">
+    <div className="relative min-h-screen bg-transparent text-gray-900 dark:text-white selection:bg-purple-500/30 overflow-x-hidden">
       <ParticleBackground />
       {/* NAVBAR */}
       <nav className="fixed top-0 w-full z-50 bg-white/60 dark:bg-gray-950/60 backdrop-blur-md border-b border-gray-100 dark:border-gray-900">
