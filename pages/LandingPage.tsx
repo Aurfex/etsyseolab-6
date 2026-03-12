@@ -83,13 +83,13 @@ const LandingPage: React.FC = () => {
             <span className="text-xl font-bold text-gray-900 dark:text-white tracking-tight uppercase">ETSY SEOLAB</span>
           </div>
           <div className="hidden md:flex items-center space-x-8 text-sm font-medium">
-            <a href="#features" className="hover:text-purple-600 transition-colors">Features</a>
-            <a href="#pricing" className="hover:text-purple-600 transition-colors">Pricing</a>
+            <a href="#features" className="hover:text-purple-600 transition-colors">{t('landing_nav_features')}</a>
+            <a href="#pricing" className="hover:text-purple-600 transition-colors">{t('landing_nav_pricing')}</a>
             <button 
               onClick={login}
               className="px-6 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full font-bold hover:scale-105 transition-transform"
             >
-              Login with Etsy
+              {t('landing_nav_login')}
             </button>
           </div>
         </div>
@@ -100,14 +100,14 @@ const LandingPage: React.FC = () => {
         <div className="max-w-7xl mx-auto text-center">
           <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 text-xs font-bold mb-8 animate-fade-in">
             <Rocket className="w-4 h-4" />
-            <span>Powering 2,500+ Etsy Shops with AI</span>
+            <span>{t('landing_social_proof')}</span>
           </div>
           <h1 className="text-5xl md:text-7xl font-black mb-12 leading-[1.3] animate-fade-in-up">
-            Dominate <span className="text-[#F1641E]">Etsy</span> Search with <br />
+            {t('landing_hero_title1')} <span className="text-[#F1641E]">Etsy</span> {t('landing_hero_title2')} <br />
             <span className="inline-block bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-500 mt-4 py-2">AI Intelligence.</span>
           </h1>
           <p className="text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto mb-4 animate-fade-in-up delay-100">
-            Stop guessing your keywords. Use Hasti AI to analyze your competitors, optimize your listings, and scale your sales automatically.
+            {t('landing_hero_subtitle')}
           </p>
           <p className="text-lg font-medium text-purple-600 dark:text-purple-400 mb-10 animate-fade-in-up delay-150 italic">
             "Hasti AI: Because your competitors need a reason to cry."
@@ -117,11 +117,11 @@ const LandingPage: React.FC = () => {
               onClick={login}
               className="w-full sm:w-auto px-8 py-4 bg-[#F1641E] text-white rounded-2xl font-bold text-lg hover:bg-[#d4551a] hover:shadow-xl hover:shadow-orange-500/30 transition-all flex items-center justify-center group"
             >
-              Start Your Free Audit
+              {t('landing_hero_cta')}
               <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
             <button className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl font-bold text-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
-              Watch Demo
+              {t('landing_hero_secondary_cta')}
             </button>
           </div>
 
@@ -143,8 +143,8 @@ const LandingPage: React.FC = () => {
       <section id="features" className="relative py-20 px-6 bg-gray-50/50 dark:bg-gray-900/20">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-black mb-4 text-gray-900 dark:text-white">Everything you need to <br /> scale on Etsy.</h2>
-            <p className="text-gray-500 dark:text-gray-400">Powered by the latest LLMs and real-time Etsy market data.</p>
+            <h2 className="text-3xl md:text-5xl font-black mb-4 text-gray-900 dark:text-white">{t('landing_feat_title')}</h2>
+            <p className="text-gray-500 dark:text-gray-400">{t('landing_feat_subtitle')}</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {features.map((f, i) => (
@@ -166,8 +166,8 @@ const LandingPage: React.FC = () => {
       <section className="relative py-20 px-6 overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-black mb-4 text-gray-900 dark:text-white">Trusted by creators worldwide.</h2>
-            <p className="text-gray-500 dark:text-gray-400">Join 2,500+ Etsy sellers who have automated their growth.</p>
+            <h2 className="text-3xl md:text-5xl font-black mb-4 text-gray-900 dark:text-white">{t('landing_testi_title')}</h2>
+            <p className="text-gray-500 dark:text-gray-400">{t('landing_testi_subtitle')}</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {testimonials.map((t, i) => (
@@ -193,21 +193,21 @@ const LandingPage: React.FC = () => {
       <section id="pricing" className="py-20 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-black mb-4 text-gray-900 dark:text-white">Simple, transparent pricing.</h2>
-            <p className="text-gray-500 dark:text-gray-400">Choose the plan that fits your growth stage.</p>
+            <h2 className="text-3xl md:text-5xl font-black mb-4 text-gray-900 dark:text-white">{t('landing_pricing_title')}</h2>
+            <p className="text-gray-500 dark:text-gray-400">{t('landing_pricing_subtitle')}</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {pricing.map((p, i) => (
               <div key={i} className={`p-8 rounded-3xl border ${p.highlight ? 'border-purple-500 ring-4 ring-purple-500/10 bg-white dark:bg-gray-900 relative scale-105 z-10' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950'}`}>
                 {p.highlight && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-purple-600 text-white text-xs font-bold rounded-full">
-                    MOST POPULAR
+                    {t('landing_pricing_popular')}
                   </div>
                 )}
                 <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">{p.name}</h3>
                 <div className="flex items-baseline mb-4">
                   <span className="text-4xl font-black text-gray-900 dark:text-white">{p.price}</span>
-                  {p.price !== 'Free' && <span className="text-gray-500 ml-1">/mo</span>}
+                  {p.price !== 'Free' && <span className="text-gray-500 ml-1">{t('landing_pricing_mo')}</span>}
                 </div>
                 <p className="text-sm text-gray-500 mb-8">{p.description}</p>
                 <div className="space-y-4 mb-8">
