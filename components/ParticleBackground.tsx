@@ -13,8 +13,8 @@ const ParticleBackground: React.FC = () => {
     let animationFrameId: number;
     let particles: Particle[] = [];
     const mouse = { x: 0, y: 0, radius: 180 };
-    const particleCount = 150; // Increased count as requested
-    const centerAttraction = 0.05; // Subtle drift towards center
+    const particleCount = 200; // Even more particles
+    const centerAttraction = 0.05; 
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -157,13 +157,14 @@ const ParticleBackground: React.FC = () => {
   return (
     <canvas
       ref={canvasRef}
+      className="particle-canvas"
       style={{
         position: 'fixed',
         top: 0,
         left: 0,
         width: '100%',
         height: '100%',
-        zIndex: -1,
+        zIndex: 0,
         pointerEvents: 'none',
         background: 'transparent'
       }}

@@ -141,10 +141,10 @@ const LandingPage: React.FC = () => {
   ];
 
   return (
-    <div className="relative min-h-screen bg-transparent text-gray-900 dark:text-white selection:bg-purple-500/30 overflow-x-hidden">
+    <div className="relative min-h-screen bg-transparent text-gray-900 dark:text-white selection:bg-purple-500/30 overflow-x-hidden z-10">
       <ParticleBackground />
       {/* NAVBAR */}
-      <nav className="fixed top-0 w-full z-50 bg-white/60 dark:bg-gray-950/60 backdrop-blur-md border-b border-gray-100 dark:border-gray-900">
+      <nav className="fixed top-0 w-full z-50 bg-white/40 dark:bg-gray-950/40 backdrop-blur-md border-b border-gray-100 dark:border-gray-900">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Zap className="h-7 w-7 text-[#F1641E] flex-shrink-0" />
