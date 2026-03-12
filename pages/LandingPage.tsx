@@ -1,8 +1,76 @@
 import React, { useState } from 'react';
-import { Zap, Shield, BarChart3, ArrowRight, CheckCircle2, Star, Rocket, Layout, Bot, ChevronDown, ChevronUp } from 'lucide-react';
+import { Zap, Shield, BarChart3, ArrowRight, CheckCircle2, Star, Rocket, Layout, Bot, ChevronDown, ChevronUp, Send, Loader2 } from 'lucide-react';
 import { useAppContext } from '../contexts/AppContext';
 import { useTranslation } from '../contexts/LanguageContext';
 import ParticleBackground from '../components/ParticleBackground';
+
+const WaitlistForm = () => {
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const { t } = useTranslation();
+  const { showToast } = useAppContext();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+
+    setStatus('loading');
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // In a real app, we'd call /api/waitlist
+      // For now, we'll just show success
+      setStatus('success');
+      showToast({ tKey: 'waitlist_success', type: 'success' });
+      setEmail('');
+    } catch (err) {
+      setStatus('error');
+      showToast({ tKey: 'waitlist_error', type: 'error' });
+    } finally {
+      setTimeout(() => setStatus('idle'), 3000);
+    }
+  };
+
+  if (status === 'success') {
+    return (
+      <div className="flex items-center justify-center p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/30 rounded-2xl animate-fade-in">
+        <CheckCircle2 className="w-5 h-5 text-green-500 mr-2" />
+        <span className="font-bold text-green-700 dark:text-green-400">{t('waitlist_success_msg')}</span>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="relative max-w-md mx-auto sm:mx-0 w-full">
+      <div className="flex flex-col sm:flex-row gap-3">
+        <input
+          type="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={t('waitlist_input_placeholder')}
+          className="flex-1 px-6 py-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl focus:ring-2 focus:ring-[#F1641E] outline-none transition-all text-gray-900 dark:text-white"
+        />
+        <button
+          type="submit"
+          disabled={status === 'loading'}
+          className="px-8 py-4 bg-[#F1641E] text-white rounded-2xl font-bold hover:bg-[#d4551a] hover:shadow-lg hover:shadow-orange-500/30 transition-all flex items-center justify-center disabled:opacity-50"
+        >
+          {status === 'loading' ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            <>
+              <span>{t('waitlist_btn')}</span>
+              <Send className="ml-2 w-4 h-4" />
+            </>
+          )}
+        </button>
+      </div>
+    </form>
+  );
+};
 
 const FaqItem = ({ question, answer }: { question: string, answer: string }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -112,17 +180,22 @@ const LandingPage: React.FC = () => {
           <p className="text-lg font-medium text-purple-600 dark:text-purple-400 mb-10 animate-fade-in-up delay-150 italic">
             "Hasti AI: Because your competitors need a reason to cry."
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 animate-fade-in-up delay-200">
-            <button 
-              onClick={login}
-              className="w-full sm:w-auto px-8 py-4 bg-[#F1641E] text-white rounded-2xl font-bold text-lg hover:bg-[#d4551a] hover:shadow-xl hover:shadow-orange-500/30 transition-all flex items-center justify-center group"
-            >
-              {t('landing_hero_cta')}
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </button>
-            <button className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl font-bold text-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
-              {t('landing_hero_secondary_cta')}
-            </button>
+          <div className="flex flex-col items-center justify-center animate-fade-in-up delay-200">
+            <div className="mb-6 w-full max-w-lg">
+              <WaitlistForm />
+            </div>
+            <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+              <button 
+                onClick={login}
+                className="w-full sm:w-auto px-8 py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-2xl font-bold text-lg hover:scale-105 transition-all flex items-center justify-center group"
+              >
+                {t('landing_hero_cta')}
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </button>
+              <button className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl font-bold text-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
+                {t('landing_hero_secondary_cta')}
+              </button>
+            </div>
           </div>
 
           {/* Floating UI Mockup */}
@@ -241,6 +314,27 @@ const LandingPage: React.FC = () => {
             {faqs.map((faq, i) => (
               <FaqItem key={i} question={faq.question} answer={faq.answer} />
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA SECTION */}
+      <section className="py-20 px-6">
+        <div className="max-w-5xl mx-auto bg-gradient-to-br from-purple-600 to-indigo-700 rounded-[3rem] p-12 md:p-20 text-center text-white relative overflow-hidden shadow-2xl">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-900/30 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl"></div>
+          
+          <div className="relative z-10">
+            <h2 className="text-4xl md:text-6xl font-black mb-8">{t('landing_cta_bottom_title')}</h2>
+            <p className="text-xl text-purple-100 mb-12 max-w-2xl mx-auto">
+              {t('landing_cta_bottom_subtitle')}
+            </p>
+            <div className="max-w-md mx-auto">
+              <WaitlistForm />
+            </div>
+            <p className="mt-6 text-sm text-purple-200">
+              {t('landing_cta_bottom_note')}
+            </p>
           </div>
         </div>
       </section>

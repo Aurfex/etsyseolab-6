@@ -824,6 +824,16 @@ const en: Translations = {
     "landing_faq_3_q": "How is this different from eRank or Marmalead?",
     "landing_faq_3_a": "Traditional tools give you overwhelming spreadsheets of raw data and expect you to do the hard work. Hasti AI is a generative co-pilot. We don't just show you the data; we actually write the optimized titles and tags for you.",
     "landing_faq_4_q": "Do I need to be a tech expert to use this?",
-    "landing_faq_4_a": "Not at all. If you know how to click a button, you can use Hasti AI. Our interface is specifically designed for creative sellers, not coders or data scientists."
+    "landing_faq_4_a": "Not at all. If you know how to click a button, you can use Hasti AI. Our interface is specifically designed for creative sellers, not coders or data scientists.",
+    
+    // Waitlist
+    "waitlist_input_placeholder": "Enter your shop email...",
+    "waitlist_btn": "Join Waitlist",
+    "waitlist_success": "You're in!",
+    "waitlist_error": "Something went wrong.",
+    "waitlist_success_msg": "Welcome to the future of Etsy. We'll be in touch!",
+    "landing_cta_bottom_title": "Ready to dominate Etsy?",
+    "landing_cta_bottom_subtitle": "Join 500+ shops already using Hasti AI to outsmart their competition.",
+    "landing_cta_bottom_note": "No credit card required. Cancel anytime."
 };
 export default en;

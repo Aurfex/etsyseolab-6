@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Calculator, Download, RefreshCw } from 'lucide-react';
+import { useTranslation } from '../contexts/LanguageContext';
 
 type Material = '14k Gold' | 'Platinum' | 'Silver 925';
 
@@ -39,6 +40,7 @@ const FieldInput: React.FC<FieldInputProps> = ({ label, value, onChange, onBlur 
 );
 
 const PricingCalculatorPage: React.FC = () => {
+  const { t } = useTranslation();
   const [inputs, setInputs] = useState({
     goldPricePerGram: 85,
     platinumPricePerGram: 45,
@@ -229,16 +231,16 @@ const PricingCalculatorPage: React.FC = () => {
           <Calculator className="w-7 h-7" /> Pricing Calculator
         </h1>
         <p className="text-gray-500 dark:text-gray-400 mt-1">
-          Etsy-matched sizes (6-12), 3 materials, full cost breakdown, and tax presets.
+          {t('calc_desc')}
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 space-y-4 max-h-[75vh] overflow-auto">
-          <FieldInput label="Gold Price / g" {...bindField('goldPricePerGram')} />
-          <FieldInput label="Platinum Price / g" {...bindField('platinumPricePerGram')} />
-          <FieldInput label="Silver Fixed Price / Ring" {...bindField('silverFixedPrice')} />
-          <FieldInput label="Base Weight Size 7 (g)" {...bindField('baseWeightSize7')} />
+          <FieldInput label={t("calc_lbl_gold")} {...bindField('goldPricePerGram')} />
+          <FieldInput label={t("calc_lbl_plat")} {...bindField('platinumPricePerGram')} />
+          <FieldInput label={t("calc_lbl_silver")} {...bindField('silverFixedPrice')} />
+          <FieldInput label={t("calc_lbl_base_weight")} {...bindField('baseWeightSize7')} />
 
           <button
             onClick={refreshMetalPrices}
@@ -246,18 +248,18 @@ const PricingCalculatorPage: React.FC = () => {
             className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg disabled:opacity-60"
           >
             <RefreshCw className={`w-4 h-4 ${isRefreshingMetals ? 'animate-spin' : ''}`} />
-            {isRefreshingMetals ? 'Refreshing metal prices...' : 'Refresh Live Metal Prices (CAD)'}
+            {isRefreshingMetals ? t('calc_refreshing') : t('calc_refresh_live')}
           </button>
           {metalStatus && <p className="text-xs text-gray-500">{metalStatus}</p>}
 
           <hr className="border-gray-200 dark:border-gray-700" />
-          <FieldInput label="Design" {...bindField('designCost')} />
-          <FieldInput label="3D Printing" {...bindField('printing3DCost')} />
-          <FieldInput label="Casting" {...bindField('castingCost')} />
-          <FieldInput label="Soldering, Cleaning & Polishing" {...bindField('finishingCost')} />
-          <FieldInput label="Plating" {...bindField('platingCost')} />
-          <FieldInput label="Stone Setting" {...bindField('stoneSettingCost')} />
-          <FieldInput label="Laser Engraving" {...bindField('engravingCost')} />
+          <FieldInput label={t("calc_lbl_design")} {...bindField('designCost')} />
+          <FieldInput label={t("calc_lbl_3d")} {...bindField('printing3DCost')} />
+          <FieldInput label={t("calc_lbl_casting")} {...bindField('castingCost')} />
+          <FieldInput label={t("calc_lbl_finishing")} {...bindField('finishingCost')} />
+          <FieldInput label={t("calc_lbl_plating")} {...bindField('platingCost')} />
+          <FieldInput label={t("calc_lbl_setting")} {...bindField('stoneSettingCost')} />
+          <FieldInput label={t("calc_lbl_engraving")} {...bindField('engravingCost')} />
           <FieldInput label="Stone Price" {...bindField('stonePrice')} />
           <FieldInput label="Finding" {...bindField('findingCost')} />
           <FieldInput label="Tools" {...bindField('toolsCost')} />
@@ -294,8 +296,8 @@ const PricingCalculatorPage: React.FC = () => {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-gray-500 border-b border-gray-200 dark:border-gray-700">
-                <th className="p-2">Size</th>
-                <th className="p-2">Material</th>
+                <th className="p-2">{t('calc_table_size')}</th>
+                <th className="p-2">{t('calc_table_material')}</th>
                 <th className="p-2">Weight(g)</th>
                 <th className="p-2">Material Cost</th>
                 <th className="p-2">Cost+Tax</th>

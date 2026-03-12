@@ -849,6 +849,16 @@ const fr: Translations = {
     "landing_faq_3_q": "En quoi est-ce différent d'eRank ou Marmalead ?",
     "landing_faq_3_a": "Les outils traditionnels vous donnent des feuilles de calcul brutes. Hasti IA est un copilote génératif. Nous écrivons les titres et tags optimisés pour vous.",
     "landing_faq_4_q": "Dois-je être un expert technique ?",
-    "landing_faq_4_a": "Pas du tout. Si vous savez cliquer sur un bouton, vous pouvez utiliser Hasti IA. Notre interface est conçue pour les créateurs, pas pour les codeurs."
+    "landing_faq_4_a": "Pas du tout. Si vous savez cliquer sur un bouton, vous pouvez utiliser Hasti IA. Notre interface est conçue pour les créateurs, pas pour les codeurs.",
+    
+    // Waitlist
+    "waitlist_input_placeholder": "Votre email de boutique...",
+    "waitlist_btn": "Rejoindre",
+    "waitlist_success": "Bienvenue !",
+    "waitlist_error": "Une erreur est survenue.",
+    "waitlist_success_msg": "Bienvenue dans le futur d'Etsy. On se parle bientôt !",
+    "landing_cta_bottom_title": "Prêt à dominer Etsy ?",
+    "landing_cta_bottom_subtitle": "Rejoignez plus de 500 boutiques utilisant déjà Hasti IA.",
+    "landing_cta_bottom_note": "Pas de carte de crédit. Annulez à tout moment."
 };
 export default fr;
