@@ -114,7 +114,7 @@ const DashboardPage: React.FC = () => {
                                 />
                             </svg>
                             <div className="absolute flex flex-col items-center justify-center">
-                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Health Score</span>
+                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t('dash_health_score')}</span>
                                 <span className={`text-5xl font-black ${healthScore === 'C-' ? 'text-purple-600' : 'text-green-500'}`}>
                                     {healthScore}
                                 </span>
@@ -125,26 +125,26 @@ const DashboardPage: React.FC = () => {
                     {/* Middle: Issues List */}
                     <div className="flex-grow w-full">
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                            {healthScore === 'C-' ? 'Your store needs attention' : 'Your store is perfectly optimized!'}
+                            {healthScore === 'C-' ? t('dash_health_needs_attention') : t('dash_health_perfect')}
                         </h2>
                         
                         <div className="space-y-3">
                             <div className={`flex items-center p-3 rounded-xl border ${healthScore === 'C-' ? 'bg-purple-50 dark:bg-purple-900/20 border-purple-100 dark:border-purple-800/50' : 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800/50'}`}>
                                 {healthScore === 'C-' ? <AlertTriangle className="w-5 h-5 text-purple-500 mr-3" /> : <Check className="w-5 h-5 text-green-500 mr-3" />}
                                 <span className="text-gray-700 dark:text-gray-300 font-medium">
-                                    {healthScore === 'C-' ? `${missingTagsCount} listings missing tags` : 'All tags are optimized'}
+                                    {healthScore === 'C-' ? t('dash_health_missing_tags', { count: missingTagsCount }) : t('dash_health_tags_ok')}
                                 </span>
                             </div>
                             <div className={`flex items-center p-3 rounded-xl border ${healthScore === 'C-' ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-800/50' : 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800/50'}`}>
                                 {healthScore === 'C-' ? <AlertCircle className="w-5 h-5 text-indigo-500 mr-3" /> : <Check className="w-5 h-5 text-green-500 mr-3" />}
                                 <span className="text-gray-700 dark:text-gray-300 font-medium">
-                                    {healthScore === 'C-' ? `${lowSeoCount} listings have low SEO scores` : 'SEO scores are excellent'}
+                                    {healthScore === 'C-' ? t('dash_health_low_seo', { count: lowSeoCount }) : t('dash_health_seo_ok')}
                                 </span>
                             </div>
                             <div className={`flex items-center p-3 rounded-xl border ${healthScore === 'C-' ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800/50' : 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800/50'}`}>
                                 {healthScore === 'C-' ? <ImageIcon className="w-5 h-5 text-blue-600 mr-3" /> : <Check className="w-5 h-5 text-green-500 mr-3" />}
                                 <span className="text-gray-700 dark:text-gray-300 font-medium">
-                                    {healthScore === 'C-' ? `${poorImagesCount} listings need Image SEO` : 'All images are WEBP optimized'}
+                                    {healthScore === 'C-' ? t('dash_health_missing_image_seo', { count: poorImagesCount }) : t('dash_health_image_seo_ok')}
                                 </span>
                             </div>
                         </div>
@@ -161,11 +161,11 @@ const DashboardPage: React.FC = () => {
                                 {isFixing ? (
                                     <span className="flex items-center justify-center">
                                         <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
-                                        Fixing with AI...
+                                        {t('dash_health_fixing')}
                                     </span>
                                 ) : (
                                     <span className="flex items-center justify-center text-lg">
-                                        ✨ Fix All with AI
+                                        ✨ {t('dash_health_fix_all')}
                                     </span>
                                 )}
                             </button>
@@ -173,13 +173,13 @@ const DashboardPage: React.FC = () => {
                             <div className="w-full lg:w-64 py-4 px-6 rounded-2xl font-bold text-green-700 bg-green-100 dark:bg-green-900/40 dark:text-green-300 text-center border border-green-200 dark:border-green-800">
                                 <span className="flex items-center justify-center text-lg">
                                     <Check className="w-6 h-6 mr-2" />
-                                    Store is Perfect
+                                    {t('dash_health_perfect_store')}
                                 </span>
                             </div>
                         )}
                         {healthScore === 'C-' && !isFixing && (
                             <p className="text-xs text-gray-400 mt-3 text-center">
-                                AI will analyze and fix {missingTagsCount + lowSeoCount + poorImagesCount} issues.
+                                {t('dash_health_fix_desc', { count: missingTagsCount + lowSeoCount + poorImagesCount })}
                             </p>
                         )}
                     </div>
@@ -194,12 +194,12 @@ const DashboardPage: React.FC = () => {
                         <div>
                             <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center">
                                 <DollarSign className="w-5 h-5 me-2 text-indigo-500"/>
-                                AI Revenue Forecast
+                                {t('dash_rev_title')}
                             </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Estimated impact of poor SEO on your sales</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{t('dash_rev_subtitle')}</p>
                         </div>
                         <div className="text-right">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Missed This Month</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{t('dash_rev_missed_label')}</p>
                             <p className={`text-2xl font-bold ${healthScore === 'C-' ? 'text-indigo-500' : 'text-green-500'}`}>
                                 {healthScore === 'C-' ? '$2,450.00' : '$0.00'}
                             </p>
@@ -225,9 +225,9 @@ const DashboardPage: React.FC = () => {
                                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                     formatter={(value: number) => [`$${value}`, 'Revenue']}
                                 />
-                                <Area type="monotone" dataKey="actual" name="Current Revenue" stroke="#4F46E5" strokeWidth={3} fillOpacity={1} fill="url(#colorActual)" />
+                                <Area type="monotone" dataKey="actual" name={t('dash_rev_current')} stroke="#4F46E5" strokeWidth={3} fillOpacity={1} fill="url(#colorActual)" />
                                 {healthScore === 'C-' && (
-                                    <Area type="monotone" dataKey="missed" name="Potential Revenue" stroke="#10B981" strokeWidth={2} strokeDasharray="5 5" fillOpacity={1} fill="url(#colorMissed)" />
+                                    <Area type="monotone" dataKey="missed" name={t('dash_rev_potential')} stroke="#10B981" strokeWidth={2} strokeDasharray="5 5" fillOpacity={1} fill="url(#colorMissed)" />
                                 )}
                             </AreaChart>
                         </ResponsiveContainer>
@@ -242,13 +242,13 @@ const DashboardPage: React.FC = () => {
                             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
                                 <Search className="w-4 h-4" />
                             </span>
-                            <h3 className="font-bold text-gray-900 dark:text-white">Competitor Radar</h3>
+                            <h3 className="font-bold text-gray-900 dark:text-white">{t('dash_radar_title')}</h3>
                         </div>
                         <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
-                            <strong>@BohoJewelryCo</strong> just listed 3 new items using the tag <span className="inline-block bg-white dark:bg-gray-800 px-2 py-1 rounded text-xs border border-gray-200 dark:border-gray-700 mx-1 font-mono text-gray-800 dark:text-gray-200">chunky silver ring</span>.
+                            <span dangerouslySetInnerHTML={{ __html: t('dash_radar_alert', { shop: 'BohoJewelryCo', count: 3 }) }} /> <span className="inline-block bg-white dark:bg-gray-800 px-2 py-1 rounded text-xs border border-gray-200 dark:border-gray-700 mx-1 font-mono text-gray-800 dark:text-gray-200">chunky silver ring</span>.
                         </p>
                         <button className="w-full py-2 bg-[#F1641E] hover:bg-[#D95A1B] text-white text-sm font-semibold rounded-xl transition-colors shadow-md shadow-[#F1641E]/20">
-                            Analyze Their SEO
+                            {t('dash_radar_btn')}
                         </button>
                     </div>
 
@@ -258,7 +258,7 @@ const DashboardPage: React.FC = () => {
                             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
                                 <Flame className="w-4 h-4" />
                             </span>
-                            <h3 className="font-bold text-gray-900 dark:text-white">Etsy Hot Trends</h3>
+                            <h3 className="font-bold text-gray-900 dark:text-white">{t('dash_trends_title')}</h3>
                         </div>
                         <ul className="space-y-3">
                             <li className="flex justify-between items-center">
@@ -310,7 +310,7 @@ const DashboardPage: React.FC = () => {
                                         </div>
                                     )}
                                     <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md backdrop-blur-sm">
-                                        SEO: {healthScore === 'A+' ? '99' : product.seoScore}%
+                                        {t('dash_seo_label')}: {healthScore === 'A+' ? '99' : product.seoScore}%
                                     </div>
                                 </div>
                                 <div className="p-3">
@@ -327,7 +327,7 @@ const DashboardPage: React.FC = () => {
                 ) : (
                     <div className="text-center py-8 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-dashed border-gray-300 dark:border-gray-600">
                         <Package className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                        <p className="text-gray-500 dark:text-gray-400">No listings found. Connect your Etsy shop to see your products.</p>
+                        <p className="text-gray-500 dark:text-gray-400">{t('dash_no_listings')}</p>
                     </div>
                 )}
             </div>
