@@ -4,7 +4,7 @@ import { useAppContext } from '../contexts/AppContext';
 import { useTranslation } from '../contexts/LanguageContext';
 
 const SalesReportPage: React.FC = () => {
-    const { activityLogs } = useAppContext();
+    const { activityLogs, showToast } = useAppContext();
     const { t } = useTranslation();
     const [isGenerating, setIsGenerating] = useState(false);
     const [startDate, setStartDate] = useState('2026-03-01');
@@ -18,33 +18,34 @@ const SalesReportPage: React.FC = () => {
         setIsGenerating(true);
         setTimeout(() => {
             setIsGenerating(false);
-            // Simulate PDF Generation with a text blob
-            const mockContent = `
-                ===================================
-                HASTI AI SALES INTELLIGENCE REPORT
-                ===================================
-                Period: ${startDate} to ${endDate}
-                
-                SUMMARY:
-                - Total Sales: $12,450.00
-                - Total Orders: 452
-                - Conversion Rate: 3.8%
-                - AI SEO Impact: +$1,280.00
-                
-                TOP PERFORMING TAGS:
-                1. "handmade jewelry" (+24% reach)
-                2. "custom gift for her" (+18% reach)
-                3. "minimalist silver ring" (+15% reach)
-                
-                Generated on: ${new Date().toLocaleString()}
-                ===================================
-            `;
-            const blob = new Blob([mockContent], { type: 'text/plain' });
+            
+            // Real Logic: Convert activity logs to CSV data
+            const headers = ["ID", "Type", "Status", "Timestamp", "Detail"];
+            const rows = activityLogs.map(log => [
+                log.id,
+                log.type,
+                log.status,
+                new Date(log.timestamp).toLocaleString(),
+                log.subtitle || ""
+            ]);
+
+            const csvContent = [
+                ["HASTI AI - SALES & ACTIVITY INTELLIGENCE REPORT"],
+                [`Period: ${startDate} to ${endDate}`],
+                [`Generated on: ${new Date().toLocaleString()}`],
+                [],
+                headers,
+                ...rows
+            ].map(e => e.join(",")).join("\n");
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `Hasti_Sales_Report_${startDate}.txt`;
+            link.download = `Hasti_Intelligence_Report_${startDate}.csv`;
             link.click();
-        }, 3000);
+            
+            showToast({ tKey: 'report_generated_success', type: 'success' });
+        }, 2000);
     };
 
     return (

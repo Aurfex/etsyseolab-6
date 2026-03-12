@@ -857,6 +857,7 @@ const fr: Translations = {
     "waitlist_success": "Bienvenue !",
     "waitlist_error": "Une erreur est survenue.",
     "waitlist_success_msg": "Bienvenue dans le futur d'Etsy. On se parle bientôt !",
+    "report_generated_success": "Rapport d'intelligence généré et téléchargé.",
     "landing_cta_bottom_title": "Prêt à dominer Etsy ?",
     "landing_cta_bottom_subtitle": "Rejoignez plus de 500 boutiques utilisant déjà Hasti IA.",
     "landing_cta_bottom_note": "Pas de carte de crédit. Annulez à tout moment."
