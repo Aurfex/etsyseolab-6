@@ -39,8 +39,7 @@ const ParticleBackground: React.FC = () => {
 
       constructor() {
         this.x = Math.random() * canvas.width;
-        // Bias Y towards the top 60% of the screen for "Integration" with Hero
-        this.y = Math.random() * (canvas.height * 0.8);
+        this.y = Math.random() * canvas.height;
         this.size = Math.random() * 1.5 + 0.5;
         this.speedX = (Math.random() - 0.5) * 0.3;
         this.speedY = (Math.random() - 0.5) * 0.3;
@@ -57,14 +56,14 @@ const ParticleBackground: React.FC = () => {
 
         // Subtle pull towards center-top, but with a "limit" so they don't clump
         const centerX = canvas.width / 2;
-        const centerY = canvas.height / 3;
+        const centerY = canvas.height / 2;
         const dxCenter = centerX - this.x;
         const dyCenter = centerY - this.y;
         const distCenter = Math.sqrt(dxCenter * dxCenter + dyCenter * dyCenter);
 
         if (distCenter > 100) { // Only pull if they are far away
-            this.x += dxCenter * 0.0003;
-            this.y += dyCenter * 0.0003;
+            this.x += dxCenter * 0.0001;
+            this.y += dyCenter * 0.0001;
         }
 
         // Mouse interaction (Stronger but shorter range for a "poke" feel)
@@ -84,8 +83,8 @@ const ParticleBackground: React.FC = () => {
           this.y -= directionY;
         }
 
-        // Fade out as they go lower on the screen
-        this.alpha = Math.max(0, 1 - (this.y / (canvas.height * 0.9)));
+        // Keep alpha high throughout the page for glassmorphism sections
+        this.alpha = 0.8;
 
         if (this.x > canvas.width) this.x = 0;
         else if (this.x < 0) this.x = canvas.width;

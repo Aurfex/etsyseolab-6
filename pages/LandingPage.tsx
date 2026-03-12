@@ -216,7 +216,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* FEATURES SECTION */}
-      <section id="features" className="relative py-20 px-6 bg-gray-50/50 dark:bg-gray-900/20">
+      <section id="features" className="relative py-20 px-6 bg-transparent">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-black mb-4 text-gray-900 dark:text-white">{t('landing_feat_title')}</h2>
@@ -307,7 +307,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* FAQ SECTION */}
-      <section className="py-20 px-6 bg-gray-50 dark:bg-gray-900/30">
+      <section className="py-20 px-6 bg-transparent">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-black mb-4 text-gray-900 dark:text-white">{t('landing_faq_title')}</h2>
@@ -323,7 +323,7 @@ const LandingPage: React.FC = () => {
 
       {/* CTA SECTION */}
       <section className="py-20 px-6">
-        <div className="max-w-5xl mx-auto bg-gradient-to-br from-purple-600/40 to-indigo-700/40 backdrop-blur-xl border border-white/10 rounded-[3rem] p-12 md:p-20 text-center text-white relative overflow-hidden shadow-2xl">
+        <div className="max-w-5xl mx-auto bg-gradient-to-br from-purple-600/20 to-indigo-700/20 backdrop-blur-2xl border border-white/20 rounded-[3rem] p-12 md:p-20 text-center text-white relative overflow-hidden shadow-2xl">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-900/30 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl"></div>
           
