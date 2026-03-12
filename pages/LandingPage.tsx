@@ -323,20 +323,20 @@ const LandingPage: React.FC = () => {
 
       {/* CTA SECTION */}
       <section className="py-20 px-6 relative z-10">
-        <div className="max-w-5xl mx-auto bg-white/5 dark:bg-gray-900/10 backdrop-blur-3xl border border-white/20 rounded-[3rem] p-12 md:p-20 text-center text-white relative overflow-hidden shadow-2xl">
-          {/* Subtle accent gradients that don't block the background */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl"></div>
+        <div className="max-w-5xl mx-auto bg-transparent backdrop-blur-xl border border-purple-500/30 dark:border-white/20 rounded-[3rem] p-12 md:p-20 text-center relative overflow-hidden shadow-2xl">
+          {/* Extremely subtle ambient glows */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/5 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl"></div>
           
           <div className="relative z-10">
-            <h2 className="text-4xl md:text-6xl font-black mb-8 text-white">{t('landing_cta_bottom_title')}</h2>
-            <p className="text-xl text-gray-200 mb-12 max-w-2xl mx-auto">
+            <h2 className="text-4xl md:text-6xl font-black mb-8 text-gray-900 dark:text-white">{t('landing_cta_bottom_title')}</h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 mb-12 max-w-2xl mx-auto">
               {t('landing_cta_bottom_subtitle')}
             </p>
             <div className="max-w-md mx-auto">
               <WaitlistForm />
             </div>
-            <p className="mt-6 text-sm text-gray-400">
+            <p className="mt-6 text-sm text-gray-500 dark:text-gray-400">
               {t('landing_cta_bottom_note')}
             </p>
           </div>
