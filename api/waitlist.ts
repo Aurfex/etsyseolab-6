@@ -1,7 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
+import { supabase } from '../services/supabaseClient';
 
-// This is a simple mock API for the waitlist. 
-// In a production app, we would use Supabase, MongoDB, or an email service like Mailchimp.
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -14,18 +13,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    console.log(`[Waitlist] New signup: ${email}`);
-    
-    // Simulate a bit of latency
-    await new Promise(resolve => setTimeout(resolve, 800));
+    const { error } = await supabase
+      .from('waitlist')
+      .insert([{ email }]);
 
-    // Success response
+    if (error) {
+      if (error.code === '23505') { // Unique constraint violation
+        return res.status(200).json({ 
+          success: true, 
+          message: 'You are already on the waitlist!' 
+        });
+      }
+      throw error;
+    }
+
     return res.status(200).json({ 
       success: true, 
       message: 'Successfully added to waitlist' 
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Waitlist] Error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 }

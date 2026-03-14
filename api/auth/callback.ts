@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import axios from 'axios';
+import { supabase } from '../../services/supabaseClient';
 
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -70,6 +71,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { access_token, refresh_token, expires_in } = response.data;
     
+    // Fetch Etsy User Info to get shop_id
+    try {
+      const userResp = await axios.get('https://openapi.etsy.com/v3/application/users/me', {
+        headers: {
+          'Authorization': `Bearer ${access_token}`,
+          'x-api-key': process.env.ETSY_CLIENT_ID!
+        }
+      });
+      
+      const etsyUserId = String(userResp.data?.user_id);
+      const shopId = String(userResp.data?.shop_id);
+
+      // Note: In a real production app, we would link this to a Supabase Auth user ID.
+      // For this MVP, we can store it in a way that the frontend can later claim.
+      console.log(`Syncing Etsy User ${etsyUserId} (Shop ${shopId}) to Supabase...`);
+      
+      // We'll perform an upsert based on the shop_id or etsy_user_id.
+      // (Requires adjusting the schema id type or using a separate mapping table)
+    } catch (syncError) {
+      console.warn('Failed to sync Etsy profile to Supabase:', syncError);
+    }
+
     // Redirect back to the frontend with tokens in URL hash (safer than query params)
     // The frontend should parse this hash and store tokens in sessionStorage
     res.redirect(`/#access_token=${access_token}&refresh_token=${refresh_token}&expires_in=${expires_in}`);

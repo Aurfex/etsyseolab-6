@@ -45,3 +45,14 @@ CREATE POLICY "Users can view their own profile" ON profiles FOR SELECT USING (a
 CREATE POLICY "Users can update their own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
 CREATE POLICY "Users can view their own products" ON product_cache FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can view their own logs" ON audit_logs FOR SELECT USING (auth.uid() = user_id);
+
+-- 4. Waitlist (Lead Generation)
+CREATE TABLE IF NOT EXISTS waitlist (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE waitlist ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public can insert into waitlist" ON waitlist FOR INSERT WITH CHECK (true);
+CREATE POLICY "Only admins can view waitlist" ON waitlist FOR SELECT USING (false); -- Admin roles to be defined later

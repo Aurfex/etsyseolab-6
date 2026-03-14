@@ -22,8 +22,21 @@ The platform is now fully equipped for lead generation and presents a profession
 - **Dashboard Wired to Real Data (2026-03-14):** 
     - Replaced mocked revenue data and charts in `DashboardPage.tsx` with live data from the Etsy API via `AppContext`.
     - Dashboard now dynamically calculates "Missed Revenue" based on actual performance.
-- **Next Immediate Goal (Supabase Database Integration):** 
-    - Move from `sessionStorage` and local state to a permanent database (Supabase/PostgreSQL) to store user settings, history, and audit logs.
+- **Supabase Foundation (2026-03-14):** 
+    - Installed `@supabase/supabase-js`.
+    - Created `services/supabaseClient.ts` for centralized database access.
+    - Successfully pushed to main; Vercel deployment confirmed.
+- **Database Schema Defined (2026-03-14):** 
+    - Created `database_schema.sql` with `profiles`, `product_cache`, and `audit_logs` tables.
+    - Implemented Row Level Security (RLS) policies for user data isolation.
+- **Auth & Token Sync (2026-03-14):** 
+    - Updated `api/auth/callback.ts` to fetch Etsy User/Shop metadata after token exchange.
+    - Prepared the logic for persisting these tokens into the Supabase `profiles` table.
+- **Waitlist Real Integration (2026-03-14):** 
+    - Created `waitlist` table in Supabase.
+    - Updated `api/waitlist.ts` to perform real insertions into the database.
+- **Next Immediate Goal (Dashboard Real-time Integration):** 
+    - Connect the Frontend `DashboardPage` to real-time Supabase hooks to show live optimization logs.
 
 ### Key Achievements (2026-03-12)
 - **Waitlist Integration (Lead Gen):** 
