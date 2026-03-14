@@ -1,8 +1,20 @@
 # ETSY SEOLAB - Project Status & Roadmap
-*Last Updated: 2026-03-12*
+*Last Updated: 2026-03-14*
 
 ## Current State (Milestone Achieved: Lead Generation & Full UI Maturity)
 The platform is now fully equipped for lead generation and presents a professional, high-end visual experience.
+
+### Key Achievements (2026-03-14)
+- **Shopify Migration (CSV Export) Finalization:**
+    - Refactored `ShopifyExportPage.tsx` to exactly match the official `product_template.csv` standard required by Shopify.
+    - Added dynamic multi-row generation logic to properly format multiple variants (e.g., sizes/colors) and multiple images under a single `Handle`.
+- **Deployment Stability (Vercel Fixes):**
+    - Resolved translation file `Duplicate Key` build errors (`en.ts`, `fr.ts`).
+    - Bypassed Vercel Hobby plan 12-function limit by archiving unused backend API endpoints into `api-disabled/` and `api-archive/`.
+- **Data Mocking for Testing:**
+    - Updated `mockData.ts` to include multi-variant pricing matrices and multiple images to ensure the CSV module can be tested in the browser.
+- **Next Immediate Goal (Etsy API Deep Fetch):** 
+    - The `fetchEtsyProducts` API call currently only retrieves top-level listing data. It needs to be upgraded to iterate through `/inventory` and `/images` endpoints to retrieve true variation and image data for live user shops.
 
 ### Key Achievements (2026-03-12)
 - **Waitlist Integration (Lead Gen):** 
