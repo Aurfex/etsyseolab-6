@@ -13,20 +13,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    const token = getAuthToken(req);
-    // Temp bypass for testing or if token isn't passed from frontend correctly
-    /*
-    if (!token) {
-        return res.status(401).json({ error: 'Unauthorized: Missing or invalid token.' });
-    }
-    */
-
+    // Auth check bypassed for debugging
     try {
         const { query } = req.body;
         const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
         
         console.log("Assistant Query:", query);
-        console.log("Using API Key:", apiKey ? "FOUND (ends with " + apiKey.slice(-4) + ")" : "MISSING");
+        console.log("Using API Key:", apiKey ? "FOUND (starts with " + apiKey.slice(0, 8) + "...)" : "MISSING");
         
         if (!apiKey) {
             return res.status(500).json({ error: 'Server is not configured with a Gemini API key.' });
@@ -57,9 +50,11 @@ Return a JSON object:
 }
 `;
 
+        console.log("Generating content...");
         const result = await model.generateContent(prompt);
         const response = await result.response;
         const text = response.text();
+        console.log("Generated text:", text);
         
         // Extract JSON from potentially markdown-wrapped response
         const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -67,7 +62,10 @@ Return a JSON object:
 
         return res.status(200).json(parsed);
     } catch (error: any) {
-        console.error("Error in /api/assistant:", error);
-        return res.status(500).json({ error: error.message || 'An unexpected error occurred.' });
+        console.error("DETAILED ERROR in /api/assistant:", error);
+        return res.status(500).json({ 
+            error: error.message || 'An unexpected error occurred.',
+            details: error.stack
+        });
     }
 }
