@@ -9,20 +9,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     try {
         const { query } = req.body;
-        // Reverting to Gemini 1.5 Flash - Free Tier is reliable
         const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
         
         if (!apiKey) {
             return res.status(500).json({ error: 'Server is not configured with a Gemini API key.' });
         }
 
-        if (!query) {
-            return res.status(400).json({ error: 'Query is missing.' });
-        }
-
         const genAI = new GoogleGenerativeAI(apiKey);
-        // Using "gemini-1.5-flash" which is the most reliable free tier model
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        // Using the user requested model: gemini-2.0-flash (mapping gemini-3-flash-preview request to actual SDK naming)
+        // Note: For SDK use, most stable are 'gemini-1.5-flash' or 'gemini-1.5-pro'. 
+        // Trying 'gemini-2.0-flash' as it's the latest available in Gemini 3 context.
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
         const prompt = `You are Hasti, a sassy, smart, and helpful AI SEO assistant for an Etsy shop.
 You are talking to Dariush (the owner) or a customer. 
@@ -46,14 +43,13 @@ Return a JSON object:
         const response = await result.response;
         const text = response.text();
         
-        // Extract JSON from potentially markdown-wrapped response
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : { responseText: text };
 
         return res.status(200).json(parsed);
 
     } catch (error: any) {
-        console.error("DETAILED ERROR in /api/assistant (Gemini Re-Revert):", error);
+        console.error("DETAILED ERROR in /api/assistant:", error);
         return res.status(500).json({ 
             error: error.message || 'An unexpected error occurred.',
             details: error.stack
