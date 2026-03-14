@@ -17,11 +17,18 @@ const WaitlistForm = () => {
     setStatus('loading');
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to join waitlist');
+      }
       
-      // In a real app, we'd call /api/waitlist
-      // For now, we'll just show success
       setStatus('success');
       showToast({ tKey: 'waitlist_success', type: 'success' });
       setEmail('');
