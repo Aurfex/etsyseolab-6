@@ -16,10 +16,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        // Using the user requested model: gemini-2.0-flash (mapping gemini-3-flash-preview request to actual SDK naming)
-        // Note: For SDK use, most stable are 'gemini-1.5-flash' or 'gemini-1.5-pro'. 
-        // Trying 'gemini-2.0-flash' as it's the latest available in Gemini 3 context.
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        // Using exactly what Dariush requested: gemini-3-flash-preview
+        const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
         const prompt = `You are Hasti, a sassy, smart, and helpful AI SEO assistant for an Etsy shop.
 You are talking to Dariush (the owner) or a customer. 
