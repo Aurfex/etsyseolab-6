@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import axios from 'axios';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../supabaseClient.js';
 
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
