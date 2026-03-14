@@ -19,8 +19,11 @@ The platform is now fully equipped for lead generation and presents a profession
 - **Sales Intelligence (PDF Reports) Operational:** 
     - Fixed Vercel variable shadowing crash (`action` TDZ error) in `api/etsy-proxy.ts`.
     - Added `transactions_r` OAuth scope to `api/auth/login.ts` allowing the app to fetch real Etsy receipts and generate accurate PDF sales reports based on user date selection.
-- **Next Immediate Goal (Dashboard Polish & Database):** 
-    - Transition dashboard mocked stats to use real data fetched from the backend or start Supabase integration.
+- **Dashboard Wired to Real Data (2026-03-14):** 
+    - Replaced mocked revenue data and charts in `DashboardPage.tsx` with live data from the Etsy API via `AppContext`.
+    - Dashboard now dynamically calculates "Missed Revenue" based on actual performance.
+- **Next Immediate Goal (Supabase Database Integration):** 
+    - Move from `sessionStorage` and local state to a permanent database (Supabase/PostgreSQL) to store user settings, history, and audit logs.
 
 ### Key Achievements (2026-03-12)
 - **Waitlist Integration (Lead Gen):** 
