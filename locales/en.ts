@@ -375,7 +375,7 @@ const en: Translations = {
 
     // OptimoBot
     "bot_title": "Hasti AI",
-    "bot_welcome": "Hi Dariush! I'm Hasti, your SEO Co-pilot. How can I help you grow your Etsy shop today?",
+    "bot_welcome": "Hi there! I'm Hasti, your SEO Co-pilot. How can I help you grow your Etsy shop today?",
     "bot_placeholder": "Ask Hasti...",
 
     // Toasts
