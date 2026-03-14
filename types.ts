@@ -10,6 +10,8 @@ export interface Product {
   tags: string[];
   imageFilename: string;
   imageUrl: string;
+  images?: any[];
+  variants?: any[];
   seoScore: number;
   quantity?: number;
   price?: number;

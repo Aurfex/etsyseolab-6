@@ -328,7 +328,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 return Math.max(20, Math.min(99, Math.round(score)));
             };
 
-            const realProducts: Product[] = data.products.map((p: any) => {
+                        const realProducts: Product[] = data.products.map((p: any) => {
                 const title = p.title || '';
                 const description = p.description || '';
                 const tags = p.tags || [];
@@ -341,8 +341,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                     tags,
                     quantity: p.quantity ?? 0,
                     price: p.price ?? 0,
-                    imageFilename: p.imageUrl ? p.imageUrl.split('/').pop() : 'placeholder.jpg', // Extract filename or use placeholder
-                    imageUrl: p.imageUrl || 'https://via.placeholder.com/300', // Use real image URL
+                    imageFilename: p.imageUrl ? p.imageUrl.split('/').pop() : 'placeholder.jpg',
+                    imageUrl: p.imageUrl || 'https://via.placeholder.com/300',
+                    images: p.images || [],
+                    variants: p.variants || [],
                     seoScore: Number.isFinite(p.seoScore) ? p.seoScore : calcSeoScore(title, description, tags)
                 });
             });
