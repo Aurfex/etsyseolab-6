@@ -13,8 +13,11 @@ The platform is now fully equipped for lead generation and presents a profession
     - Bypassed Vercel Hobby plan 12-function limit by archiving unused backend API endpoints into `api-disabled/` and `api-archive/`.
 - **Data Mocking for Testing:**
     - Updated `mockData.ts` to include multi-variant pricing matrices and multiple images to ensure the CSV module can be tested in the browser.
-- **Next Immediate Goal (Etsy API Deep Fetch):** 
-    - The `fetchEtsyProducts` API call currently only retrieves top-level listing data. It needs to be upgraded to iterate through `/inventory` and `/images` endpoints to retrieve true variation and image data for live user shops.
+- **Etsy API Deep Fetch Completed:**
+    - Upgraded `fetchEtsyProducts` and the `api/etsy-proxy` endpoint to retrieve true variation/inventory data and secondary images for live user shops using `includes=Images,Inventory`.
+    - Shopify Migration module is now fully operational with real Etsy shop data.
+- **Next Immediate Goal (Sales Intelligence - PDF Reports):** 
+    - Build out the real logic for the `SalesReportPage.tsx` module to fetch, analyze, and generate PDF reports based on real Etsy shop sales data.
 
 ### Key Achievements (2026-03-12)
 - **Waitlist Integration (Lead Gen):** 
