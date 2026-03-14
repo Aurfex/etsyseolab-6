@@ -38,7 +38,10 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     `etsy_oauth_state=${state}; ${cookieAttrs}`
   ]);
 
-  const scopes = process.env.ETSY_SCOPES || 'listings_r listings_w listings_d';
+  let scopes = process.env.ETSY_SCOPES || 'listings_r listings_w listings_d profile_r shops_r email_r';
+  if (!scopes.includes('transactions_r')) {
+    scopes += ' transactions_r';
+  }
   const redirectUri = process.env.ETSY_REDIRECT_URI;
   const clientId = process.env.ETSY_CLIENT_ID;
 
