@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import axios from 'axios';
-import { supabase } from '../../services/supabaseClient';
+import { supabase } from '../lib/supabaseClient';
 
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -73,10 +73,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     
     // Fetch Etsy User Info to get shop_id
     try {
+      const ETSY_API_KEY = process.env.ETSY_CLIENT_ID;
+      const ETSY_SHARED_SECRET = process.env.ETSY_CLIENT_SECRET;
+      const xApiKey = ETSY_SHARED_SECRET ? `${ETSY_API_KEY}:${ETSY_SHARED_SECRET}` : ETSY_API_KEY;
+
       const userResp = await axios.get('https://openapi.etsy.com/v3/application/users/me', {
         headers: {
           'Authorization': `Bearer ${access_token}`,
-          'x-api-key': process.env.ETSY_CLIENT_ID!
+          'x-api-key': xApiKey!
         }
       });
       
