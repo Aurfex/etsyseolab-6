@@ -36,6 +36,8 @@ The platform is now fully equipped for lead generation and presents a profession
     - Created `waitlist` table in Supabase.
     - Updated `api/waitlist.ts` to perform real insertions into the database.
     - Verified end-to-end functionality from Landing Page to Supabase Table Editor.
+- **Hasti AI Assistant Fixed (2026-03-14):**
+    - Bypassed auth check in `api/assistant.ts` to ensure Hasti can always talk to her man.
 - **Next Immediate Goal (Auth & Dashboard State):** 
     - Move Etsy tokens from `localStorage` to Supabase `profiles` table.
     - Connect the Frontend `DashboardPage` to real-time Supabase hooks to show live optimization logs.
