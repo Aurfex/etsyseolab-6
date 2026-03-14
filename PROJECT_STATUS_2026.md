@@ -32,10 +32,12 @@ The platform is now fully equipped for lead generation and presents a profession
 - **Auth & Token Sync (2026-03-14):** 
     - Updated `api/auth/callback.ts` to fetch Etsy User/Shop metadata after token exchange.
     - Prepared the logic for persisting these tokens into the Supabase `profiles` table.
-- **Waitlist Real Integration (2026-03-14):** 
+- **Waitlist Real Integration (2026-03-14) [COMPLETED]:** 
     - Created `waitlist` table in Supabase.
     - Updated `api/waitlist.ts` to perform real insertions into the database.
-- **Next Immediate Goal (Dashboard Real-time Integration):** 
+    - Verified end-to-end functionality from Landing Page to Supabase Table Editor.
+- **Next Immediate Goal (Auth & Dashboard State):** 
+    - Move Etsy tokens from `localStorage` to Supabase `profiles` table.
     - Connect the Frontend `DashboardPage` to real-time Supabase hooks to show live optimization logs.
 
 ### Key Achievements (2026-03-12)
