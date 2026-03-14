@@ -817,14 +817,6 @@ const en: Translations = {
     "landing_price_3_feat_4": "White-glove Setup",
     "landing_price_3_btn": "Contact Sales",
     "landing_watch_demo": "Watch Demo",
-    "landing_faq_1_q": "Is it safe to connect my Etsy shop?",
-    "landing_faq_1_a": "Absolutely. We use Etsy's official, secure OAuth 2.0 API. We never see your password, and you can revoke access at any time directly from your Etsy settings.",
-    "landing_faq_2_q": "Will Hasti AI change my listings without my permission?",
-    "landing_faq_2_a": "Only if you want it to! By default, Hasti acts as an advisor—you review and approve every change. If you trust the AI, you can enable 'Autopilot' to let it optimize in the background while you sleep.",
-    "landing_faq_3_q": "How is this different from eRank or Marmalead?",
-    "landing_faq_3_a": "Traditional tools give you overwhelming spreadsheets of raw data and expect you to do the hard work. Hasti AI is a generative co-pilot. We don't just show you the data; we actually write the optimized titles and tags for you.",
-    "landing_faq_4_q": "Do I need to be a tech expert to use this?",
-    "landing_faq_4_a": "Not at all. If you know how to click a button, you can use Hasti AI. Our interface is specifically designed for creative sellers, not coders or data scientists.",
     
     // Waitlist
     "waitlist_input_placeholder": "Enter your shop email...",
