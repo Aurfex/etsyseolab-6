@@ -25,6 +25,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const { query } = req.body;
         const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
         
+        console.log("Assistant Query:", query);
+        console.log("Using API Key:", apiKey ? "FOUND (ends with " + apiKey.slice(-4) + ")" : "MISSING");
+        
         if (!apiKey) {
             return res.status(500).json({ error: 'Server is not configured with a Gemini API key.' });
         }
