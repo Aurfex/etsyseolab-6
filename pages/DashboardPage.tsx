@@ -81,7 +81,7 @@ const DashboardPage: React.FC = () => {
     const latestProducts = products.slice(0, 4);
 
     return (
-        <div className="space-y-8 animate-fade-in">
+        <div className="space-y-8 animate-fade-in w-full h-full min-h-[400px]">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('dashboard_title')}</h1>
