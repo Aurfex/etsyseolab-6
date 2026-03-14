@@ -204,10 +204,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!shopId) return res.status(404).json({ error: 'No Etsy shop found.' });
 
       try {
-        const receiptsResponse = await axios.get(
-          `https://openapi.etsy.com/v3/application/shops/${shopId}/receipts?limit=100`,
-          { headers }
-        );
+        const payload = body?.payload || {};
+        let url = `https://openapi.etsy.com/v3/application/shops/${shopId}/receipts?limit=100`;
+        
+        if (payload.startDate) {
+          const minCreated = Math.floor(new Date(payload.startDate).getTime() / 1000);
+          if (!isNaN(minCreated)) url += `&min_created=${minCreated}`;
+        }
+        if (payload.endDate) {
+          // Add 23:59:59 to end date to include the whole day
+          const d = new Date(payload.endDate);
+          d.setHours(23, 59, 59, 999);
+          const maxCreated = Math.floor(d.getTime() / 1000);
+          if (!isNaN(maxCreated)) url += `&max_created=${maxCreated}`;
+        }
+
+        const receiptsResponse = await axios.get(url, { headers });
 
         let totalRevenue = 0;
         let orderCount = receiptsResponse.data?.count || 0;
