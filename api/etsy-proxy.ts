@@ -208,8 +208,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Multipart path: upload image
     if (contentType.includes('multipart/form-data')) {
       const { fields, files } = await parseForm(req);
-      const action = String(toSingle(fields.action as any) || 'upload_image');
-      if (action !== 'upload_image') return res.status(400).json({ error: 'Unsupported multipart action.' });
+      const multipartAction = String(toSingle(fields.action as any) || 'upload_image');
+      if (multipartAction !== 'upload_image') return res.status(400).json({ error: 'Unsupported multipart action.' });
 
       const listingId = String(toSingle(fields.listing_id as any) || '').trim();
       const altText = String(toSingle(fields.alt_text as any) || '').trim();
