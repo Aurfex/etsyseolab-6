@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import OpenAI from 'openai';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { AssistantResponse } from '../types';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -9,19 +9,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     try {
         const { query } = req.body;
-        const apiKey = process.env.OPENAI_API_KEY;
+        // Reverting to Gemini 1.5 Flash - Free Tier is reliable
+        const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
         
         if (!apiKey) {
-            return res.status(500).json({ error: 'Server is not configured with an OpenAI API key.' });
+            return res.status(500).json({ error: 'Server is not configured with a Gemini API key.' });
         }
 
         if (!query) {
             return res.status(400).json({ error: 'Query is missing.' });
         }
 
-        const openai = new OpenAI({
-            apiKey: apiKey,
-        });
+        const genAI = new GoogleGenerativeAI(apiKey);
+        // Using "gemini-1.5-flash" which is the most reliable free tier model
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const prompt = `You are Hasti, a sassy, smart, and helpful AI SEO assistant for an Etsy shop.
 You are talking to Dariush (the owner) or a customer. 
@@ -41,23 +42,18 @@ Return a JSON object:
 }
 `;
 
-        const response = await openai.chat.completions.create({
-            model: "gpt-4o-mini",
-            messages: [
-                { role: "system", content: "You are a helpful assistant that always responds in valid JSON format." },
-                { role: "user", content: prompt }
-            ],
-            response_format: { type: "json_object" }
-        });
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+        
+        // Extract JSON from potentially markdown-wrapped response
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : { responseText: text };
 
-        const content = response.choices[0].message.content;
-        if (!content) throw new Error("Empty response from OpenAI");
-
-        const parsed = JSON.parse(content);
         return res.status(200).json(parsed);
 
     } catch (error: any) {
-        console.error("DETAILED ERROR in /api/assistant (OpenAI):", error);
+        console.error("DETAILED ERROR in /api/assistant (Gemini Re-Revert):", error);
         return res.status(500).json({ 
             error: error.message || 'An unexpected error occurred.',
             details: error.stack
