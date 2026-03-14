@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
-import { Product, OptimizationResult, ActivityLog, Settings, Theme, CompetitorData, ActivityType, ToastData, Page, Review, ReviewResponse, FullReviewData, QuickReply, ReviewResponseStatus, ReviewAnalyticsData, Auth, FAQ, SuggestedQuestion, AssistantResponse, GiftFinderQuiz, GiftFinderResponse, LoyaltyData, Story, NewProductData, EtsyCategory } from '../types';
+import { Product, OptimizationResult, ActivityLog, Settings, Theme, CompetitorData, ActivityType, ToastData, Page, Review, ReviewResponse, FullReviewData, QuickReply, ReviewResponseStatus, ReviewAnalyticsData, Auth, FAQ, SuggestedQuestion, AssistantResponse, GiftFinderQuiz, GiftFinderResponse, LoyaltyData, Story, NewProductData, EtsyCategory, SalesData } from '../types';
 import { MOCK_PRODUCTS } from '../utils/mockData';
 import { runFullOptimization as apiRunFullOptimization } from '../services/geminiService';
 import { MOCK_FULL_REVIEWS, MOCK_QUICK_REPLIES } from '../utils/mockFullReviews';
@@ -81,6 +81,8 @@ interface AppContextType {
   generateSeoMetadata: (details: Pick<NewProductData, 'title' | 'description'> & { keywords?: string }, files?: File[]) => Promise<Pick<NewProductData, 'title' | 'description' | 'tags'> & { imageAltTexts?: string[]; suggestedBasics?: { categoryHint?: string; price?: number; quantity?: number; who_made?: string; when_made?: string; is_supply?: boolean } }>;
   publishNewProduct: (productData: NewProductData) => Promise<void>;
   etsyCategories: EtsyCategory[];
+  salesData: SalesData | null;
+  fetchSalesData: (startDate?: string, endDate?: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -189,6 +191,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     
     // Add Product State
     const [newProductData, setNewProductData] = useState<Partial<NewProductData>>(defaultNewProductData);
+    const [salesData, setSalesData] = useState<SalesData | null>(null);
     const etsyCategories = MOCK_ETSY_CATEGORIES;
 
 
@@ -358,10 +361,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         }
     }, [auth.token, showToast]);
 
+    const fetchSalesData = useCallback(async (startDate?: string, endDate?: string) => {
+        if (!auth.token) return;
+        
+        try {
+            const data = await makeApiCall('/api/etsy-proxy', 'POST', { 
+                action: 'get_sales_data',
+                payload: { startDate, endDate }
+            });
+            setSalesData(data);
+        } catch (error: any) {
+            console.error("Error fetching Etsy sales data:", error);
+            showToast({ message: "Error loading sales data.", type: 'error' });
+        }
+    }, [auth.token, makeApiCall, showToast]);
+
     useEffect(() => {
         if (auth.isAuthenticated && auth.token) {
             // Fetch real products from Etsy
             fetchEtsyProducts();
+            fetchSalesData(); // Initial fetch
             
             setReviewsError(null);
             setFaqError(null);
@@ -773,8 +792,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }, [addLog, showToast, setPage]);
 
     const value = useMemo(() => ({
-        page, setPage, isSidebarCollapsed, toggleSidebar, products, activityLogs, settings, effectiveTheme, updateSettings, resetSettings, runFullOptimization, runAutomationTask, runAutopilotFix, analyzeCompetitor, competitorData, toast, setToast, showToast, refreshProducts: fetchEtsyProducts, auth, login, logout, handleOAuthCallback, reviewsData, quickReplies, isReviewsLoading, reviewsError, fetchReviewData, generateReviewResponse, updateReviewStatus, saveEditedResponse, getReviewAnalytics, faqs, suggestedQuestions, isFaqLoading, faqError, fetchFaqData, scanForFaqs, generateFaqAnswer, publishFaq, updateFaq, deleteFaq, askAssistant, findGifts, loyaltyData, isLoyaltyLoading, loyaltyError, fetchLoyaltyData, redeemLoyaltyReward, stories, isStoriesLoading, storiesError, fetchStories, saveStory, newProductData, updateNewProductData, generateSeoMetadata, publishNewProduct, etsyCategories,
-    }), [ page, setPage, isSidebarCollapsed, products, activityLogs, settings, effectiveTheme, competitorData, toast, auth, reviewsData, quickReplies, isReviewsLoading, reviewsError, faqs, suggestedQuestions, isFaqLoading, faqError, loyaltyData, isLoyaltyLoading, loyaltyError, stories, isStoriesLoading, storiesError, newProductData, etsyCategories, toggleSidebar, updateSettings, resetSettings, runFullOptimization, runAutomationTask, runAutopilotFix, analyzeCompetitor, showToast, fetchEtsyProducts, login, logout, handleOAuthCallback, fetchReviewData, generateReviewResponse, updateReviewStatus, saveEditedResponse, getReviewAnalytics, fetchFaqData, scanForFaqs, generateFaqAnswer, publishFaq, updateFaq, deleteFaq, askAssistant, findGifts, fetchLoyaltyData, redeemLoyaltyReward, fetchStories, saveStory, updateNewProductData, generateSeoMetadata, publishNewProduct ]);
+        page, setPage, isSidebarCollapsed, toggleSidebar, products, activityLogs, settings, effectiveTheme, updateSettings, resetSettings, runFullOptimization, runAutomationTask, runAutopilotFix, analyzeCompetitor, competitorData, toast, setToast, showToast, refreshProducts: fetchEtsyProducts, auth, login, logout, handleOAuthCallback, reviewsData, quickReplies, isReviewsLoading, reviewsError, fetchReviewData, generateReviewResponse, updateReviewStatus, saveEditedResponse, getReviewAnalytics, faqs, suggestedQuestions, isFaqLoading, faqError, fetchFaqData, scanForFaqs, generateFaqAnswer, publishFaq, updateFaq, deleteFaq, askAssistant, findGifts, loyaltyData, isLoyaltyLoading, loyaltyError, fetchLoyaltyData, redeemLoyaltyReward, stories, isStoriesLoading, storiesError, fetchStories, saveStory, newProductData, updateNewProductData, generateSeoMetadata, publishNewProduct, etsyCategories, salesData, fetchSalesData,
+    }), [ page, setPage, isSidebarCollapsed, products, activityLogs, settings, effectiveTheme, competitorData, toast, auth, reviewsData, quickReplies, isReviewsLoading, reviewsError, faqs, suggestedQuestions, isFaqLoading, faqError, loyaltyData, isLoyaltyLoading, loyaltyError, stories, isStoriesLoading, storiesError, newProductData, etsyCategories, salesData, toggleSidebar, updateSettings, resetSettings, runFullOptimization, runAutomationTask, runAutopilotFix, analyzeCompetitor, showToast, fetchEtsyProducts, login, logout, handleOAuthCallback, fetchReviewData, generateReviewResponse, updateReviewStatus, saveEditedResponse, getReviewAnalytics, fetchFaqData, scanForFaqs, generateFaqAnswer, publishFaq, updateFaq, deleteFaq, askAssistant, findGifts, fetchLoyaltyData, redeemLoyaltyReward, fetchStories, saveStory, updateNewProductData, generateSeoMetadata, publishNewProduct, fetchSalesData ]);
 
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

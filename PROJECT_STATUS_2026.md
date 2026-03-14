@@ -16,8 +16,11 @@ The platform is now fully equipped for lead generation and presents a profession
 - **Etsy API Deep Fetch Completed:**
     - Upgraded `fetchEtsyProducts` and the `api/etsy-proxy` endpoint to retrieve true variation/inventory data and secondary images for live user shops using `includes=Images,Inventory`.
     - Shopify Migration module is now fully operational with real Etsy shop data.
-- **Next Immediate Goal (Sales Intelligence - PDF Reports):** 
-    - Build out the real logic for the `SalesReportPage.tsx` module to fetch, analyze, and generate PDF reports based on real Etsy shop sales data.
+- **Sales Intelligence (PDF Reports) Operational:** 
+    - Fixed Vercel variable shadowing crash (`action` TDZ error) in `api/etsy-proxy.ts`.
+    - Added `transactions_r` OAuth scope to `api/auth/login.ts` allowing the app to fetch real Etsy receipts and generate accurate PDF sales reports based on user date selection.
+- **Next Immediate Goal (Dashboard Polish & Database):** 
+    - Transition dashboard mocked stats to use real data fetched from the backend or start Supabase integration.
 
 ### Key Achievements (2026-03-12)
 - **Waitlist Integration (Lead Gen):** 

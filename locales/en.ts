@@ -45,6 +45,7 @@ const en: Translations = {
     "dashboard_subtitle": "Autonomous optimization powered by artificial intelligence",
     "metric_total_products": "Total Products",
     "metric_avg_seo_score": "Avg SEO Score",
+    "metric_total_revenue": "Total Revenue",
     "metric_ai_optimizations": "AI Optimizations",
     "metric_sync_status": "Sync Status",
     "autopilot_summary_title": "Autopilot AI Summary",

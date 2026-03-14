@@ -321,3 +321,21 @@ export interface NewProductData {
     // Optional manual guidance for AI generation
     ai_keywords?: string;
 }
+
+// --- SALES MODULE TYPES ---
+export interface Order {
+    receipt_id: string;
+    buyer_email: string;
+    status: string;
+    date: string;
+    total: number;
+    currency: string;
+}
+
+export interface SalesData {
+    total_revenue: number;
+    order_count: number;
+    recent_orders: Order[];
+    currency: string;
+    _isMock?: boolean;
+}

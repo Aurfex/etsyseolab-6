@@ -32,20 +32,26 @@ const MetricCard: React.FC<MetricCardProps> = ({ icon: Icon, title, value, chang
   </div>
 );
 
-// Mock data for the Revenue Chart
-const revenueData = [
-  { name: 'Mon', actual: 120, missed: 400 },
-  { name: 'Tue', actual: 180, missed: 420 },
-  { name: 'Wed', actual: 150, missed: 450 },
-  { name: 'Thu', actual: 200, missed: 500 },
-  { name: 'Fri', actual: 250, missed: 520 },
-  { name: 'Sat', actual: 300, missed: 600 },
-  { name: 'Sun', actual: 280, missed: 650 },
-];
-
 const DashboardPage: React.FC = () => {
-    const { products, activityLogs } = useAppContext();
+    const { products, activityLogs, salesData, fetchSalesData } = useAppContext();
     const { t } = useTranslation();
+
+    // Chart Data mapping
+    const revenueData = salesData && salesData.recent_orders.length > 0
+        ? [...salesData.recent_orders].reverse().map(order => ({
+            name: new Date(order.date).toLocaleDateString(undefined, { weekday: 'short' }),
+            actual: order.total,
+            missed: order.total * 1.4 // Mocked missed as 40% of actual for UI purposes
+        }))
+        : [
+            { name: 'Mon', actual: 120, missed: 400 },
+            { name: 'Tue', actual: 180, missed: 420 },
+            { name: 'Wed', actual: 150, missed: 450 },
+            { name: 'Thu', actual: 200, missed: 500 },
+            { name: 'Fri', actual: 250, missed: 520 },
+            { name: 'Sat', actual: 300, missed: 600 },
+            { name: 'Sun', actual: 280, missed: 650 },
+        ];
     
     // Store Health Logic (Mocked for Demo effect)
     const [isFixing, setIsFixing] = useState(false);
@@ -201,7 +207,9 @@ const DashboardPage: React.FC = () => {
                         <div className="text-right">
                             <p className="text-sm text-gray-500 dark:text-gray-400">{t('dash_rev_missed_label')}</p>
                             <p className={`text-2xl font-bold ${healthScore === 'C-' ? 'text-indigo-500' : 'text-green-500'}`}>
-                                {healthScore === 'C-' ? '$2,450.00' : '$0.00'}
+                                {healthScore === 'C-' 
+                                    ? (salesData ? `$${(salesData.total_revenue * 0.4).toFixed(2)}` : '$2,450.00') 
+                                    : '$0.00'}
                             </p>
                         </div>
                     </div>
@@ -279,10 +287,10 @@ const DashboardPage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <MetricCard icon={Package} title={t('metric_total_products')} value={String(products.length || 124)} change="" bgColor="bg-white dark:bg-gray-800" iconColor="text-blue-500"/>
+                <MetricCard icon={Package} title={t('metric_total_products')} value={String(products.length || 0)} change="" bgColor="bg-white dark:bg-gray-800" iconColor="text-blue-500"/>
                 <MetricCard icon={TrendingUp} title={t('metric_avg_seo_score')} value={healthScore === 'A+' ? '98%' : `${avgSeoScore || 62}%`} change={healthScore === 'A+' ? '+36% today' : ''} bgColor="bg-white dark:bg-gray-800" iconColor="text-green-500"/>
+                <MetricCard icon={DollarSign} title={t('metric_total_revenue')} value={salesData ? `${salesData.total_revenue.toFixed(2)} ${salesData.currency}` : '$0.00'} change={salesData?._isMock ? 'Demo Data' : t('today')} bgColor="bg-white dark:bg-gray-800" iconColor="text-indigo-500"/>
                 <MetricCard icon={Zap} title={t('metric_ai_optimizations')} value={healthScore === 'A+' ? String(optimizationsToday + 15) : String(optimizationsToday)} change={t('today')} bgColor="bg-white dark:bg-gray-800" iconColor="text-purple-500"/>
-                <MetricCard icon={Activity} title={t('metric_sync_status')} value={t('live')} change={t('live_status_time_ago', { minutes: 1 })} bgColor="bg-white dark:bg-gray-800" iconColor="text-orange-500"/>
             </div>
 
             {/* YOUR LISTINGS (Restored) */}
