@@ -19,6 +19,7 @@ interface MetricCardProps {
 interface FixItem {
     id: string;
     listing_id?: string;
+    imageUrl?: string;
     original: any;
     optimized: { title: string; description: string; tags: string[] };
     status: 'pending' | 'saving' | 'saved' | 'failed';
@@ -110,11 +111,12 @@ const DashboardPage: React.FC = () => {
                 newFixes.push({
                     id: p.id,
                     listing_id: p.id,
+                    imageUrl: p.imageUrl,
                     original: { title: p.title, description: p.description, tags: p.tags },
                     optimized: { 
                         title: optResult.title, 
                         description: optResult.description, 
-                        tags: optResult.tags
+                        tags: optResult.tags && optResult.tags.length > 0 ? optResult.tags : p.tags
                     },
                     status: 'pending'
                 });
