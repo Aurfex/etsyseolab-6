@@ -3,6 +3,12 @@ import axios from 'axios';
 import formidable from 'formidable';
 import { readFile } from 'node:fs/promises';
 
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
 export const config = {
   api: {
     bodyParser: false,
@@ -15,7 +21,13 @@ const getAuthToken = (req: VercelRequest) => {
   return authHeader.split(' ')[1];
 };
 
-const getHeaders = (token: string) => {
+const getHeaders = async (req: VercelRequest) => {
+  const token = getAuthToken(req);
+  if (!token) throw new Error('Unauthorized: Missing or invalid token.');
+
+  // --- NEW: Try to fetch from Supabase first if needed, or just use the passed token ---
+  // For now, we use the token from the header (frontend sent it)
+  
   const ETSY_API_KEY = process.env.ETSY_CLIENT_ID;
   const ETSY_SHARED_SECRET = process.env.ETSY_CLIENT_SECRET;
   if (!ETSY_API_KEY) throw new Error('Server configuration error: Missing ETSY_CLIENT_ID.');
@@ -129,14 +141,11 @@ const parseForm = async (req: VercelRequest): Promise<{ fields: formidable.Field
 const toSingle = <T>(v: T | T[] | undefined): T | undefined => (Array.isArray(v) ? v[0] : v);
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const token = getAuthToken(req);
-  if (!token) return res.status(401).json({ error: 'Unauthorized: Missing or invalid token.' });
-
   let headers: Record<string, string>;
   try {
-    headers = getHeaders(token);
+    headers = await getHeaders(req);
   } catch (e: any) {
-    return res.status(500).json({ error: e.message || 'Server configuration error.' });
+    return res.status(e.message.includes('Unauthorized') ? 401 : 500).json({ error: e.message || 'Server configuration error.' });
   }
 
   try {

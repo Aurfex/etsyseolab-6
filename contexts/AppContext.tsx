@@ -11,6 +11,8 @@ import { createListing, uploadListingImage, updateListing } from '../services/et
 import { MOCK_ETSY_CATEGORIES } from '../utils/mockEtsyData';
 
 
+import { supabase } from '../services/supabaseClient';
+
 export type ConnectionStatus = 'untested' | 'ok' | 'error' | 'loading';
 
 interface AppContextType {
@@ -221,7 +223,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         window.location.href = '/api/auth/login';
     }, []);
     
-    const handleOAuthCallback = useCallback((token: string, refreshToken?: string) => {
+    const handleOAuthCallback = useCallback(async (token: string, refreshToken?: string) => {
         const newAuth: Auth = {
             isAuthenticated: true,
             token,
@@ -232,6 +234,29 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setAuth(newAuth);
         // Persist to session storage
         sessionStorage.setItem('auth', JSON.stringify(newAuth));
+        
+        // --- NEW: Sync to Supabase ---
+        if (supabase) {
+            try {
+                const { data: { user } } = await supabase.auth.getUser(); // If using Supabase Auth
+                const userId = user?.id || 'default_user'; // Fallback for now if not fully using Supabase Auth
+                
+                const { error } = await supabase
+                    .from('profiles')
+                    .upsert({ 
+                        id: userId,
+                        etsy_token: token,
+                        etsy_refresh_token: refreshToken,
+                        updated_at: new Date()
+                    });
+                
+                if (error) console.error("Error syncing to Supabase:", error);
+                else console.log("Successfully synced Etsy tokens to Supabase.");
+            } catch (err) {
+                console.error("Supabase sync failed:", err);
+            }
+        }
+
         showToast({ message: 'Successfully connected to Etsy! 🎉', type: 'success' });
         
         // Clean up URL
@@ -370,6 +395,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 payload: { startDate, endDate }
             });
             setSalesData(data);
+            
+            // --- NEW: Sync Sales to Supabase for Persistence/Analytics ---
+            if (supabase && data && !data._isMock) {
+                const { data: { user } } = await supabase.auth.getUser();
+                const userId = user?.id || 'default_user';
+                
+                await supabase
+                    .from('sales_history')
+                    .upsert({
+                        user_id: userId,
+                        total_revenue: data.total_revenue,
+                        order_count: data.order_count,
+                        currency: data.currency,
+                        updated_at: new Date()
+                    });
+            }
         } catch (error: any) {
             console.error("Error fetching Etsy sales data:", error);
             showToast({ message: "Error loading sales data.", type: 'error' });

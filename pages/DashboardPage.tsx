@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Package, TrendingUp, Zap, Activity, FileText, Tag, Image as ImageIcon, Check, Info, AlertTriangle, AlertCircle, RefreshCw, DollarSign, Search, Flame } from 'lucide-react';
 import type { ElementType } from 'react';
 import { useAppContext } from '../contexts/AppContext';
@@ -33,7 +33,7 @@ const MetricCard: React.FC<MetricCardProps> = ({ icon: Icon, title, value, chang
 );
 
 const DashboardPage: React.FC = () => {
-    const { products, activityLogs, salesData, fetchSalesData } = useAppContext();
+    const { products, activityLogs, salesData, fetchSalesData, runAutopilotFix, showToast, auth, refreshProducts } = useAppContext();
     const { t } = useTranslation();
 
     // Chart Data mapping
@@ -68,6 +68,13 @@ const DashboardPage: React.FC = () => {
             setHealthScore('A+');
         }, 3000);
     };
+
+    // Auto-refresh data on mount if authenticated
+    useEffect(() => {
+        if (auth.isAuthenticated) {
+            fetchSalesData();
+        }
+    }, [auth.isAuthenticated, fetchSalesData]);
 
     const optimizationsToday = activityLogs.filter(log => 
         log.timestamp.toDateString() === new Date().toDateString() &&
