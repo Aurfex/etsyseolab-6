@@ -30,8 +30,30 @@ const Toggle: React.FC<{label: string; description?: string; id: string; checked
 );
 
 const SettingsPage: React.FC = () => {
-  const { settings, updateSettings, resetSettings, auth } = useAppContext();
+  const { settings, updateSettings, resetSettings, auth, showToast } = useAppContext();
   const { language, setLanguage, t } = useTranslation();
+  const [isRedirecting, setIsRedirecting] = React.useState(false);
+
+  const handleUpgrade = async (plan: 'growth' | 'elite') => {
+    setIsRedirecting(true);
+    try {
+        const response = await fetch('/api/create-checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ plan })
+        });
+        const data = await response.json();
+        if (data.url) {
+            window.location.href = data.url;
+        } else {
+            throw new Error(data.error || 'Failed to create checkout session');
+        }
+    } catch (err: any) {
+        showToast({ message: `Payment Error: ${err.message}`, type: 'error' });
+    } finally {
+        setIsRedirecting(false);
+    }
+  };
 
   const handleSettingChange = (section: keyof Settings | 'language' | 'theme', key: string, value: any) => {
     if (section === 'autopilot' || key === 'mockMode') {
@@ -117,10 +139,18 @@ const SettingsPage: React.FC = () => {
                             <p className="text-sm mt-4 opacity-90">$19/month • Renews April 10, 2026</p>
                         </div>
                         <div className="flex flex-col justify-center gap-2">
-                            <button className="w-full py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl text-sm font-bold shadow-sm hover:shadow-md transition-all">
-                                Manage Subscription
+                            <button 
+                                onClick={() => handleUpgrade('growth')}
+                                disabled={isRedirecting}
+                                className="w-full py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl text-sm font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50"
+                            >
+                                {isRedirecting ? 'Processing...' : 'Manage Subscription'}
                             </button>
-                            <button className="w-full py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-xl text-sm font-bold hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-all">
+                            <button 
+                                onClick={() => handleUpgrade('elite')}
+                                disabled={isRedirecting}
+                                className="w-full py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-xl text-sm font-bold hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-all disabled:opacity-50"
+                            >
                                 Upgrade to Elite
                             </button>
                         </div>
