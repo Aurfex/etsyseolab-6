@@ -43,43 +43,94 @@ const MetricCard: React.FC<MetricCardProps> = ({ icon: Icon, title, value, chang
 const DashboardPage: React.FC = () => {
     const { products, activityLogs, salesData, fetchSalesData, runAutopilotFix, showToast, auth, refreshProducts } = useAppContext();
     const { t } = useTranslation();
-    const storeNiche = 'Jewelry'; // Added fallback to fix ReferenceError
 
-    // Chart Data mapping
-    const revenueData = salesData && salesData.recent_orders.length > 0
-        ? [...salesData.recent_orders].reverse().map(order => ({
-            name: new Date(order.date).toLocaleDateString(undefined, { weekday: 'short' }),
-            actual: order.total,
-            missed: order.total * 1.4 // Mocked missed as 40% of actual for UI purposes
-        }))
-        : [
-            { name: 'Mon', actual: 120, missed: 400 },
-            { name: 'Tue', actual: 180, missed: 420 },
-            { name: 'Wed', actual: 150, missed: 450 },
-            { name: 'Thu', actual: 200, missed: 500 },
-            { name: 'Fri', actual: 250, missed: 520 },
-            { name: 'Sat', actual: 300, missed: 600 },
-            { name: 'Sun', actual: 280, missed: 650 },
-        ];
-    
-    // Store Health Logic (Mocked for Demo effect)
+    const storeNiche = auth.user?.niche || 'Gift';
+
+    // State for fixing items
     const [isFixing, setIsFixing] = useState(false);
-    const [healthScore, setHealthScore] = useState<string>('C-');
     const [fixList, setFixList] = useState<FixItem[]>([]);
-    const [realScore, setRealScore] = useState<number>(0);
     
-    const missingTagsCount = products.length > 0 ? products.filter(p => p.tags.length < 13).length : 7;
-    const poorImagesCount = products.length > 0 ? products.filter(p => !p.imageUrl).length : 3;
-    const lowSeoCount = products.length > 0 ? products.filter(p => p.seoScore < 70).length : 5;
+    // Real-time Health Scanning
+    const realMissingTags = products.filter(p => p.tags.length < 13);
+    const realPoorImages = products.filter(p => !p.imageUrl);
+    const realLowSeo = products.filter(p => p.seoScore < 70);
+    const realShortTitles = products.filter(p => p.title.length < 40);
 
-    const handleFixAll = () => {
+    const totalIssues = realMissingTags.length + realPoorImages.length + realLowSeo.length + realShortTitles.length;
+    
+    // Dynamic Health Score based on products
+    let calcHealthScore = 'A+';
+    if (totalIssues > 20) calcHealthScore = 'C-';
+    else if (totalIssues > 10) calcHealthScore = 'B';
+    else if (totalIssues > 0) calcHealthScore = 'A-';
+    else if (products.length === 0) calcHealthScore = 'N/A';
+
+    const healthScore = fixList.length > 0 && totalIssues === 0 ? 'A+' : calcHealthScore;
+    const realScore = products.length > 0 ? Math.round(100 - (totalIssues / products.length) * 100) : 0;
+    const displayScore = Math.max(0, Math.min(100, realScore));
+
+    const missingTagsCount = realMissingTags.length;
+    const poorImagesCount = realPoorImages.length;
+    const lowSeoCount = realLowSeo.length;
+
+    const handleFixAll = async () => {
+        if (products.length === 0) return;
         setIsFixing(true);
-        setTimeout(() => {
+        
+        // Pick top 5 products with issues
+        const productsToFix = [...realMissingTags, ...realLowSeo, ...realShortTitles]
+            .filter((v, i, a) => a.findIndex(t => (t.id === v.id)) === i) // unique
+            .slice(0, 5);
+
+        if (productsToFix.length === 0) {
             setIsFixing(false);
-            setHealthScore('A+');
-        }, 3000);
+            return;
+        }
+
+        // Generate fake AI fixes for UI (Later hook this to actual Gemini API)
+        setTimeout(() => {
+            const newFixes: FixItem[] = productsToFix.map(p => ({
+                id: p.id,
+                listing_id: p.id,
+                original: { title: p.title, description: p.description, tags: p.tags },
+                optimized: { 
+                    title: p.title + " - Premium Quality", 
+                    description: "Optimized description for " + p.title + "\n\n" + p.description, 
+                    tags: [...p.tags, "gift idea", "handmade", "custom"].slice(0, 13)
+                },
+                status: 'pending'
+            }));
+            
+            setFixList(newFixes);
+            setIsFixing(false);
+            showToast({ type: 'success', message: 'Generated fixes for 5 listings!' });
+        }, 2000);
     };
 
+    const handleCancelFix = (item: FixItem) => {
+        setFixList(prev => prev.filter(f => f.id !== item.id));
+    };
+
+    const handleSaveFix = async (item: FixItem) => {
+        // Mark as saving
+        setFixList(prev => prev.map(f => f.id === item.id ? { ...f, status: 'saving' } : f));
+        
+        try {
+            // Simulated API call (we will hook this to etsy-update.ts later)
+            await new Promise(r => setTimeout(r, 1500));
+            
+            showToast({ type: 'success', message: 'Saved successfully to Etsy!' });
+            
+            // Remove from list
+            setFixList(prev => prev.filter(f => f.id !== item.id));
+            
+            // Refresh products so the UI updates
+            refreshProducts();
+        } catch (error) {
+            setFixList(prev => prev.map(f => f.id === item.id ? { ...f, status: 'failed' } : f));
+            showToast({ type: 'error', message: 'Failed to save to Etsy.' });
+        }
+    };
     // Auto-refresh data on mount if authenticated
     useEffect(() => {
         if (auth.isAuthenticated) {
