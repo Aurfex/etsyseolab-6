@@ -41,9 +41,9 @@ const MetricCard: React.FC<MetricCardProps> = ({ icon: Icon, title, value, chang
 );
 
 const DashboardPage: React.FC = () => {
-    const { products, activityLogs, salesData, fetchSalesData, runAutopilotFix, showToast, auth, refreshProducts } = useAppContext();
+    
+    const { products, activityLogs, salesData, fetchSalesData, runAutopilotFix, runFullOptimization, showToast, auth, refreshProducts } = useAppContext();
     const { t } = useTranslation();
-
     const storeNiche = auth.user?.niche || 'Gift';
 
     // Chart Data mapping
@@ -51,7 +51,7 @@ const DashboardPage: React.FC = () => {
         ? [...salesData.recent_orders].reverse().map(order => ({
             name: new Date(order.date).toLocaleDateString(undefined, { weekday: 'short' }),
             actual: order.total,
-            missed: order.total * 1.4 // Mocked missed as 40% of actual for UI purposes
+            missed: order.total * 1.4
         }))
         : [
             { name: 'Mon', actual: 120, missed: 400 },
@@ -84,8 +84,7 @@ const DashboardPage: React.FC = () => {
 
     const healthScore = fixList.length > 0 && totalIssues === 0 ? 'A+' : calcHealthScore;
     const realScore = products.length > 0 ? Math.round(100 - (totalIssues / products.length) * 100) : 0;
-    const displayScore = Math.max(0, Math.min(100, realScore));
-
+    
     const missingTagsCount = realMissingTags.length;
     const poorImagesCount = realPoorImages.length;
     const lowSeoCount = realLowSeo.length;
@@ -104,24 +103,33 @@ const DashboardPage: React.FC = () => {
             return;
         }
 
-        // Generate fake AI fixes for UI (Later hook this to actual Gemini API)
-        setTimeout(() => {
-            const newFixes: FixItem[] = productsToFix.map(p => ({
-                id: p.id,
-                listing_id: p.id,
-                original: { title: p.title, description: p.description, tags: p.tags },
-                optimized: { 
-                    title: p.title + " - Premium Quality", 
-                    description: "Optimized description for " + p.title + "\n\n" + p.description, 
-                    tags: [...p.tags, "gift idea", "handmade", "custom"].slice(0, 13)
-                },
-                status: 'pending'
-            }));
+        const newFixes: FixItem[] = [];
+        for (const p of productsToFix) {
+            try {
+                const optResult = await runFullOptimization(p);
+                newFixes.push({
+                    id: p.id,
+                    listing_id: p.id,
+                    original: { title: p.title, description: p.description, tags: p.tags },
+                    optimized: { 
+                        title: optResult.title, 
+                        description: optResult.description, 
+                        tags: optResult.tags
+                    },
+                    status: 'pending'
+                });
+            } catch (err) {
+                console.error('Failed to optimize', p.id, err);
+            }
+        }
             
+        if (newFixes.length > 0) {
             setFixList(newFixes);
-            setIsFixing(false);
-            showToast({ type: 'success', message: 'Generated fixes for 5 listings!' });
-        }, 2000);
+            showToast({ type: 'success', message: 'AI Optimization generated for listings!' });
+        } else {
+            showToast({ type: 'error', message: 'AI Optimization failed. Check Gemini API limits.' });
+        }
+        setIsFixing(false);
     };
 
     const handleCancelFix = (item: FixItem) => {
@@ -133,27 +141,44 @@ const DashboardPage: React.FC = () => {
         setFixList(prev => prev.map(f => f.id === item.id ? { ...f, status: 'saving' } : f));
         
         try {
-            // Simulated API call (we will hook this to etsy-update.ts later)
-            await new Promise(r => setTimeout(r, 1500));
+            const token = auth.token || localStorage.getItem('etsy_token');
+            if (!token) throw new Error('No auth token');
             
+            const payload = {
+                title: item.optimized.title,
+                description: item.optimized.description,
+                tags: item.optimized.tags.join(',')
+            };
+            
+            const response = await fetch('/api/etsy-update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({
+                    listing_id: item.id,
+                    payload
+                })
+            });
+            
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                console.error("Etsy Update Failed:", errData);
+                throw new Error(errData.error || 'Update failed');
+            }
+            
+            // Success
             showToast({ type: 'success', message: 'Saved successfully to Etsy!' });
-            
-            // Remove from list
             setFixList(prev => prev.filter(f => f.id !== item.id));
-            
-            // Refresh products so the UI updates
             refreshProducts();
         } catch (error) {
+            console.error(error);
             setFixList(prev => prev.map(f => f.id === item.id ? { ...f, status: 'failed' } : f));
             showToast({ type: 'error', message: 'Failed to save to Etsy.' });
         }
     };
-    // Auto-refresh data on mount if authenticated
-    useEffect(() => {
-        if (auth.isAuthenticated) {
-            fetchSalesData();
-        }
-    }, [auth.isAuthenticated, fetchSalesData]);
+
 
     const optimizationsToday = activityLogs.filter(log => 
         log.timestamp.toDateString() === new Date().toDateString() &&
@@ -205,10 +230,10 @@ const DashboardPage: React.FC = () => {
                                     strokeLinecap="round" 
                                 />
                             </svg>
-                            <div className="absolute flex flex-col items-center justify-center">
+                                                        <div className="absolute flex flex-col items-center justify-center">
                                 <span className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t('dash_health_score')}</span>
-                                <span className={`text-5xl font-black ${healthScore !== 'A+' ? 'text-purple-600' : 'text-green-500'}`}>
-                                    {realScore === 0 ? healthScore : realScore}
+                                <span className={'text-5xl font-black ' + (healthScore !== 'A+' ? 'text-purple-600' : 'text-green-500')}>
+                                    {healthScore}
                                 </span>
                             </div>
                         </div>
