@@ -23,17 +23,32 @@ const getAuthToken = (req: VercelRequest) => {
 
 const getHeaders = async (req: VercelRequest) => {
   const token = getAuthToken(req);
-  if (!token) throw new Error('Unauthorized: Missing or invalid token.');
 
-  // --- NEW: Try to fetch from Supabase first if needed, or just use the passed token ---
-  // For now, we use the token from the header (frontend sent it)
-  
+  // Try to fetch from Supabase first
+  let finalToken = token;
+  try {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('etsy_token')
+      .eq('id', 'default_user')
+      .single();
+
+    if (profile?.etsy_token) {
+      finalToken = profile.etsy_token;
+      console.log('Successfully fetched token from Supabase profiles.');
+    }
+  } catch (err) {
+    console.error('Failed to fetch token from Supabase:', err);
+  }
+
+  if (!finalToken) throw new Error('Unauthorized: Missing or invalid token.');
+
   const ETSY_API_KEY = process.env.ETSY_CLIENT_ID;
   const ETSY_SHARED_SECRET = process.env.ETSY_CLIENT_SECRET;
   if (!ETSY_API_KEY) throw new Error('Server configuration error: Missing ETSY_CLIENT_ID.');
   const xApiKey = ETSY_SHARED_SECRET ? `${ETSY_API_KEY}:${ETSY_SHARED_SECRET}` : ETSY_API_KEY;
   return {
-    Authorization: `Bearer ${token}`,
+    Authorization: `Bearer ${finalToken}`,
     'x-api-key': xApiKey,
     'Content-Type': 'application/json',
   } as Record<string, string>;

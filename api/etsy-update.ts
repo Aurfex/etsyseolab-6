@@ -1,5 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import axios from 'axios';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const getAuthToken = (req: VercelRequest) => {
   const authHeader = req.headers.authorization;
@@ -24,7 +29,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const token = getAuthToken(req);
+  let token = getAuthToken(req);
+  try {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('etsy_token')
+      .eq('id', 'default_user')
+      .single();
+    if (profile?.etsy_token) {
+      token = profile.etsy_token;
+    }
+  } catch (err) {
+    console.error('Failed to fetch token from Supabase:', err);
+  }
+
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
 
   const { listing_id, payload } = req.body;
