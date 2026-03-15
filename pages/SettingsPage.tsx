@@ -85,7 +85,7 @@ const SettingsPage: React.FC = () => {
                     <label className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('settings_language')}</label>
                     <select value={language} onChange={e => handleSettingChange('language', 'language', e.target.value as Language)} className="mt-1 block w-full bg-gray-100 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 rounded-md p-2">
                         <option value="en">English</option>
-                        <option value="fa">Farsi (فارسی)</option>
+                        <option value="fr">French (Français)</option>
                     </select>
                 </div>
                  <div>
