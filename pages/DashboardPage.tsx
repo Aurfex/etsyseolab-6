@@ -46,6 +46,23 @@ const DashboardPage: React.FC = () => {
 
     const storeNiche = auth.user?.niche || 'Gift';
 
+    // Chart Data mapping
+    const revenueData = salesData && salesData.recent_orders.length > 0
+        ? [...salesData.recent_orders].reverse().map(order => ({
+            name: new Date(order.date).toLocaleDateString(undefined, { weekday: 'short' }),
+            actual: order.total,
+            missed: order.total * 1.4 // Mocked missed as 40% of actual for UI purposes
+        }))
+        : [
+            { name: 'Mon', actual: 120, missed: 400 },
+            { name: 'Tue', actual: 180, missed: 420 },
+            { name: 'Wed', actual: 150, missed: 450 },
+            { name: 'Thu', actual: 200, missed: 500 },
+            { name: 'Fri', actual: 250, missed: 520 },
+            { name: 'Sat', actual: 300, missed: 600 },
+            { name: 'Sun', actual: 280, missed: 650 },
+        ];
+
     // State for fixing items
     const [isFixing, setIsFixing] = useState(false);
     const [fixList, setFixList] = useState<FixItem[]>([]);
