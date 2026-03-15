@@ -15,6 +15,14 @@ interface MetricCardProps {
   iconColor: string;
 }
 
+
+interface FixItem {
+    id: string;
+    listing_id?: string;
+    original: any;
+    optimized: { title: string; description: string; tags: string[] };
+    status: 'pending' | 'saving' | 'saved' | 'failed';
+}
 interface ActivityItemProps {
   activity: ActivityLog;
 }
@@ -55,7 +63,9 @@ const DashboardPage: React.FC = () => {
     
     // Store Health Logic (Mocked for Demo effect)
     const [isFixing, setIsFixing] = useState(false);
-    const [healthScore, setHealthScore] = useState<'A+' | 'C-'>('C-');
+    const [healthScore, setHealthScore] = useState<string>('C-');
+    const [fixList, setFixList] = useState<FixItem[]>([]);
+    const [realScore, setRealScore] = useState<number>(0);
     
     const missingTagsCount = products.length > 0 ? products.filter(p => p.tags.length < 13).length : 7;
     const poorImagesCount = products.length > 0 ? products.filter(p => !p.imageUrl).length : 3;
@@ -108,8 +118,8 @@ const DashboardPage: React.FC = () => {
             {/* dY" WOW FACTOR: Store Health Dashboard dY" */}
             <div className="relative overflow-hidden bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-card dark:shadow-card-dark border border-gray-100 dark:border-gray-700">
                 {/* Decorative background glow */}
-                <div className={`absolute -top-24 -right-24 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-20 transition-all duration-1000 ${healthScore === 'C-' ? 'bg-purple-400' : 'bg-green-400'}`}></div>
-                <div className={`absolute -bottom-24 -left-24 w-72 h-72 rounded-full mix-blend-multiply filter blur-3xl opacity-20 transition-all duration-1000 ${healthScore === 'C-' ? 'bg-indigo-400' : 'bg-teal-400'}`}></div>
+                <div className={`absolute -top-24 -right-24 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-20 transition-all duration-1000 ${healthScore !== 'A+' ? 'bg-purple-400' : 'bg-green-400'}`}></div>
+                <div className={`absolute -bottom-24 -left-24 w-72 h-72 rounded-full mix-blend-multiply filter blur-3xl opacity-20 transition-all duration-1000 ${healthScore !== 'A+' ? 'bg-indigo-400' : 'bg-teal-400'}`}></div>
 
                 <div className="relative z-10 flex flex-col lg:flex-row gap-8 items-center">
                     {/* Left: Score Circle */}
@@ -119,17 +129,17 @@ const DashboardPage: React.FC = () => {
                                 <circle cx="80" cy="80" r="70" className="stroke-current text-gray-200 dark:text-gray-700" strokeWidth="12" fill="transparent" />
                                 <circle 
                                     cx="80" cy="80" r="70" 
-                                    className={`stroke-current transition-all duration-1000 ease-out ${healthScore === 'C-' ? 'text-purple-600' : 'text-green-500'}`} 
+                                    className={`stroke-current transition-all duration-1000 ease-out ${healthScore !== 'A+' ? 'text-purple-600' : 'text-green-500'}`} 
                                     strokeWidth="12" fill="transparent" 
                                     strokeDasharray="440" 
-                                    strokeDashoffset={healthScore === 'C-' ? "220" : "40"} 
+                                    strokeDashoffset={healthScore !== 'A+' ? "220" : "40"} 
                                     strokeLinecap="round" 
                                 />
                             </svg>
                             <div className="absolute flex flex-col items-center justify-center">
                                 <span className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t('dash_health_score')}</span>
-                                <span className={`text-5xl font-black ${healthScore === 'C-' ? 'text-purple-600' : 'text-green-500'}`}>
-                                    {healthScore}
+                                <span className={`text-5xl font-black ${healthScore !== 'A+' ? 'text-purple-600' : 'text-green-500'}`}>
+                                    {realScore === 0 ? healthScore : realScore}
                                 </span>
                             </div>
                         </div>
@@ -138,26 +148,26 @@ const DashboardPage: React.FC = () => {
                     {/* Middle: Issues List */}
                     <div className="flex-grow w-full">
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                            {healthScore === 'C-' ? t('dash_health_needs_attention') : t('dash_health_perfect')}
+                            {healthScore !== 'A+' ? t('dash_health_needs_attention') : t('dash_health_perfect')}
                         </h2>
                         
                         <div className="space-y-3">
-                            <div className={`flex items-center p-3 rounded-xl border ${healthScore === 'C-' ? 'bg-purple-50 dark:bg-purple-900/20 border-purple-100 dark:border-purple-800/50' : 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800/50'}`}>
-                                {healthScore === 'C-' ? <AlertTriangle className="w-5 h-5 text-purple-500 mr-3" /> : <Check className="w-5 h-5 text-green-500 mr-3" />}
+                            <div className={`flex items-center p-3 rounded-xl border ${healthScore !== 'A+' ? 'bg-purple-50 dark:bg-purple-900/20 border-purple-100 dark:border-purple-800/50' : 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800/50'}`}>
+                                {healthScore !== 'A+' ? <AlertTriangle className="w-5 h-5 text-purple-500 mr-3" /> : <Check className="w-5 h-5 text-green-500 mr-3" />}
                                 <span className="text-gray-700 dark:text-gray-300 font-medium">
-                                    {healthScore === 'C-' ? t('dash_health_missing_tags', { count: missingTagsCount }) : t('dash_health_tags_ok')}
+                                    {healthScore !== 'A+' ? t('dash_health_missing_tags', { count: missingTagsCount }) : t('dash_health_tags_ok')}
                                 </span>
                             </div>
-                            <div className={`flex items-center p-3 rounded-xl border ${healthScore === 'C-' ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-800/50' : 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800/50'}`}>
-                                {healthScore === 'C-' ? <AlertCircle className="w-5 h-5 text-indigo-500 mr-3" /> : <Check className="w-5 h-5 text-green-500 mr-3" />}
+                            <div className={`flex items-center p-3 rounded-xl border ${healthScore !== 'A+' ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-800/50' : 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800/50'}`}>
+                                {healthScore !== 'A+' ? <AlertCircle className="w-5 h-5 text-indigo-500 mr-3" /> : <Check className="w-5 h-5 text-green-500 mr-3" />}
                                 <span className="text-gray-700 dark:text-gray-300 font-medium">
-                                    {healthScore === 'C-' ? t('dash_health_low_seo', { count: lowSeoCount }) : t('dash_health_seo_ok')}
+                                    {healthScore !== 'A+' ? t('dash_health_low_seo', { count: lowSeoCount }) : t('dash_health_seo_ok')}
                                 </span>
                             </div>
-                            <div className={`flex items-center p-3 rounded-xl border ${healthScore === 'C-' ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800/50' : 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800/50'}`}>
-                                {healthScore === 'C-' ? <ImageIcon className="w-5 h-5 text-blue-600 mr-3" /> : <Check className="w-5 h-5 text-green-500 mr-3" />}
+                            <div className={`flex items-center p-3 rounded-xl border ${healthScore !== 'A+' ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800/50' : 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800/50'}`}>
+                                {healthScore !== 'A+' ? <ImageIcon className="w-5 h-5 text-blue-600 mr-3" /> : <Check className="w-5 h-5 text-green-500 mr-3" />}
                                 <span className="text-gray-700 dark:text-gray-300 font-medium">
-                                    {healthScore === 'C-' ? t('dash_health_missing_image_seo', { count: poorImagesCount }) : t('dash_health_image_seo_ok')}
+                                    {healthScore !== 'A+' ? t('dash_health_missing_image_seo', { count: poorImagesCount }) : t('dash_health_image_seo_ok')}
                                 </span>
                             </div>
                         </div>
@@ -165,7 +175,7 @@ const DashboardPage: React.FC = () => {
 
                     {/* Right: Magic Button */}
                     <div className="flex-shrink-0 w-full lg:w-auto flex flex-col items-center justify-center">
-                        {healthScore === 'C-' ? (
+                        {healthScore !== 'A+' ? (
                             <button 
                                 onClick={handleFixAll}
                                 disabled={isFixing}
@@ -190,7 +200,7 @@ const DashboardPage: React.FC = () => {
                                 </span>
                             </div>
                         )}
-                        {healthScore === 'C-' && !isFixing && (
+                        {healthScore !== 'A+' && !isFixing && (
                             <p className="text-xs text-gray-400 mt-3 text-center">
                                 {t('dash_health_fix_desc', { count: missingTagsCount + lowSeoCount + poorImagesCount })}
                             </p>
@@ -199,6 +209,44 @@ const DashboardPage: React.FC = () => {
                 </div>
             </div>
 
+            
+            {fixList.length > 0 && (
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-card dark:shadow-card-dark border border-purple-200 dark:border-purple-800 animate-fade-in mt-6">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <Zap className="w-6 h-6 mr-2 text-purple-500" /> AI Fix Review
+                    </h3>
+                    <div className="space-y-4">
+                        {fixList.map(item => (
+                            <div key={item.id} className="p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <span className="text-xs font-bold text-red-500 uppercase tracking-wider mb-2 block">Before (Errors)</span>
+                                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">{item.original.title}</p>
+                                        <div className="flex flex-wrap gap-1 mt-2">
+                                            {item.original.tags.map((t: string) => <span key={t} className="text-xs bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 px-2 py-0.5 rounded">{t}</span>)}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <span className="text-xs font-bold text-green-500 uppercase tracking-wider mb-2 block">After (Optimized)</span>
+                                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">{item.optimized.title}</p>
+                                        <div className="flex flex-wrap gap-1 mt-2">
+                                            {item.optimized.tags.map((t: string) => <span key={t} className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-0.5 rounded">{t}</span>)}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                    <button onClick={() => handleCancelFix(item)} disabled={item.status === 'saving'} className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">Cancel</button>
+                                    <button onClick={() => handleSaveFix(item)} disabled={item.status === 'saving'} className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-bold rounded-lg shadow-md flex items-center">
+                                        {item.status === 'saving' ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Check className="w-4 h-4 mr-2" />}
+                                        Save to Etsy
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+            
             {/* NEW: Missed Revenue & AI Intelligence Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Chart: Missed Revenue */}
@@ -213,8 +261,8 @@ const DashboardPage: React.FC = () => {
                         </div>
                         <div className="text-right">
                             <p className="text-sm text-gray-500 dark:text-gray-400">{t('dash_rev_missed_label')}</p>
-                            <p className={`text-2xl font-bold ${healthScore === 'C-' ? 'text-indigo-500' : 'text-green-500'}`}>
-                                {healthScore === 'C-' 
+                            <p className={`text-2xl font-bold ${healthScore !== 'A+' ? 'text-indigo-500' : 'text-green-500'}`}>
+                                {healthScore !== 'A+' 
                                     ? (salesData ? `$${(salesData.total_revenue * 0.4).toFixed(2)}` : '$2,450.00') 
                                     : '$0.00'}
                             </p>
@@ -241,7 +289,7 @@ const DashboardPage: React.FC = () => {
                                     formatter={(value: number) => [`$${value}`, 'Revenue']}
                                 />
                                 <Area type="monotone" dataKey="actual" name={t('dash_rev_current')} stroke="#4F46E5" strokeWidth={3} fillOpacity={1} fill="url(#colorActual)" />
-                                {healthScore === 'C-' && (
+                                {healthScore !== 'A+' && (
                                     <Area type="monotone" dataKey="missed" name={t('dash_rev_potential')} stroke="#10B981" strokeWidth={2} strokeDasharray="5 5" fillOpacity={1} fill="url(#colorMissed)" />
                                 )}
                             </AreaChart>
@@ -260,7 +308,7 @@ const DashboardPage: React.FC = () => {
                             <h3 className="font-bold text-gray-900 dark:text-white">{t('dash_radar_title')}</h3>
                         </div>
                         <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
-                            <span dangerouslySetInnerHTML={{ __html: t('dash_radar_alert', { shop: 'BohoJewelryCo', count: 3 }) }} /> <span className="inline-block bg-white dark:bg-gray-800 px-2 py-1 rounded text-xs border border-gray-200 dark:border-gray-700 mx-1 font-mono text-gray-800 dark:text-gray-200">chunky silver ring</span>.
+                            <span dangerouslySetInnerHTML={{ __html: t('dash_radar_alert', { shop: 'Top ${storeNiche} Shop', count: 3 }) }} /> <span className="inline-block bg-white dark:bg-gray-800 px-2 py-1 rounded text-xs border border-gray-200 dark:border-gray-700 mx-1 font-mono text-gray-800 dark:text-gray-200">${storeNiche} design</span>.
                         </p>
                         <button className="w-full py-2 bg-[#F1641E] hover:bg-[#D95A1B] text-white text-sm font-semibold rounded-xl transition-colors shadow-md shadow-[#F1641E]/20">
                             {t('dash_radar_btn')}
@@ -277,15 +325,15 @@ const DashboardPage: React.FC = () => {
                         </div>
                         <ul className="space-y-3">
                             <li className="flex justify-between items-center">
-                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">1. Cyberpunk mask</span>
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">1. Unique ${storeNiche}</span>
                                 <span className="text-xs text-green-500 font-bold">+124%</span>
                             </li>
                             <li className="flex justify-between items-center">
-                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">2. Mother's day necklace</span>
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">2. Custom ${storeNiche} gift</span>
                                 <span className="text-xs text-green-500 font-bold">+89%</span>
                             </li>
                             <li className="flex justify-between items-center">
-                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">3. Raw emerald ring</span>
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">3. Trending ${storeNiche}</span>
                                 <span className="text-xs text-green-500 font-bold">+45%</span>
                             </li>
                         </ul>
