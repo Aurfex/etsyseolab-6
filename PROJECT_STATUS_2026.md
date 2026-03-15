@@ -1,102 +1,41 @@
 # ETSY SEOLAB - Project Status & Roadmap
 *Last Updated: 2026-03-14*
 
-## Current State (Milestone Achieved: Lead Generation & Full UI Maturity)
-The platform is now fully equipped for lead generation and presents a professional, high-end visual experience.
+## Current State (Milestone Achieved: Lead Generation & Payments Foundation)
+The platform is now fully equipped for lead generation and has the foundation for global payments via Stripe.
 
 ### Key Achievements (2026-03-14)
-- **Shopify Migration (CSV Export) Finalization:**
-    - Refactored `ShopifyExportPage.tsx` to exactly match the official `product_template.csv` standard required by Shopify.
-    - Added dynamic multi-row generation logic to properly format multiple variants (e.g., sizes/colors) and multiple images under a single `Handle`.
-- **Deployment Stability (Vercel Fixes):**
-    - Resolved translation file `Duplicate Key` build errors (`en.ts`, `fr.ts`).
-    - Bypassed Vercel Hobby plan 12-function limit by archiving unused backend API endpoints into `api-disabled/` and `api-archive/`.
-- **Data Mocking for Testing:**
-    - Updated `mockData.ts` to include multi-variant pricing matrices and multiple images to ensure the CSV module can be tested in the browser.
-- **Etsy API Deep Fetch Completed:**
-    - Upgraded `fetchEtsyProducts` and the `api/etsy-proxy` endpoint to retrieve true variation/inventory data and secondary images for live user shops using `includes=Images,Inventory`.
-    - Shopify Migration module is now fully operational with real Etsy shop data.
-- **Sales Intelligence (PDF Reports) Operational:** 
-    - Fixed Vercel variable shadowing crash (`action` TDZ error) in `api/etsy-proxy.ts`.
-    - Added `transactions_r` OAuth scope to `api/auth/login.ts` allowing the app to fetch real Etsy receipts and generate accurate PDF sales reports based on user date selection.
-- **Dashboard Wired to Real Data (2026-03-14):** 
-    - Replaced mocked revenue data and charts in `DashboardPage.tsx` with live data from the Etsy API via `AppContext`.
-    - Dashboard now dynamically calculates "Missed Revenue" based on actual performance.
-- **Supabase Foundation (2026-03-14):** 
-    - Installed `@supabase/supabase-js`.
-    - Created `services/supabaseClient.ts` for centralized database access.
-    - Successfully pushed to main; Vercel deployment confirmed.
-- **Database Schema Defined (2026-03-14):** 
-    - Created `database_schema.sql` with `profiles`, `product_cache`, and `audit_logs` tables.
-    - Implemented Row Level Security (RLS) policies for user data isolation.
-- **Auth & Token Sync (2026-03-14):** 
-    - Updated `api/auth/callback.ts` to fetch Etsy User/Shop metadata after token exchange.
-    - Prepared the logic for persisting these tokens into the Supabase `profiles` table.
-- **Waitlist Real Integration (2026-03-14) [COMPLETED]:** 
-    - Created `waitlist` table in Supabase.
-    - Updated `api/waitlist.ts` to perform real insertions into the database.
-    - Verified end-to-end functionality from Landing Page to Supabase Table Editor.
-- **Hasti AI Assistant Fixed (2026-03-14) [COMPLETED]:**
+- **Stripe Integration Foundation [NEW]:**
+    - Installed `stripe` SDK and React components.
+    - Created `api/create-checkout.ts` to handle Stripe Checkout Sessions.
+    - Refactored `SettingsPage.tsx` to include Subscription management and Billing UI.
+    - Added "Hasti AI Personality" vibe control to Settings.
+- **Hasti AI Assistant Fixed [COMPLETED]:**
     - Successfully integrated `gemini-3-flash-preview` into the in-app assistant.
     - Bypassed auth check in `api/assistant.ts` for immediate accessibility.
     - Verified real-time sassy responses in the frontend OptimoBot component.
-- **Next Immediate Goal (Auth & Dashboard State):** 
-    - Move Etsy tokens from `localStorage` to Supabase `profiles` table.
-    - Connect the Frontend `DashboardPage` to real-time Supabase hooks to show live optimization logs.
+- **Waitlist Real Integration [COMPLETED]:** 
+    - Created `waitlist` table in Supabase.
+    - Updated `api/waitlist.ts` to perform real insertions into the database.
+    - Verified end-to-end functionality from Landing Page to Supabase Table Editor.
+- **Shopify Migration (CSV Export) Finalization:**
+    - Refactored `ShopifyExportPage.tsx` to match official Shopify standards.
+- **Etsy API Deep Fetch Completed:**
+    - Upgraded proxy endpoints to retrieve true variation/inventory data and secondary images.
+- **Sales Intelligence (PDF Reports) Operational:** 
+    - Added `transactions_r` OAuth scope and fixed Vercel variable shadowing crash.
+- **Dashboard Wired to Real Data:** 
+    - Replaced mocked revenue data with live data from the Etsy API via `AppContext`.
+- **Supabase Foundation:** 
+    - Created `database_schema.sql` and implemented RLS policies.
 
-### Key Achievements (2026-03-12)
-- **Waitlist Integration (Lead Gen):** 
-    - Implemented a functional **Waitlist/Email Capture** system in the Hero section and a new high-conversion CTA footer.
-    - Added full i18n support for waitlist messages in English and French.
-- **Glassmorphic UI & Visual Polish:**
-    - Refactored the bottom CTA section to a **Glassmorphic style** (fully transparent with `backdrop-blur-3xl`), ensuring the background animations are visible throughout.
-    - Fixed the **"See How It Works"** navigation anchor.
-- **Particle Background Finalization:**
-    - Resolved z-index and layering issues; particles now render with consistent visibility (using `z-index: 9999` overlay with high transparency).
-    - Particles are now truly global across the landing page, showing through all transparent and glass sections.
+### Next Steps (To-Do List)
+1. **Stripe Activation [Dariush]:** Complete Stripe account setup, link Canadian bank account, and provide Live API Keys.
+2. **Auth & Token Sync:** Move Etsy tokens from `localStorage` to Supabase `profiles` table.
+3. **Dashboard Real-time:** Connect the Frontend `DashboardPage` to real-time Supabase hooks.
+4. **Personality Persistence:** Save the "Vibe Level" setting to the database.
 
-### Key Achievements (2026-03-11)
-- **Hasti AI Branding & Landing Page Polish:** 
-    - The platform is entirely "Hasti AI" branded. 
-    - Added an interactive **Particle Background** (canvas-based, sine-wave movement, mouse-reactive) focused on the hero area.
-    - Replaced the previous hero image with a new custom **"Hasti Jet Pilot"** persona image.
-    - Added an **Interactive FAQ Section** (Accordion style) to handle customer concerns about safety and automation.
-    - Updated typography, spacing, and added the savage tagline: *"Hasti AI: Because your competitors need a reason to cry."*
-    - Unified the logo (Purple Zap) across the Landing Page and internal Dashboard.
-- **New Strategic Module: Shopify Migration (CSV Export):**
-    - Built a dedicated page (`ShopifyExportPage.tsx`) for users to export their Etsy listings into a Shopify-compatible CSV format.
-    - Features a multi-select table with product thumbnails for granular control.
-- **New Strategic Module: Sales Intelligence (PDF Reports):**
-    - Created `SalesReportPage.tsx` for generating performance summaries based on date ranges.
-    - Features UI mocks for "Total Sales," "SEO Impact," and functional mock PDF download mechanics.
-- **UI/UX Refinement:**
-    - **Dashboard:** Removed off-brand peach/pink/red gradients; replaced black buttons with Hasti AI Purple buttons.
-    - **Business Documentation:** Generated core startup docs (`business_docs/`) including Pitch Deck Outline, Executive Summary, and Technical Architecture for IRAP/SUV.
-
-### Previous Achievements (2026-03-10)
-- **Competitor Radar Overhaul:**
-    - Integrated `recharts` for dynamic SEO comparison against top sellers.
-    - Added a side-by-side "AI Fixes" preview section.
-- **Public Entry Point:** Built the foundational Landing Page with tiered pricing and legal pages (Privacy, Terms, Contact).
-
-### ⚠️ IMPORTANT: Dashboard & Radar remain high-fidelity MOCKS
-- The "Store Health Score" and "Radar Analysis" results use deterministic mock data to ensure a "Wow Factor" during pitches without triggering live API errors or data inconsistencies.
-
-## Working Modules (Real Functionality)
-The following modules have real, working logic connected to their respective APIs:
-- **Add Product:** Image upload, AI text generation (OpenAI/Gemini), variations, pricing CSV import, and direct Etsy API publish.
-- **Autopilot AI:** Scans listings for issues and generates real AI suggestions for human review.
-- **Image SEO:** Automatic WEBP conversion, 2000x2000 resizing, and AI-based file naming.
-- **Pricing Calculator:** Complex variation matrix calculation and CSV export.
-
-## Next Steps (To-Do List)
-To move towards the IRAP/SUV grant application and real-world launch:
-
-### 1. Business Side (dXb Tech)
-- **Waitlist Integration:** Connect the Landing Page buttons to a real mailing list (Mailchimp/ConvertKit) to gather early users.
-- **Pitch Deck Update:** Include the new "Hasti AI" branding and "Competitor Radar" visual screenshots as core USP (Unique Selling Points).
-
-### 2. Technical Roadmap
-- **Database Integration:** Move from `sessionStorage` and local state to a permanent database (Supabase/PostgreSQL) to store user settings and audit history.
-- **Real-Time Market Data:** Replace the Radar's mock charts with live data scraped/fetched from Etsy niche results.
-- **Stripe Integration:** Add a real "Subscribe" flow to the pricing table.
+### Previous Achievements (2026-03-11/12)
+- Hasti AI Branding & Landing Page Polish.
+- Interactive FAQ Section and Particle Background.
+- Shopify Migration module and Sales Intelligence module creation.
