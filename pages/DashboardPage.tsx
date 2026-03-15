@@ -43,6 +43,7 @@ const MetricCard: React.FC<MetricCardProps> = ({ icon: Icon, title, value, chang
 const DashboardPage: React.FC = () => {
     const { products, activityLogs, salesData, fetchSalesData, runAutopilotFix, showToast, auth, refreshProducts } = useAppContext();
     const { t } = useTranslation();
+    const storeNiche = 'Jewelry'; // Added fallback to fix ReferenceError
 
     // Chart Data mapping
     const revenueData = salesData && salesData.recent_orders.length > 0
@@ -308,7 +309,7 @@ const DashboardPage: React.FC = () => {
                             <h3 className="font-bold text-gray-900 dark:text-white">{t('dash_radar_title')}</h3>
                         </div>
                         <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
-                            <span dangerouslySetInnerHTML={{ __html: t('dash_radar_alert', { shop: 'Top ${storeNiche} Shop', count: 3 }) }} /> <span className="inline-block bg-white dark:bg-gray-800 px-2 py-1 rounded text-xs border border-gray-200 dark:border-gray-700 mx-1 font-mono text-gray-800 dark:text-gray-200">${storeNiche} design</span>.
+                            <span dangerouslySetInnerHTML={{ __html: t('dash_radar_alert', { shop: `Top ${storeNiche} Shop`, count: 3 }) }} /> <span className="inline-block bg-white dark:bg-gray-800 px-2 py-1 rounded text-xs border border-gray-200 dark:border-gray-700 mx-1 font-mono text-gray-800 dark:text-gray-200">{storeNiche} design</span>.
                         </p>
                         <button className="w-full py-2 bg-[#F1641E] hover:bg-[#D95A1B] text-white text-sm font-semibold rounded-xl transition-colors shadow-md shadow-[#F1641E]/20">
                             {t('dash_radar_btn')}
@@ -325,15 +326,15 @@ const DashboardPage: React.FC = () => {
                         </div>
                         <ul className="space-y-3">
                             <li className="flex justify-between items-center">
-                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">1. Unique ${storeNiche}</span>
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">1. Unique {storeNiche}</span>
                                 <span className="text-xs text-green-500 font-bold">+124%</span>
                             </li>
                             <li className="flex justify-between items-center">
-                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">2. Custom ${storeNiche} gift</span>
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">2. Custom {storeNiche} gift</span>
                                 <span className="text-xs text-green-500 font-bold">+89%</span>
                             </li>
                             <li className="flex justify-between items-center">
-                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">3. Trending ${storeNiche}</span>
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">3. Trending {storeNiche}</span>
                                 <span className="text-xs text-green-500 font-bold">+45%</span>
                             </li>
                         </ul>
