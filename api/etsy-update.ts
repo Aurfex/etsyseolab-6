@@ -14,11 +14,14 @@ const getAuthToken = (req: VercelRequest) => {
 
 const getHeaders = (token: string) => {
   const ETSY_API_KEY = process.env.ETSY_CLIENT_ID;
+  const ETSY_SHARED_SECRET = process.env.ETSY_CLIENT_SECRET;
   if (!ETSY_API_KEY) throw new Error('Server configuration error: Missing ETSY_CLIENT_ID.');
+  
+  const xApiKey = ETSY_SHARED_SECRET ? `${ETSY_API_KEY}:${ETSY_SHARED_SECRET}` : ETSY_API_KEY;
   
   return {
     Authorization: `Bearer ${token}`,
-    'x-api-key': ETSY_API_KEY,
+    'x-api-key': xApiKey,
     'Content-Type': 'application/json',
   } as Record<string, string>;
 };
@@ -54,21 +57,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const cleanId = String(listing_id).trim();
     
     // Etsy v3 Update Listing: PATCH /v3/application/listings/{listing_id}
-    // We use the most direct URL first.
     console.log(`Updating listing: ${cleanId}`);
 
-    const response = await axios({
-        method: 'PATCH',
-        url: `https://openapi.etsy.com/v3/application/listings/${cleanId}`,
-        headers: headers,
-        data: payload
-    });
+    try {
+        const response = await axios.patch(
+          `https://openapi.etsy.com/v3/application/listings/${cleanId}`,
+          payload,
+          { headers }
+        );
+        return res.status(200).json({ success: true, data: response.data });
+    } catch (firstErr: any) {
+        if (firstErr.response?.status === 404) {
+            console.log("Direct update failed with 404, trying shop-specific endpoint...");
+            // Try fetching shop_id to use the alternate endpoint
+            const userResponse = await axios.get('https://openapi.etsy.com/v3/application/users/me', { headers });
+            const shopId = userResponse.data?.shop_id;
+            if (shopId) {
+                const retryResponse = await axios.patch(
+                    `https://openapi.etsy.com/v3/application/shops/${shopId}/listings/${cleanId}`,
+                    payload,
+                    { headers }
+                );
+                return res.status(200).json({ success: true, data: retryResponse.data });
+            }
+        }
+        throw firstErr;
+    }
 
-    return res.status(200).json({ success: true, data: response.data });
   } catch (error: any) {
     console.error('❌ Etsy Update Error:', error.response?.status, error.response?.data || error.message);
-    
-    // If 404, the listing ID might be wrong or the endpoint structure is different for this app
     return res.status(error.response?.status || 500).json({ 
       error: error.response?.data?.error || error.message,
       details: error.response?.data 
