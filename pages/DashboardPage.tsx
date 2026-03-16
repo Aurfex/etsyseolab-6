@@ -63,6 +63,7 @@ const DashboardPage: React.FC = () => {
     // State
     const [isFixing, setIsFixing] = useState(false);
     const [fixList, setFixList] = useState<FixItem[]>([]);
+    const [fixProgress, setFixProgress] = useState<('pending' | 'loading' | 'done')[]>([]);
     
     // Real-time Health Scanning Logic
     const realMissingTags = products.filter(p => p.tags.length < 13);
@@ -73,7 +74,7 @@ const DashboardPage: React.FC = () => {
     const totalIssues = realMissingTags.length + realPoorImages.length + realLowSeo.length + realShortTitles.length;
     
     const getGrade = (issues: number, total: number) => {
-        if (total === 0) return 'N/A';
+        if (total === 0) return 'Analyzing...';
         const ratio = issues / total;
         if (ratio === 0) return 'A+';
         if (ratio < 0.1) return 'A';
@@ -83,7 +84,7 @@ const DashboardPage: React.FC = () => {
         return 'C-';
     };
 
-    const healthScore = getGrade(totalIssues, products.length * 2);
+    const healthScore = products.length === 0 ? 'Analyzing...' : getGrade(totalIssues, products.length * 2);
     const avgSeoScore = products.length > 0 
         ? Math.round(products.reduce((acc, p) => acc + p.seoScore, 0) / products.length)
         : 0;
@@ -116,17 +117,35 @@ const DashboardPage: React.FC = () => {
     const handleFixAll = async () => {
         if (products.length === 0) return;
         setIsFixing(true);
+        setFixList([]);
+        setFixProgress(['loading', 'pending', 'pending', 'pending', 'pending']);
+        
         const productsToFix = [...products].sort((a, b) => a.seoScore - b.seoScore).slice(0, 5);
         const newFixes: FixItem[] = [];
-        for (const p of productsToFix) {
-            const result = await optimizeItem(p);
-            if (result) newFixes.push(result);
+        
+        for (let i = 0; i < productsToFix.length; i++) {
+            // Update progress state
+            setFixProgress(prev => prev.map((s, idx) => idx === i ? 'loading' : s));
+            
+            const result = await optimizeItem(productsToFix[i]);
+            if (result) {
+                newFixes.push(result);
+                setFixProgress(prev => prev.map((s, idx) => idx === i ? 'done' : s));
+            } else {
+                setFixProgress(prev => prev.map((s, idx) => idx === i ? 'pending' : s));
+            }
+            
+            // Set next one to loading if exists
+            if (i < productsToFix.length - 1) {
+                setFixProgress(prev => prev.map((s, idx) => idx === i + 1 ? 'loading' : s));
+            }
         }
+        
         if (newFixes.length > 0) {
             setFixList(newFixes);
             showToast({ type: 'success', message: 'AI Analysis complete!' });
         } else {
-            showToast({ type: 'error', message: 'Analysis failed. API limits might be reached.' });
+            showToast({ type: 'error', message: 'Analysis failed.' });
         }
         setIsFixing(false);
     };
@@ -150,7 +169,9 @@ const DashboardPage: React.FC = () => {
     const handleSaveFix = async (item: FixItem) => {
         setFixList(prev => prev.map(f => f.id === item.id ? { ...f, status: 'saving' } : f));
         try {
-            const token = auth.token || localStorage.getItem('etsy_token');
+            const token = auth.token || sessionStorage.getItem('etsy_token');
+            if (!token) throw new Error('Unauthorized: No token found');
+
             const response = await fetch('/api/etsy-update', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
@@ -159,17 +180,21 @@ const DashboardPage: React.FC = () => {
                     payload: {
                         title: item.optimized.title,
                         description: item.optimized.description,
-                        tags: item.optimized.tags.join(',')
+                        tags: item.optimized.tags // Send as array for V3
                     }
                 })
             });
-            if (!response.ok) throw new Error('Update failed');
+            
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'Update failed');
+            
             showToast({ type: 'success', message: 'Saved successfully to Etsy!' });
             setFixList(prev => prev.filter(f => f.id !== item.id));
             refreshProducts();
-        } catch (error) {
+        } catch (error: any) {
+            console.error('Save failed:', error);
             setFixList(prev => prev.map(f => f.id === item.id ? { ...f, status: 'failed' } : f));
-            showToast({ type: 'error', message: 'Failed to save to Etsy.' });
+            showToast({ type: 'error', message: 'Failed to save: ' + error.message });
         }
     };
 
@@ -187,7 +212,7 @@ const DashboardPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('dashboard_title')}</h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1">SEO Engine v2.5: Active and Monitoring</p>
+                    <p className="text-gray-500 dark:text-gray-400 mt-1">SEO Engine v2.6: Real-time Sync Active</p>
                 </div>
                 <div className="flex items-center gap-2 mt-4 sm:mt-0">
                     <button className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-500/10 rounded-full">
@@ -209,7 +234,7 @@ const DashboardPage: React.FC = () => {
                             </svg>
                             <div className="absolute flex flex-col items-center justify-center">
                                 <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Score</span>
-                                <span className={"text-5xl font-black " + (healthScore.startsWith('A') ? 'text-green-500' : 'text-purple-600')}>{healthScore}</span>
+                                <span className={"text-5xl font-black " + (healthScore.startsWith('A') ? 'text-green-500' : 'text-purple-600')}>{healthScore === 'Analyzing...' ? '...' : healthScore}</span>
                             </div>
                         </div>
                     </div>
@@ -217,14 +242,22 @@ const DashboardPage: React.FC = () => {
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Store Health Status</h2>
                         <div className="space-y-3">
                             <div className="flex items-center p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800">
-                                <AlertTriangle className="w-5 h-5 text-amber-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{missingTagsCount} products need tag improvement</span>
+                                <AlertTriangle className="w-5 h-5 text-amber-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{products.length === 0 ? 'Checking listings...' : `${missingTagsCount} products need tag improvement`}</span>
                             </div>
                             <div className="flex items-center p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800">
-                                <AlertCircle className="w-5 h-5 text-red-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{lowSeoCount} products have critical SEO gaps</span>
+                                <AlertCircle className="w-5 h-5 text-red-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{products.length === 0 ? 'Analyzing SEO gaps...' : `${lowSeoCount} products have critical SEO gaps`}</span>
                             </div>
                         </div>
                     </div>
-                    <div className="flex-shrink-0 w-full lg:w-auto">
+                    <div className="flex-shrink-0 w-full lg:w-auto flex flex-col items-center gap-4">
+                        {/* Progress Indicators */}
+                        {isFixing && (
+                            <div className="flex gap-2 mb-2">
+                                {fixProgress.map((status, i) => (
+                                    <div key={i} className={"w-4 h-4 rounded-md " + (status === 'done' ? 'bg-green-500' : status === 'loading' ? 'bg-orange-500 animate-pulse' : 'bg-gray-300')}></div>
+                                ))}
+                            </div>
+                        )}
                         <button onClick={handleFixAll} disabled={isFixing} className="w-full lg:w-64 py-4 px-6 rounded-2xl font-bold text-white shadow-lg bg-[#F1641E] hover:bg-[#D95A1B] disabled:bg-gray-400">
                             {isFixing ? <RefreshCw className="w-5 h-5 animate-spin mx-auto" /> : "✨ FIX 5 PRIORITY ITEMS"}
                         </button>
@@ -241,8 +274,8 @@ const DashboardPage: React.FC = () => {
                             <div key={item.id} className="p-5 rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30 flex flex-col gap-4 relative">
                                 {item.status === 'optimizing' && <div className="absolute inset-0 bg-white/60 dark:bg-gray-900/60 z-20 flex items-center justify-center backdrop-blur-sm rounded-2xl"><RefreshCw className="w-8 h-8 text-purple-500 animate-spin" /></div>}
                                 <div className="flex flex-col md:flex-row gap-6">
-                                    <div className="w-32 h-32 flex-shrink-0 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
-                                        <img src={item.imageUrl || 'https://via.placeholder.com/150'} className="w-full h-full object-cover" alt="" />
+                                    <div className="w-32 h-32 flex-shrink-0 rounded-xl overflow-hidden border border-gray-200 shadow-sm bg-white">
+                                        <img src={item.imageUrl || 'https://via.placeholder.com/150'} className="w-full h-full object-contain" alt="" />
                                     </div>
                                     <div className="flex-grow grid grid-cols-1 lg:grid-cols-2 gap-8">
                                         <div className="space-y-2 opacity-70">
@@ -297,13 +330,11 @@ const DashboardPage: React.FC = () => {
                     </div>
                 </div>
                 <div className="col-span-1 flex flex-col gap-6">
-                    {/* RESTORED: Competitor Radar Alert */}
                     <div className="bg-gradient-to-br from-[#FAFAFA] to-[#F0F0F0] dark:from-[#1E1E1E] dark:to-[#2D2D2D] p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
                         <div className="flex items-center gap-3 mb-3"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"><Search className="w-4 h-4" /></span><h3 className="font-bold text-gray-900 dark:text-white">Competitor Radar</h3></div>
                         <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-4">3 Top competitors in <b>{storeNiche}</b> recently updated their tags. Check your rank now.</p>
                         <button className="w-full py-2 bg-[#F1641E] hover:bg-[#D95A1B] text-white text-sm font-semibold rounded-xl transition-colors">View Analysis</button>
                     </div>
-                    {/* RESTORED: Keyword Trends */}
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card border border-gray-100 dark:border-gray-700">
                         <div className="flex items-center gap-3 mb-4"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"><Flame className="w-4 h-4" /></span><h3 className="font-bold text-gray-900 dark:text-white">Trending Keywords</h3></div>
                         <ul className="space-y-3">
