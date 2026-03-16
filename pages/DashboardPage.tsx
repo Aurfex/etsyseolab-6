@@ -59,10 +59,10 @@ const DashboardPage: React.FC = () => {
         }
     }, [products, lockedPriorityIds]);
 
-    // Use derived priority if not locked yet to avoid "0" score on load
     const priorityProducts = useMemo(() => {
         if (lockedPriorityIds.length > 0) {
-            return products.filter(p => lockedPriorityIds.includes(p.id));
+            const list = products.filter(p => lockedPriorityIds.includes(p.id));
+            if (list.length > 0) return list;
         }
         return [...products].sort((a, b) => a.seoScore - b.seoScore).slice(0, 5);
     }, [products, lockedPriorityIds]);
@@ -70,7 +70,7 @@ const DashboardPage: React.FC = () => {
     // 2. Calculate Batch Health Grade
     const healthData = useMemo(() => {
         if (priorityProducts.length === 0) {
-            return { grade: '...', missingTags: 0, lowSeo: 0, avgScore: 0 };
+            return { grade: '...', missingTags: 0, lowSeo: 0, avgScore: 20 };
         }
         
         const totalScore = priorityProducts.reduce((acc, p) => {
@@ -222,7 +222,7 @@ const DashboardPage: React.FC = () => {
 
     useEffect(() => {
         if (products.length > 0) {
-            const timer = setTimeout(() => setIsScanning(false), 1500);
+            const timer = setTimeout(() => setIsScanning(false), 2000);
             return () => clearTimeout(timer);
         }
     }, [products.length]);
