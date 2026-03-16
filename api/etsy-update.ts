@@ -14,12 +14,11 @@ const getAuthToken = (req: VercelRequest) => {
 
 const getHeaders = (token: string) => {
   const ETSY_API_KEY = process.env.ETSY_CLIENT_ID;
-  const ETSY_SHARED_SECRET = process.env.ETSY_CLIENT_SECRET;
   if (!ETSY_API_KEY) throw new Error('Server configuration error: Missing ETSY_CLIENT_ID.');
-  const xApiKey = ETSY_SHARED_SECRET ? `${ETSY_API_KEY}:${ETSY_SHARED_SECRET}` : ETSY_API_KEY;
+  
   return {
     Authorization: `Bearer ${token}`,
-    'x-api-key': xApiKey,
+    'x-api-key': ETSY_API_KEY,
     'Content-Type': 'application/json',
   } as Record<string, string>;
 };
@@ -52,40 +51,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const headers = getHeaders(token);
+    const cleanId = String(listing_id).trim();
     
-    // Etsy v3 Update Listing endpoint (PATCH /v3/application/listings/{listing_id})
-    // NOTE: This endpoint requires the listing_id in the URL.
-    const response = await axios.patch(
-      `https://openapi.etsy.com/v3/application/listings/${listing_id}`,
-      payload,
-      { headers }
-    );
+    // Etsy v3 Update Listing: PATCH /v3/application/listings/{listing_id}
+    // We use the most direct URL first.
+    console.log(`Updating listing: ${cleanId}`);
+
+    const response = await axios({
+        method: 'PATCH',
+        url: `https://openapi.etsy.com/v3/application/listings/${cleanId}`,
+        headers: headers,
+        data: payload
+    });
 
     return res.status(200).json({ success: true, data: response.data });
   } catch (error: any) {
-    // If 404, maybe we need the shop-specific endpoint for some scopes
-    if (error?.response?.status === 404) {
-        try {
-            // Fallback: Try shop-specific update if possible
-            const userResponse = await axios.get('https://openapi.etsy.com/v3/application/users/me', { headers });
-            const shopId = userResponse.data?.shop_id;
-            if (shopId) {
-                const retryResponse = await axios.patch(
-                    `https://openapi.etsy.com/v3/application/shops/${shopId}/listings/${listing_id}`,
-                    payload,
-                    { headers }
-                );
-                return res.status(200).json({ success: true, data: retryResponse.data });
-            }
-        } catch (retryError) {
-            console.error('Retry with shopId failed as well');
-        }
-    }
+    console.error('❌ Etsy Update Error:', error.response?.status, error.response?.data || error.message);
     
-    console.error('❌ Etsy update error:', error?.response?.data || error.message);
-    return res.status(error?.response?.status || 500).json({ 
-      error: error?.response?.data?.error || error.message,
-      details: error?.response?.data 
+    // If 404, the listing ID might be wrong or the endpoint structure is different for this app
+    return res.status(error.response?.status || 500).json({ 
+      error: error.response?.data?.error || error.message,
+      details: error.response?.data 
     });
   }
 }

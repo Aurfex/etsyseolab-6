@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Package, TrendingUp, Zap, Activity, FileText, Tag, Image as ImageIcon, Check, Info, AlertTriangle, AlertCircle, RefreshCw, DollarSign, Search, Flame, RotateCw, XCircle } from 'lucide-react';
 import type { ElementType } from 'react';
 import { useAppContext } from '../contexts/AppContext';
@@ -43,57 +43,51 @@ const DashboardPage: React.FC = () => {
     const { t } = useTranslation();
     const storeNiche = auth.user?.niche || 'Jewelry';
 
-    // Chart Data mapping
-    const revenueData = salesData && salesData.recent_orders.length > 0
-        ? [...salesData.recent_orders].reverse().map(order => ({
-            name: new Date(order.date).toLocaleDateString(undefined, { weekday: 'short' }),
-            actual: order.total,
-            missed: order.total * 1.4
-        }))
-        : [
-            { name: 'Mon', actual: 120, missed: 400 },
-            { name: 'Tue', actual: 180, missed: 420 },
-            { name: 'Wed', actual: 150, missed: 450 },
-            { name: 'Thu', actual: 200, missed: 500 },
-            { name: 'Fri', actual: 250, missed: 520 },
-            { name: 'Sat', actual: 300, missed: 600 },
-            { name: 'Sun', actual: 280, missed: 650 },
-        ];
-
     // State
     const [isFixing, setIsFixing] = useState(false);
     const [fixList, setFixList] = useState<FixItem[]>([]);
     const [fixProgress, setFixProgress] = useState<('pending' | 'loading' | 'done')[]>([]);
     const [isScanning, setIsScanning] = useState(true);
-    
-    // Real-time Health Scanning Logic
-    const realMissingTags = products.filter(p => p.tags.length < 13);
-    const realPoorImages = products.filter(p => !p.imageUrl);
-    const realLowSeo = products.filter(p => p.seoScore < 70);
-    const realShortTitles = products.filter(p => p.title.length < 40);
 
-    const totalIssues = realMissingTags.length + realPoorImages.length + realLowSeo.length + realShortTitles.length;
-    
-    const getGrade = (issues: number, total: number) => {
-        if (total === 0) return 'A+';
-        const ratio = issues / total;
-        if (ratio === 0) return 'A+';
-        if (ratio < 0.1) return 'A';
-        if (ratio < 0.2) return 'A-';
-        if (ratio < 0.4) return 'B';
-        if (ratio < 0.6) return 'C';
-        return 'C-';
-    };
+    // Stable derivation of health score
+    const healthData = useMemo(() => {
+        if (products.length === 0) return { grade: '...', issues: 0, missingTags: 0, lowSeo: 0 };
+        
+        const missingTags = products.filter(p => p.tags.length < 13).length;
+        const lowSeo = products.filter(p => p.seoScore < 70).length;
+        const shortTitles = products.filter(p => p.title.length < 40).length;
+        const totalIssues = missingTags + lowSeo + shortTitles;
+        
+        const ratio = totalIssues / Math.max(1, products.length * 2);
+        let grade = 'A+';
+        if (ratio > 0.6) grade = 'C-';
+        else if (ratio > 0.4) grade = 'C';
+        else if (ratio > 0.2) grade = 'B';
+        else if (ratio > 0.1) grade = 'A-';
+        else if (ratio > 0) grade = 'A';
+        
+        return { grade, issues: totalIssues, missingTags, lowSeo };
+    }, [products]);
 
-    // Fix grade switching by using a stable derivation
-    const healthScore = isScanning ? '...' : getGrade(totalIssues, Math.max(1, products.length * 2));
-    
-    const avgSeoScore = products.length > 0 
-        ? Math.round(products.reduce((acc, p) => acc + p.seoScore, 0) / products.length)
-        : 0;
+    const healthScore = isScanning ? '...' : healthData.grade;
 
-    const missingTagsCount = realMissingTags.length;
-    const lowSeoCount = realLowSeo.length;
+    const revenueData = useMemo(() => {
+        return salesData && salesData.recent_orders.length > 0
+            ? [...salesData.recent_orders].reverse().map(order => ({
+                name: new Date(order.date).toLocaleDateString(undefined, { weekday: 'short' }),
+                actual: order.total,
+                missed: order.total * 1.4
+            }))
+            : [
+                { name: 'Mon', actual: 120, missed: 400 },
+                { name: 'Tue', actual: 180, missed: 420 },
+                { name: 'Wed', actual: 150, missed: 450 },
+                { name: 'Thu', actual: 200, missed: 500 },
+                { name: 'Fri', actual: 250, missed: 520 },
+                { name: 'Sat', actual: 300, missed: 600 },
+                { name: 'Sun', actual: 280, missed: 650 },
+            ];
+    }, [salesData]);
 
     const optimizeItem = async (p: Product): Promise<FixItem | null> => {
         try {
@@ -201,10 +195,9 @@ const DashboardPage: React.FC = () => {
         if (auth.isAuthenticated) fetchSalesData();
     }, [auth.isAuthenticated]);
 
-    // Handle initial scanning state
     useEffect(() => {
         if (products.length > 0) {
-            const timer = setTimeout(() => setIsScanning(false), 1500);
+            const timer = setTimeout(() => setIsScanning(false), 2000);
             return () => clearTimeout(timer);
         }
     }, [products.length]);
@@ -214,12 +207,18 @@ const DashboardPage: React.FC = () => {
         (log.type === 'title_optimization' || log.type === 'tag_enhancement' || log.type === 'description_rewrite' || log.type === 'image_optimization')
     ).length;
 
+    const avgSeoScoreDisplay = useMemo(() => {
+        return products.length > 0 
+            ? Math.round(products.reduce((acc, p) => acc + p.seoScore, 0) / products.length)
+            : 0;
+    }, [products]);
+
     return (
         <div className="space-y-8 animate-fade-in w-full h-full min-h-[400px]">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('dashboard_title')}</h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1">SEO Engine v2.7: Advanced Analysis</p>
+                    <p className="text-gray-500 dark:text-gray-400 mt-1">SEO Intelligence Center v2.8</p>
                 </div>
                 <div className="flex items-center gap-2 mt-4 sm:mt-0">
                     <button className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-500/10 rounded-full">
@@ -246,13 +245,13 @@ const DashboardPage: React.FC = () => {
                         </div>
                     </div>
                     <div className="flex-grow w-full">
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{isScanning ? 'Scanning Store...' : 'Store Health Status'}</h2>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{isScanning ? 'Analyzing listings...' : 'Store Health Status'}</h2>
                         <div className="space-y-3">
                             <div className="flex items-center p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800">
-                                <AlertTriangle className="w-5 h-5 text-amber-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{isScanning ? 'Analyzing tags...' : `${missingTagsCount} products need tag improvement`}</span>
+                                <AlertTriangle className="w-5 h-5 text-amber-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{isScanning ? 'Syncing tags...' : `${healthData.missingTags} products need tag optimization`}</span>
                             </div>
                             <div className="flex items-center p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800">
-                                <AlertCircle className="w-5 h-5 text-red-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{isScanning ? 'Checking SEO gaps...' : `${lowSeoCount} products have critical SEO gaps`}</span>
+                                <AlertCircle className="w-5 h-5 text-red-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{isScanning ? 'Scanning SEO gaps...' : `${healthData.lowSeo} products have critical SEO issues`}</span>
                             </div>
                         </div>
                     </div>
@@ -260,7 +259,7 @@ const DashboardPage: React.FC = () => {
                         {(isFixing || fixProgress.length > 0) && (
                             <div className="flex gap-2 mb-2">
                                 {fixProgress.map((status, i) => (
-                                    <div key={i} className={"w-4 h-4 rounded-md transition-colors duration-500 " + (status === 'done' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : status === 'loading' ? 'bg-orange-500 animate-pulse' : 'bg-gray-200 dark:bg-gray-700')}></div>
+                                    <div key={i} className={"w-4 h-4 rounded-md transition-all duration-500 " + (status === 'done' ? 'bg-green-500 scale-110' : status === 'loading' ? 'bg-orange-500 animate-pulse' : 'bg-gray-200 dark:bg-gray-700')}></div>
                                 ))}
                             </div>
                         )}
@@ -298,14 +297,14 @@ const DashboardPage: React.FC = () => {
                                             </div>
                                             <p className="text-sm font-bold text-gray-900 dark:text-white line-clamp-2">{item.optimized.title}</p>
                                             <div className="flex flex-wrap gap-1">
-                                                {item.optimized.tags.slice(0, 10).map(t => <span key={'a'+t} className="text-[10px] bg-green-100 dark:bg-green-900/40 text-green-700 px-1.5 py-0.5 rounded border border-green-200">{t}</span>)}
+                                                {item.optimized.tags.slice(0, 10).map(t => <span key={'a'+t} className="text-[10px] bg-green-100 dark:bg-green-900/40 text-green-700 px-1.5 py-0.5 rounded border border-green-200 font-medium">{t}</span>)}
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="flex justify-end items-center gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                    <button onClick={() => handleCancelFix(item)} className="p-2 text-gray-400 hover:text-red-500"><XCircle className="w-5 h-5" /></button>
-                                    <button onClick={() => handleRegenerate(item)} className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-purple-600 hover:bg-purple-50 rounded-xl transition-all"><RotateCw className="w-4 h-4" /> Regenerate</button>
+                                    <button onClick={() => handleCancelFix(item)} className="p-2 text-gray-400 hover:text-red-500 transition-colors"><XCircle className="w-5 h-5" /></button>
+                                    <button onClick={() => handleRegenerate(item)} className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-xl transition-all"><RotateCw className="w-4 h-4" /> Regenerate</button>
                                     <button onClick={() => handleSaveFix(item)} disabled={item.status === 'saving'} className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-xl shadow-lg disabled:bg-gray-400 transition-all">
                                         {item.status === 'saving' ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                                         Save to Etsy
@@ -353,7 +352,7 @@ const DashboardPage: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <MetricCard icon={Package} title="Total Products" value={String(products.length)} change="" bgColor="bg-white dark:bg-gray-800" iconColor="text-blue-500"/>
-                <MetricCard icon={TrendingUp} title="Avg SEO Score" value={avgSeoScore + "%"} change="" bgColor="bg-white dark:bg-gray-800" iconColor="text-green-500"/>
+                <MetricCard icon={TrendingUp} title="Avg SEO Score" value={avgSeoScoreDisplay + "%"} change="" bgColor="bg-white dark:bg-gray-800" iconColor="text-green-500"/>
                 <MetricCard icon={DollarSign} title="Total Revenue" value={salesData ? salesData.total_revenue.toFixed(2) + ' ' + salesData.currency : '$0.00'} change="Overall" bgColor="bg-white dark:bg-gray-800" iconColor="text-indigo-500"/>
                 <MetricCard icon={Zap} title="Optimizations" value={String(optimizationsToday)} change="Today" bgColor="bg-white dark:bg-gray-800" iconColor="text-purple-500"/>
             </div>
