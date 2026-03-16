@@ -25,6 +25,19 @@ interface FixItem {
 }
 
 
+const MetricCard: React.FC<MetricCardProps> = ({ icon: Icon, title, value, change, bgColor, iconColor }) => (
+  <div className={`p-5 rounded-2xl shadow-card dark:shadow-card-dark ${bgColor} border border-gray-100 dark:border-gray-800`}>
+    <div className="flex justify-between items-start">
+      <div className="flex flex-col">
+        <span className="text-sm text-gray-500 dark:text-gray-400">{title}</span>
+        <span className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{value}</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400 mt-2">{change}</span>
+      </div>
+      <Icon className={`w-6 h-6 ${iconColor}`} />
+    </div>
+  </div>
+);
+
 const DashboardPage: React.FC = () => {
     const { products, activityLogs, salesData, fetchSalesData, runAutopilotFix, runFullOptimization, showToast, auth, refreshProducts } = useAppContext();
     const { t } = useTranslation();
