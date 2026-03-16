@@ -40,13 +40,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: 'Invalid product data.' });
     }
 
+    if (!process.env.GEMINI_API_KEY) {
+        return res.status(500).json({ error: 'GEMINI_API_KEY is not configured in Vercel environment variables.' });
+    }
+
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        console.log('Starting Gemini optimization for:', product.id);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
         
         let promptParts: any[] = [];
         
         // Add image if available
-        if (product.imageUrl) {
+        if (product.imageUrl && product.imageUrl.startsWith('http')) {
+            console.log('Fetching image:', product.imageUrl);
             const imageData = await fetchImageAsBase64(product.imageUrl);
             if (imageData) promptParts.push(imageData);
         }

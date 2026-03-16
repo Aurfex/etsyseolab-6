@@ -320,7 +320,7 @@ const DashboardPage: React.FC = () => {
                         <div><h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center"><DollarSign className="w-5 h-5 me-2 text-indigo-500"/>Potential Revenue Boost</h3><p className="text-sm text-gray-500 dark:text-gray-400">Based on optimized SEO visibility</p></div>
                         <div className="text-right"><p className="text-sm text-gray-500 dark:text-gray-400">Monthly Potential</p><p className="text-2xl font-bold text-green-500">{salesData ? '$' + (salesData.total_revenue * 1.6).toFixed(0) : '$4,820'}</p></div>
                     </div>
-                    <div className="h-64 w-full">
+                    <div className="h-64 w-full min-h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <defs><linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#4F46E5" stopOpacity={0.3}/><stop offset="95%" stopColor="#4F46E5" stopOpacity={0}/></linearGradient><linearGradient id="colorMissed" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/><stop offset="95%" stopColor="#10B981" stopOpacity={0}/></linearGradient></defs>
