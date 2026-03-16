@@ -53,7 +53,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const headers = getHeaders(token);
     
-    // Etsy v3 Update Listing endpoint
+    // Etsy v3 Update Listing endpoint (PATCH /v3/application/listings/{listing_id})
+    // NOTE: This endpoint requires the listing_id in the URL.
     const response = await axios.patch(
       `https://openapi.etsy.com/v3/application/listings/${listing_id}`,
       payload,
@@ -62,6 +63,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return res.status(200).json({ success: true, data: response.data });
   } catch (error: any) {
+    // If 404, maybe we need the shop-specific endpoint for some scopes
+    if (error?.response?.status === 404) {
+        try {
+            // Fallback: Try shop-specific update if possible
+            const userResponse = await axios.get('https://openapi.etsy.com/v3/application/users/me', { headers });
+            const shopId = userResponse.data?.shop_id;
+            if (shopId) {
+                const retryResponse = await axios.patch(
+                    `https://openapi.etsy.com/v3/application/shops/${shopId}/listings/${listing_id}`,
+                    payload,
+                    { headers }
+                );
+                return res.status(200).json({ success: true, data: retryResponse.data });
+            }
+        } catch (retryError) {
+            console.error('Retry with shopId failed as well');
+        }
+    }
+    
     console.error('❌ Etsy update error:', error?.response?.data || error.message);
     return res.status(error?.response?.status || 500).json({ 
       error: error?.response?.data?.error || error.message,
