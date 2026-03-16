@@ -49,6 +49,7 @@ const DashboardPage: React.FC = () => {
     const [fixProgress, setFixProgress] = useState<('pending' | 'loading' | 'done')[]>([]);
     const [isScanning, setIsScanning] = useState(true);
     const [savedBatchIds, setSavedBatchIds] = useState<string[]>([]);
+    const [optimizingBatchIds, setOptimizingBatchIds] = useState<string[]>([]);
 
     // 1. Identify the 5 weakest products (The "Priority Batch")
     const priorityProducts = useMemo(() => {
@@ -61,9 +62,13 @@ const DashboardPage: React.FC = () => {
     const healthData = useMemo(() => {
         if (priorityProducts.length === 0) return { grade: '...', issues: 0, missingTags: 0, lowSeo: 0, avgScore: 0 };
         
-        // Sum scores: use 98 for saved items, original for others
+        // Logic: 
+        // - If item is NOT in optimizingBatchIds and NOT in savedBatchIds, use original score.
+        // - If item IS in optimizingBatchIds but NOT in savedBatchIds, still use original (it's not saved yet).
+        // - If item IS in savedBatchIds, use 98.
         const totalScore = priorityProducts.reduce((acc, p) => {
-            return acc + (savedBatchIds.includes(p.id) ? 98 : p.seoScore);
+            const currentScore = savedBatchIds.includes(p.id) ? 98 : p.seoScore;
+            return acc + currentScore;
         }, 0);
         
         const avgBatchScore = totalScore / priorityProducts.length;
@@ -75,7 +80,6 @@ const DashboardPage: React.FC = () => {
         else if (avgBatchScore > 60) grade = 'B';
         else if (avgBatchScore > 50) grade = 'C';
         
-        // Global issues for the labels
         const missingTags = products.filter(p => p.tags.length < 13).length;
         const lowSeo = products.filter(p => p.seoScore < 70).length;
         
@@ -129,7 +133,8 @@ const DashboardPage: React.FC = () => {
         if (products.length === 0) return;
         setIsFixing(true);
         setFixList([]);
-        setSavedBatchIds([]); // Reset saved tracking for new batch
+        setSavedBatchIds([]); 
+        setOptimizingBatchIds([]);
         setFixProgress(['loading', 'pending', 'pending', 'pending', 'pending']);
         
         const newFixes: FixItem[] = [];
@@ -139,6 +144,7 @@ const DashboardPage: React.FC = () => {
             if (result) {
                 newFixes.push(result);
                 setFixProgress(prev => prev.map((s, idx) => idx === i ? 'done' : s));
+                setOptimizingBatchIds(prev => [...prev, priorityProducts[i].id]);
             } else {
                 setFixProgress(prev => prev.map((s, idx) => idx === i ? 'pending' : s));
             }
@@ -170,6 +176,7 @@ const DashboardPage: React.FC = () => {
 
     const handleCancelFix = (item: FixItem) => {
         setFixList(prev => prev.filter(f => f.id !== item.id));
+        setOptimizingBatchIds(prev => prev.filter(id => id !== item.id));
     };
 
     const handleSaveFix = async (item: FixItem) => {
@@ -195,14 +202,8 @@ const DashboardPage: React.FC = () => {
             if (!response.ok) throw new Error(resData.error || 'Update failed');
             
             showToast({ type: 'success', message: 'Saved successfully to Etsy!' });
-            
-            // Update Batch Score Tracking
             setSavedBatchIds(prev => [...prev, item.id]);
-            
-            // Remove from list
             setFixList(prev => prev.filter(f => f.id !== item.id));
-            
-            // Refresh to update global products list
             refreshProducts();
         } catch (error: any) {
             console.error('Save failed:', error);
@@ -238,7 +239,7 @@ const DashboardPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('dashboard_title')}</h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1">SEO Intelligence Center v2.9: Batch Mode</p>
+                    <p className="text-gray-500 dark:text-gray-400 mt-1">SEO Intelligence Center v3.0</p>
                 </div>
                 <div className="flex items-center gap-2 mt-4 sm:mt-0">
                     <button className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-500/10 rounded-full">
