@@ -56,32 +56,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const headers = getHeaders(token);
     const cleanId = String(listing_id).trim();
     
-    // Etsy v3 Update Listing: PATCH /v3/application/listings/{listing_id}
     console.log(`Updating listing: ${cleanId}`);
 
     try {
-        const response = await axios.patch(
-          `https://openapi.etsy.com/v3/application/listings/${cleanId}`,
+        const userResponse = await axios.get('https://openapi.etsy.com/v3/application/users/me', { headers });
+        const shopId = userResponse.data?.shop_id;
+        
+        if (!shopId) {
+            throw new Error("Could not find shop ID for the user.");
+        }
+
+        console.log(`Sending PUT request to https://openapi.etsy.com/v3/application/shops/${shopId}/listings/${cleanId}`);
+        const response = await axios.put(
+          `https://openapi.etsy.com/v3/application/shops/${shopId}/listings/${cleanId}`,
           payload,
           { headers }
         );
         return res.status(200).json({ success: true, data: response.data });
-    } catch (firstErr: any) {
-        if (firstErr.response?.status === 404) {
-            console.log("Direct update failed with 404, trying shop-specific endpoint...");
-            // Try fetching shop_id to use the alternate endpoint
-            const userResponse = await axios.get('https://openapi.etsy.com/v3/application/users/me', { headers });
-            const shopId = userResponse.data?.shop_id;
-            if (shopId) {
-                const retryResponse = await axios.patch(
-                    `https://openapi.etsy.com/v3/application/shops/${shopId}/listings/${cleanId}`,
-                    payload,
-                    { headers }
-                );
-                return res.status(200).json({ success: true, data: retryResponse.data });
-            }
-        }
-        throw firstErr;
+    } catch (error: any) {
+        console.error('❌ Etsy Update Error:', error.response?.status, error.response?.data || error.message);
+        return res.status(error.response?.status || 500).json({ 
+          error: error.response?.data?.error || error.message,
+          details: error.response?.data 
+        });
     }
 
   } catch (error: any) {
