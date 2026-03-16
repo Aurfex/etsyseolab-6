@@ -51,7 +51,7 @@ const DashboardPage: React.FC = () => {
     const [savedBatchIds, setSavedBatchIds] = useState<string[]>([]);
     const [lockedPriorityIds, setLockedPriorityIds] = useState<string[]>([]);
 
-    // 1. Identify and LOCK the 5 weakest products (to keep grade stable)
+    // 1. Identify priority products (Lock them to keep grade stable)
     useEffect(() => {
         if (products.length > 0 && lockedPriorityIds.length === 0) {
             const sorted = [...products].sort((a, b) => a.seoScore - b.seoScore).slice(0, 5);
@@ -59,24 +59,26 @@ const DashboardPage: React.FC = () => {
         }
     }, [products, lockedPriorityIds]);
 
+    // Use derived priority if not locked yet to avoid "0" score on load
     const priorityProducts = useMemo(() => {
-        return products.filter(p => lockedPriorityIds.includes(p.id));
+        if (lockedPriorityIds.length > 0) {
+            return products.filter(p => lockedPriorityIds.includes(p.id));
+        }
+        return [...products].sort((a, b) => a.seoScore - b.seoScore).slice(0, 5);
     }, [products, lockedPriorityIds]);
 
-    // 2. Calculate Batch Health Grade (Stable & Progressive)
+    // 2. Calculate Batch Health Grade
     const healthData = useMemo(() => {
-        if (priorityProducts.length === 0) return { grade: '...', issues: 0, missingTags: 0, lowSeo: 0, avgScore: 0 };
+        if (priorityProducts.length === 0) {
+            return { grade: '...', missingTags: 0, lowSeo: 0, avgScore: 0 };
+        }
         
-        // Sum scores: ONLY items actually in savedBatchIds get the 98 boost.
-        // The rest STAY at their original low score.
         const totalScore = priorityProducts.reduce((acc, p) => {
-            const currentScore = savedBatchIds.includes(p.id) ? 98 : p.seoScore;
-            return acc + currentScore;
+            return acc + (savedBatchIds.includes(p.id) ? 98 : p.seoScore);
         }, 0);
         
         const avgBatchScore = totalScore / priorityProducts.length;
         
-        // Thresholds
         let grade = 'C-';
         if (avgBatchScore >= 95) grade = 'A+';
         else if (avgBatchScore >= 85) grade = 'A';
@@ -90,7 +92,7 @@ const DashboardPage: React.FC = () => {
         return { grade, missingTags, lowSeo, avgScore: Math.round(avgBatchScore) };
     }, [priorityProducts, savedBatchIds, products]);
 
-    const healthScore = isScanning ? '...' : healthData.grade;
+    const healthScore = healthData.grade;
 
     // Chart Data mapping
     const revenueData = useMemo(() => {
@@ -204,7 +206,6 @@ const DashboardPage: React.FC = () => {
             
             showToast({ type: 'success', message: 'Saved successfully to Etsy!' });
             
-            // Progression Update
             setSavedBatchIds(prev => [...prev, item.id]);
             setFixList(prev => prev.filter(f => f.id !== item.id));
             refreshProducts();
@@ -221,7 +222,7 @@ const DashboardPage: React.FC = () => {
 
     useEffect(() => {
         if (products.length > 0) {
-            const timer = setTimeout(() => setIsScanning(false), 2000);
+            const timer = setTimeout(() => setIsScanning(false), 1500);
             return () => clearTimeout(timer);
         }
     }, [products.length]);
@@ -260,7 +261,7 @@ const DashboardPage: React.FC = () => {
                         <div className="relative w-40 h-40 flex items-center justify-center">
                             <svg className="w-full h-full transform -rotate-90">
                                 <circle cx="80" cy="80" r="70" className="stroke-current text-gray-200 dark:text-gray-700" strokeWidth="12" fill="transparent" />
-                                <circle cx="80" cy="80" r="70" className={"stroke-current transition-all duration-1000 " + (healthScore.startsWith('A') ? 'text-green-500' : 'text-purple-600')} strokeWidth="12" fill="transparent" strokeDasharray="440" strokeDashoffset={440 - (440 * (healthData.avgScore / 100))} strokeLinecap="round" />
+                                <circle cx="80" cy="80" r="70" className={"stroke-current transition-all duration-1000 " + (healthScore.startsWith('A') ? 'text-green-500' : 'text-purple-600')} strokeWidth="12" fill="transparent" strokeDasharray="440" strokeDashoffset={440 - (440 * (Math.max(20, healthData.avgScore) / 100))} strokeLinecap="round" />
                             </svg>
                             <div className="absolute flex flex-col items-center justify-center text-center">
                                 <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-tighter">Batch Rank</span>
@@ -365,7 +366,7 @@ const DashboardPage: React.FC = () => {
                         <button className="w-full py-2 bg-[#F1641E] hover:bg-[#D95A1B] text-white text-sm font-semibold rounded-xl transition-colors">View Analysis</button>
                     </div>
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card border border-gray-100 dark:border-gray-700">
-                        <div className="flex items-center gap-3 mb-4"><span className="flex h-8 w-8 items-center justify-full rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"><Flame className="w-4 h-4" /></span><h3 className="font-bold text-gray-900 dark:text-white">Trending Keywords</h3></div>
+                        <div className="flex items-center gap-3 mb-4"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"><Flame className="w-4 h-4" /></span><h3 className="font-bold text-gray-900 dark:text-white">Trending Keywords</h3></div>
                         <ul className="space-y-3">
                             <li className="flex justify-between items-center"><span className="text-sm font-medium text-gray-700 dark:text-gray-300">1. Unique {storeNiche}</span><span className="text-xs text-green-500 font-bold">+124%</span></li>
                             <li className="flex justify-between items-center"><span className="text-sm font-medium text-gray-700 dark:text-gray-300">2. Custom {storeNiche} gift</span><span className="text-xs text-green-500 font-bold">+89%</span></li>
