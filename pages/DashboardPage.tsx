@@ -49,23 +49,26 @@ const DashboardPage: React.FC = () => {
     const [fixProgress, setFixProgress] = useState<('pending' | 'loading' | 'done')[]>([]);
     const [isScanning, setIsScanning] = useState(true);
     const [savedBatchIds, setSavedBatchIds] = useState<string[]>([]);
-    const [optimizingBatchIds, setOptimizingBatchIds] = useState<string[]>([]);
+    const [lockedPriorityIds, setLockedPriorityIds] = useState<string[]>([]);
 
-    // 1. Identify the 5 weakest products (The "Priority Batch")
+    // 1. Identify and LOCK the 5 weakest products (to keep grade stable)
+    useEffect(() => {
+        if (products.length > 0 && lockedPriorityIds.length === 0) {
+            const sorted = [...products].sort((a, b) => a.seoScore - b.seoScore).slice(0, 5);
+            setLockedPriorityIds(sorted.map(p => p.id));
+        }
+    }, [products, lockedPriorityIds]);
+
     const priorityProducts = useMemo(() => {
-        return [...products]
-            .sort((a, b) => a.seoScore - b.seoScore)
-            .slice(0, 5);
-    }, [products]);
+        return products.filter(p => lockedPriorityIds.includes(p.id));
+    }, [products, lockedPriorityIds]);
 
-    // 2. Calculate Batch Health Grade
+    // 2. Calculate Batch Health Grade (Stable & Progressive)
     const healthData = useMemo(() => {
         if (priorityProducts.length === 0) return { grade: '...', issues: 0, missingTags: 0, lowSeo: 0, avgScore: 0 };
         
-        // Logic: 
-        // - If item is NOT in optimizingBatchIds and NOT in savedBatchIds, use original score.
-        // - If item IS in optimizingBatchIds but NOT in savedBatchIds, still use original (it's not saved yet).
-        // - If item IS in savedBatchIds, use 98.
+        // Sum scores: ONLY items actually in savedBatchIds get the 98 boost.
+        // The rest STAY at their original low score.
         const totalScore = priorityProducts.reduce((acc, p) => {
             const currentScore = savedBatchIds.includes(p.id) ? 98 : p.seoScore;
             return acc + currentScore;
@@ -73,12 +76,13 @@ const DashboardPage: React.FC = () => {
         
         const avgBatchScore = totalScore / priorityProducts.length;
         
+        // Stricter Thresholds for Shitty products
         let grade = 'C-';
-        if (avgBatchScore > 90) grade = 'A+';
-        else if (avgBatchScore > 80) grade = 'A';
-        else if (avgBatchScore > 70) grade = 'A-';
-        else if (avgBatchScore > 60) grade = 'B';
-        else if (avgBatchScore > 50) grade = 'C';
+        if (avgBatchScore >= 95) grade = 'A+';
+        else if (avgBatchScore >= 85) grade = 'A';
+        else if (avgBatchScore >= 75) grade = 'A-';
+        else if (avgBatchScore >= 65) grade = 'B';
+        else if (avgBatchScore >= 55) grade = 'C';
         
         const missingTags = products.filter(p => p.tags.length < 13).length;
         const lowSeo = products.filter(p => p.seoScore < 70).length;
@@ -130,11 +134,10 @@ const DashboardPage: React.FC = () => {
     };
 
     const handleFixAll = async () => {
-        if (products.length === 0) return;
+        if (priorityProducts.length === 0) return;
         setIsFixing(true);
         setFixList([]);
         setSavedBatchIds([]); 
-        setOptimizingBatchIds([]);
         setFixProgress(['loading', 'pending', 'pending', 'pending', 'pending']);
         
         const newFixes: FixItem[] = [];
@@ -144,7 +147,6 @@ const DashboardPage: React.FC = () => {
             if (result) {
                 newFixes.push(result);
                 setFixProgress(prev => prev.map((s, idx) => idx === i ? 'done' : s));
-                setOptimizingBatchIds(prev => [...prev, priorityProducts[i].id]);
             } else {
                 setFixProgress(prev => prev.map((s, idx) => idx === i ? 'pending' : s));
             }
@@ -176,7 +178,6 @@ const DashboardPage: React.FC = () => {
 
     const handleCancelFix = (item: FixItem) => {
         setFixList(prev => prev.filter(f => f.id !== item.id));
-        setOptimizingBatchIds(prev => prev.filter(id => id !== item.id));
     };
 
     const handleSaveFix = async (item: FixItem) => {
@@ -202,6 +203,8 @@ const DashboardPage: React.FC = () => {
             if (!response.ok) throw new Error(resData.error || 'Update failed');
             
             showToast({ type: 'success', message: 'Saved successfully to Etsy!' });
+            
+            // CRITICAL: Update progression ONLY on save
             setSavedBatchIds(prev => [...prev, item.id]);
             setFixList(prev => prev.filter(f => f.id !== item.id));
             refreshProducts();
@@ -239,7 +242,7 @@ const DashboardPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('dashboard_title')}</h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1">SEO Intelligence Center v3.0</p>
+                    <p className="text-gray-500 dark:text-gray-400 mt-1">SEO Intelligence Center v3.1</p>
                 </div>
                 <div className="flex items-center gap-2 mt-4 sm:mt-0">
                     <button className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-500/10 rounded-full">
@@ -362,7 +365,7 @@ const DashboardPage: React.FC = () => {
                         <button className="w-full py-2 bg-[#F1641E] hover:bg-[#D95A1B] text-white text-sm font-semibold rounded-xl transition-colors">View Analysis</button>
                     </div>
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card border border-gray-100 dark:border-gray-700">
-                        <div className="flex items-center gap-3 mb-4"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"><Flame className="w-4 h-4" /></span><h3 className="font-bold text-gray-900 dark:text-white">Trending Keywords</h3></div>
+                        <div className="flex items-center gap-3 mb-4"><span className="flex h-8 w-8 items-center justify-full rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"><Flame className="w-4 h-4" /></span><h3 className="font-bold text-gray-900 dark:text-white">Trending Keywords</h3></div>
                         <ul className="space-y-3">
                             <li className="flex justify-between items-center"><span className="text-sm font-medium text-gray-700 dark:text-gray-300">1. Unique {storeNiche}</span><span className="text-xs text-green-500 font-bold">+124%</span></li>
                             <li className="flex justify-between items-center"><span className="text-sm font-medium text-gray-700 dark:text-gray-300">2. Custom {storeNiche} gift</span><span className="text-xs text-green-500 font-bold">+89%</span></li>
