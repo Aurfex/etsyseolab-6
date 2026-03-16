@@ -64,6 +64,7 @@ const DashboardPage: React.FC = () => {
     const [isFixing, setIsFixing] = useState(false);
     const [fixList, setFixList] = useState<FixItem[]>([]);
     const [fixProgress, setFixProgress] = useState<('pending' | 'loading' | 'done')[]>([]);
+    const [isScanning, setIsScanning] = useState(true);
     
     // Real-time Health Scanning Logic
     const realMissingTags = products.filter(p => p.tags.length < 13);
@@ -74,7 +75,7 @@ const DashboardPage: React.FC = () => {
     const totalIssues = realMissingTags.length + realPoorImages.length + realLowSeo.length + realShortTitles.length;
     
     const getGrade = (issues: number, total: number) => {
-        if (total === 0) return 'Analyzing...';
+        if (total === 0) return 'A+';
         const ratio = issues / total;
         if (ratio === 0) return 'A+';
         if (ratio < 0.1) return 'A';
@@ -84,7 +85,9 @@ const DashboardPage: React.FC = () => {
         return 'C-';
     };
 
-    const healthScore = products.length === 0 ? 'Analyzing...' : getGrade(totalIssues, products.length * 2);
+    // Fix grade switching by using a stable derivation
+    const healthScore = isScanning ? '...' : getGrade(totalIssues, Math.max(1, products.length * 2));
+    
     const avgSeoScore = products.length > 0 
         ? Math.round(products.reduce((acc, p) => acc + p.seoScore, 0) / products.length)
         : 0;
@@ -124,9 +127,7 @@ const DashboardPage: React.FC = () => {
         const newFixes: FixItem[] = [];
         
         for (let i = 0; i < productsToFix.length; i++) {
-            // Update progress state
             setFixProgress(prev => prev.map((s, idx) => idx === i ? 'loading' : s));
-            
             const result = await optimizeItem(productsToFix[i]);
             if (result) {
                 newFixes.push(result);
@@ -134,8 +135,6 @@ const DashboardPage: React.FC = () => {
             } else {
                 setFixProgress(prev => prev.map((s, idx) => idx === i ? 'pending' : s));
             }
-            
-            // Set next one to loading if exists
             if (i < productsToFix.length - 1) {
                 setFixProgress(prev => prev.map((s, idx) => idx === i + 1 ? 'loading' : s));
             }
@@ -176,17 +175,17 @@ const DashboardPage: React.FC = () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
                 body: JSON.stringify({
-                    listing_id: item.id,
+                    listing_id: item.listing_id,
                     payload: {
                         title: item.optimized.title,
                         description: item.optimized.description,
-                        tags: item.optimized.tags // Send as array for V3
+                        tags: item.optimized.tags
                     }
                 })
             });
             
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.error || 'Update failed');
+            const resData = await response.json();
+            if (!response.ok) throw new Error(resData.error || 'Update failed');
             
             showToast({ type: 'success', message: 'Saved successfully to Etsy!' });
             setFixList(prev => prev.filter(f => f.id !== item.id));
@@ -194,13 +193,21 @@ const DashboardPage: React.FC = () => {
         } catch (error: any) {
             console.error('Save failed:', error);
             setFixList(prev => prev.map(f => f.id === item.id ? { ...f, status: 'failed' } : f));
-            showToast({ type: 'error', message: 'Failed to save: ' + error.message });
+            showToast({ type: 'error', message: 'Failed: ' + error.message });
         }
     };
 
     useEffect(() => {
         if (auth.isAuthenticated) fetchSalesData();
     }, [auth.isAuthenticated]);
+
+    // Handle initial scanning state
+    useEffect(() => {
+        if (products.length > 0) {
+            const timer = setTimeout(() => setIsScanning(false), 1500);
+            return () => clearTimeout(timer);
+        }
+    }, [products.length]);
 
     const optimizationsToday = activityLogs.filter(log => 
         log.timestamp.toDateString() === new Date().toDateString() &&
@@ -212,7 +219,7 @@ const DashboardPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('dashboard_title')}</h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1">SEO Engine v2.6: Real-time Sync Active</p>
+                    <p className="text-gray-500 dark:text-gray-400 mt-1">SEO Engine v2.7: Advanced Analysis</p>
                 </div>
                 <div className="flex items-center gap-2 mt-4 sm:mt-0">
                     <button className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-500/10 rounded-full">
@@ -234,31 +241,30 @@ const DashboardPage: React.FC = () => {
                             </svg>
                             <div className="absolute flex flex-col items-center justify-center">
                                 <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Score</span>
-                                <span className={"text-5xl font-black " + (healthScore.startsWith('A') ? 'text-green-500' : 'text-purple-600')}>{healthScore === 'Analyzing...' ? '...' : healthScore}</span>
+                                <span className={"text-5xl font-black " + (healthScore.startsWith('A') ? 'text-green-500' : 'text-purple-600')}>{healthScore}</span>
                             </div>
                         </div>
                     </div>
                     <div className="flex-grow w-full">
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Store Health Status</h2>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{isScanning ? 'Scanning Store...' : 'Store Health Status'}</h2>
                         <div className="space-y-3">
                             <div className="flex items-center p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800">
-                                <AlertTriangle className="w-5 h-5 text-amber-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{products.length === 0 ? 'Checking listings...' : `${missingTagsCount} products need tag improvement`}</span>
+                                <AlertTriangle className="w-5 h-5 text-amber-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{isScanning ? 'Analyzing tags...' : `${missingTagsCount} products need tag improvement`}</span>
                             </div>
                             <div className="flex items-center p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800">
-                                <AlertCircle className="w-5 h-5 text-red-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{products.length === 0 ? 'Analyzing SEO gaps...' : `${lowSeoCount} products have critical SEO gaps`}</span>
+                                <AlertCircle className="w-5 h-5 text-red-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{isScanning ? 'Checking SEO gaps...' : `${lowSeoCount} products have critical SEO gaps`}</span>
                             </div>
                         </div>
                     </div>
                     <div className="flex-shrink-0 w-full lg:w-auto flex flex-col items-center gap-4">
-                        {/* Progress Indicators */}
-                        {isFixing && (
+                        {(isFixing || fixProgress.length > 0) && (
                             <div className="flex gap-2 mb-2">
                                 {fixProgress.map((status, i) => (
-                                    <div key={i} className={"w-4 h-4 rounded-md " + (status === 'done' ? 'bg-green-500' : status === 'loading' ? 'bg-orange-500 animate-pulse' : 'bg-gray-300')}></div>
+                                    <div key={i} className={"w-4 h-4 rounded-md transition-colors duration-500 " + (status === 'done' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : status === 'loading' ? 'bg-orange-500 animate-pulse' : 'bg-gray-200 dark:bg-gray-700')}></div>
                                 ))}
                             </div>
                         )}
-                        <button onClick={handleFixAll} disabled={isFixing} className="w-full lg:w-64 py-4 px-6 rounded-2xl font-bold text-white shadow-lg bg-[#F1641E] hover:bg-[#D95A1B] disabled:bg-gray-400">
+                        <button onClick={handleFixAll} disabled={isFixing || isScanning} className="w-full lg:w-64 py-4 px-6 rounded-2xl font-bold text-white shadow-lg bg-[#F1641E] hover:bg-[#D95A1B] disabled:bg-gray-400 transition-all active:scale-95">
                             {isFixing ? <RefreshCw className="w-5 h-5 animate-spin mx-auto" /> : "✨ FIX 5 PRIORITY ITEMS"}
                         </button>
                     </div>
@@ -300,7 +306,7 @@ const DashboardPage: React.FC = () => {
                                 <div className="flex justify-end items-center gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                                     <button onClick={() => handleCancelFix(item)} className="p-2 text-gray-400 hover:text-red-500"><XCircle className="w-5 h-5" /></button>
                                     <button onClick={() => handleRegenerate(item)} className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-purple-600 hover:bg-purple-50 rounded-xl transition-all"><RotateCw className="w-4 h-4" /> Regenerate</button>
-                                    <button onClick={() => handleSaveFix(item)} disabled={item.status === 'saving'} className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-xl shadow-lg disabled:bg-gray-400">
+                                    <button onClick={() => handleSaveFix(item)} disabled={item.status === 'saving'} className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-xl shadow-lg disabled:bg-gray-400 transition-all">
                                         {item.status === 'saving' ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                                         Save to Etsy
                                     </button>
@@ -311,7 +317,7 @@ const DashboardPage: React.FC = () => {
                 </div>
             )}
 
-            {/* RESTORED SECTIONS + Metrics */}
+            {/* Metrics */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="col-span-1 lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card border border-gray-100 dark:border-gray-700 min-h-[300px]">
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center"><DollarSign className="w-5 h-5 me-2 text-indigo-500"/>Potential Revenue Boost</h3>
