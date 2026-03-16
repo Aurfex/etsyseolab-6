@@ -48,26 +48,48 @@ const DashboardPage: React.FC = () => {
     const [fixList, setFixList] = useState<FixItem[]>([]);
     const [fixProgress, setFixProgress] = useState<('pending' | 'loading' | 'done')[]>([]);
     const [isScanning, setIsScanning] = useState(true);
+    const [lockedPriorityIds, setLockedPriorityIds] = useState<string[]>([]);
+    const [savedBatchIds, setSavedBatchIds] = useState<string[]>([]);
 
-    // Stable derivation of health score
+    useEffect(() => {
+        if (products.length > 0 && lockedPriorityIds.length === 0) {
+            const sorted = [...products].sort((a, b) => a.seoScore - b.seoScore).slice(0, 2);
+            setLockedPriorityIds(sorted.map(p => p.id));
+        }
+    }, [products, lockedPriorityIds]);
+
+    // Stable derivation of health score based on the priority batch
     const healthData = useMemo(() => {
-        if (products.length === 0) return { grade: '...', issues: 0, missingTags: 0, lowSeo: 0 };
+        if (products.length === 0 || lockedPriorityIds.length === 0) return { grade: '...', issues: 0, missingTags: 0, lowSeo: 0, scorePercent: 40 };
         
-        const missingTags = products.filter(p => p.tags.length < 13).length;
-        const lowSeo = products.filter(p => p.seoScore < 70).length;
-        const shortTitles = products.filter(p => p.title.length < 40).length;
-        const totalIssues = missingTags + lowSeo + shortTitles;
+        let batchTotalScore = 0;
+        let batchIssues = 0;
         
-        const ratio = totalIssues / Math.max(1, products.length * 2);
-        let grade = 'A+';
-        if (ratio > 0.6) grade = 'C-';
-        else if (ratio > 0.4) grade = 'C';
-        else if (ratio > 0.2) grade = 'B';
-        else if (ratio > 0.1) grade = 'A-';
-        else if (ratio > 0) grade = 'A';
+        lockedPriorityIds.forEach(id => {
+            if (savedBatchIds.includes(id)) {
+                batchTotalScore += 98;
+            } else {
+                const p = products.find(prod => prod.id === id);
+                if (p) {
+                    batchTotalScore += Math.max(20, Math.min(60, p.seoScore));
+                    if (p.tags.length < 13) batchIssues++;
+                    if (p.seoScore < 70) batchIssues++;
+                } else {
+                    batchTotalScore += 40;
+                }
+            }
+        });
         
-        return { grade, issues: totalIssues, missingTags, lowSeo };
-    }, [products]);
+        const avgScore = batchTotalScore / lockedPriorityIds.length;
+        
+        let grade = 'C-';
+        if (avgScore >= 95) grade = 'A+';
+        else if (avgScore >= 80) grade = 'A';
+        else if (avgScore >= 65) grade = 'B';
+        else if (avgScore >= 50) grade = 'C';
+        
+        return { grade, issues: batchIssues, missingTags: batchIssues, lowSeo: batchIssues, scorePercent: avgScore };
+    }, [lockedPriorityIds, savedBatchIds, products]);
 
     const healthScore = isScanning ? '...' : healthData.grade;
 
@@ -183,6 +205,9 @@ const DashboardPage: React.FC = () => {
             if (!response.ok) throw new Error(resData.error || 'Update failed');
             
             showToast({ type: 'success', message: 'Saved successfully to Etsy!' });
+            
+            // PROGRESSION TRIGGER
+            setSavedBatchIds(prev => [...prev, item.id]);
             setFixList(prev => prev.filter(f => f.id !== item.id));
             refreshProducts();
         } catch (error: any) {
@@ -237,7 +262,7 @@ const DashboardPage: React.FC = () => {
                         <div className="relative w-40 h-40 flex items-center justify-center">
                             <svg className="w-full h-full transform -rotate-90">
                                 <circle cx="80" cy="80" r="70" className="stroke-current text-gray-200 dark:text-gray-700" strokeWidth="12" fill="transparent" />
-                                <circle cx="80" cy="80" r="70" className={"stroke-current transition-all duration-1000 " + (healthScore.startsWith('A') ? 'text-green-500' : 'text-purple-600')} strokeWidth="12" fill="transparent" strokeDasharray="440" strokeDashoffset={healthScore.startsWith('A') ? "40" : "220"} strokeLinecap="round" />
+                                <circle cx="80" cy="80" r="70" className={"stroke-current transition-all duration-1000 " + (healthScore.startsWith('A') ? 'text-green-500' : 'text-purple-600')} strokeWidth="12" fill="transparent" strokeDasharray="440" strokeDashoffset={440 - (440 * (Math.max(20, healthData.scorePercent || 0) / 100))} strokeLinecap="round" />
                             </svg>
                             <div className="absolute flex flex-col items-center justify-center">
                                 <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Score</span>
@@ -246,13 +271,13 @@ const DashboardPage: React.FC = () => {
                         </div>
                     </div>
                     <div className="flex-grow w-full">
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{isScanning ? 'Analyzing listings...' : 'Store Health Status'}</h2>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{isScanning ? 'Analyzing listings...' : (savedBatchIds.length === lockedPriorityIds.length && lockedPriorityIds.length > 0 ? 'Batch Optimized!' : 'Priority Batch Status')}</h2>
                         <div className="space-y-3">
                             <div className="flex items-center p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800">
-                                <AlertTriangle className="w-5 h-5 text-amber-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{isScanning ? 'Syncing tags...' : `${healthData.missingTags} products need tag optimization`}</span>
+                                <AlertTriangle className="w-5 h-5 text-amber-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{isScanning ? 'Syncing tags...' : (savedBatchIds.length === lockedPriorityIds.length && lockedPriorityIds.length > 0 ? 'No missing tags in current batch' : `${healthData.missingTags} products in batch need tag optimization`)}</span>
                             </div>
                             <div className="flex items-center p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800">
-                                <AlertCircle className="w-5 h-5 text-red-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{isScanning ? 'Scanning SEO gaps...' : `${healthData.lowSeo} products have critical SEO issues`}</span>
+                                <AlertCircle className="w-5 h-5 text-red-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{isScanning ? 'Scanning SEO gaps...' : (savedBatchIds.length === lockedPriorityIds.length && lockedPriorityIds.length > 0 ? 'Batch SEO scores are excellent' : `${healthData.lowSeo} products in batch have critical SEO issues`)}</span>
                             </div>
                         </div>
                     </div>
