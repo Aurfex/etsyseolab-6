@@ -51,40 +51,37 @@ const DashboardPage: React.FC = () => {
     const [savedBatchIds, setSavedBatchIds] = useState<string[]>([]);
     const [lockedPriorityIds, setLockedPriorityIds] = useState<string[]>([]);
 
-    // 1. LOCK the 5 weakest products immediately on load
+    // 1. Identify and LOCK the 5 weakest products immediately on load
     useEffect(() => {
         if (products.length > 0 && lockedPriorityIds.length === 0) {
-            console.log("Locking 5 priority items for current batch...");
             const sorted = [...products].sort((a, b) => a.seoScore - b.seoScore).slice(0, 5);
             setLockedPriorityIds(sorted.map(p => p.id));
         }
     }, [products, lockedPriorityIds]);
 
-    // Derived list of items to work on
     const priorityProducts = useMemo(() => {
         if (lockedPriorityIds.length > 0) {
             const list = products.filter(p => lockedPriorityIds.includes(p.id));
             if (list.length > 0) return list;
         }
-        // Fallback for initial render
         return [...products].sort((a, b) => a.seoScore - b.seoScore).slice(0, 5);
     }, [products, lockedPriorityIds]);
 
-    // 2. Calculate Health Grade BASED ONLY ON REAL SAVES
+    // 2. Calculate Batch Health Grade - STABLE LOGIC
     const healthData = useMemo(() => {
         if (priorityProducts.length === 0) {
             return { grade: '...', missingTags: 0, lowSeo: 0, avgScore: 20 };
         }
         
-        // Sum scores: item IS in savedBatchIds ? 98 : original low score
         const totalScore = priorityProducts.reduce((acc, p) => {
-            const currentScore = savedBatchIds.includes(p.id) ? 98 : p.seoScore;
+            // ONLY items in savedBatchIds get 98. Others keep their ORIGINAL low score.
+            const currentScore = savedBatchIds.includes(p.id) ? 98 : Math.max(20, p.seoScore);
             return acc + currentScore;
         }, 0);
         
         const avgBatchScore = totalScore / priorityProducts.length;
         
-        // Final Gradings
+        // Final Gradings based on average
         let grade = 'C-';
         if (avgBatchScore >= 95) grade = 'A+';
         else if (avgBatchScore >= 85) grade = 'A';
@@ -100,7 +97,7 @@ const DashboardPage: React.FC = () => {
 
     const healthScore = isScanning ? '...' : healthData.grade;
 
-    // Chart Data
+    // Chart Data mapping
     const revenueData = useMemo(() => {
         return salesData && salesData.recent_orders.length > 0
             ? [...salesData.recent_orders].reverse().map(order => ({
@@ -211,11 +208,9 @@ const DashboardPage: React.FC = () => {
             
             showToast({ type: 'success', message: 'Saved successfully to Etsy!' });
             
-            // PROGRESSION: Update savedBatchIds to trigger grade change
+            // CRITICAL: PROGRESSION HAPPENS HERE
             setSavedBatchIds(prev => [...prev, item.id]);
             setFixList(prev => prev.filter(f => f.id !== item.id));
-            
-            // Global update
             refreshProducts();
         } catch (error: any) {
             console.error('Save failed:', error);
