@@ -61,15 +61,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 "Original Title: \"" + product.title + "\"\n" +
 "Original Description: \"" + (product.description || '') + "\"\n" +
 "Original Tags: " + JSON.stringify(product.tags || []) + "\n\n" +
-"TASK:\n" +
-"1. Optimize the Title (90-140 chars) using high-traffic Etsy SEO keywords based on what you see in the image and metadata.\n" +
-"2. Rewrite the Description to be persuasive and structured (bullet points for features, materials).\n" +
-"3. Generate exactly 13 tags (each < 20 chars).\n" +
-"4. Generate a descriptive Alt Text (< 125 chars).\n\n" +
-"REQUIREMENTS:\n" +
-"- The title MUST be different from the original and significantly improved.\n" +
-"- Focus on high-intent buyer keywords.\n" +
-"- Preserve technical keywords like '14K Gold', 'Handmade', or specific brands/characters mentioned.\n\n" +
+"TASK (ETSY SEO 2026 STRATEGY):\n" +
+"1. Optimize the Title (Target: 90-140 chars). Put the most important keywords in the first 40 characters for mobile visibility. Use '|' or commas to separate keyword phrases.\n" +
+"2. Rewrite the Description: Start with a powerful hook, use bullet points for benefits and materials, and end with a Call to Action.\n" +
+"3. Generate EXACTLY 13 tags: Use high-volume long-tail keywords. EACH TAG MUST BE 20 CHARACTERS OR LESS. Do not repeat keywords from the title in tags if you can avoid it to maximize keyword reach.\n" +
+"4. Generate Alt Text: Descriptive and under 125 chars.\n\n" +
+"STRICT REQUIREMENTS:\n" +
+"- TITLE LENGTH: 90-140 characters. NO EXCEPTIONS.\n" +
+"- TAG COUNT: Exactly 13 tags. NO EXCEPTIONS.\n" +
+"- TAG LENGTH: Max 20 chars per tag. NO EXCEPTIONS.\n" +
+"- The optimized version MUST be significantly different and better for search rankings than the original.\n" +
+"- Preserve brand names or specific characters like 'Iron Man' or '14K Gold'.\n\n" +
 "Return ONLY a valid JSON object with these keys: title, description, tags (array), altText. Do not include markdown code blocks.";
 
         promptParts.push(promptText);
