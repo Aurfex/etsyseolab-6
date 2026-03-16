@@ -122,6 +122,7 @@ const DashboardPage: React.FC = () => {
         
         for (let i = 0; i < productsToFix.length; i++) {
             setFixProgress(prev => prev.map((s, idx) => idx === i ? 'loading' : s));
+            if (i > 0) await new Promise(resolve => setTimeout(resolve, 4000)); // Delay to prevent 429
             const result = await optimizeItem(productsToFix[i]);
             if (result) {
                 newFixes.push(result);
