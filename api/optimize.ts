@@ -46,7 +46,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         console.log('Starting Gemini optimization for:', product.id);
         const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         
         let promptParts: any[] = [];
         
