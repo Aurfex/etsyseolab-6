@@ -66,8 +66,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             throw new Error("Could not find shop ID for the user.");
         }
 
-        console.log(`Sending PUT request to https://openapi.etsy.com/v3/application/shops/${shopId}/listings/${cleanId}`);
-        const response = await axios.put(
+        console.log(`Sending PATCH request to https://openapi.etsy.com/v3/application/shops/${shopId}/listings/${cleanId}`);
+        const response = await axios.patch(
           `https://openapi.etsy.com/v3/application/shops/${shopId}/listings/${cleanId}`,
           payload,
           { headers }
