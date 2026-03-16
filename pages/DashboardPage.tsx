@@ -76,7 +76,7 @@ const DashboardPage: React.FC = () => {
         
         const avgBatchScore = totalScore / priorityProducts.length;
         
-        // Stricter Thresholds for Shitty products
+        // Thresholds
         let grade = 'C-';
         if (avgBatchScore >= 95) grade = 'A+';
         else if (avgBatchScore >= 85) grade = 'A';
@@ -204,7 +204,7 @@ const DashboardPage: React.FC = () => {
             
             showToast({ type: 'success', message: 'Saved successfully to Etsy!' });
             
-            // CRITICAL: Update progression ONLY on save
+            // Progression Update
             setSavedBatchIds(prev => [...prev, item.id]);
             setFixList(prev => prev.filter(f => f.id !== item.id));
             refreshProducts();
