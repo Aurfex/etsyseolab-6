@@ -48,56 +48,29 @@ const DashboardPage: React.FC = () => {
     const [fixList, setFixList] = useState<FixItem[]>([]);
     const [fixProgress, setFixProgress] = useState<('pending' | 'loading' | 'done')[]>([]);
     const [isScanning, setIsScanning] = useState(true);
-    const [savedBatchIds, setSavedBatchIds] = useState<string[]>([]);
-    const [lockedPriorityIds, setLockedPriorityIds] = useState<string[]>([]);
 
-    // 1. Identify and LOCK the 5 weakest products immediately on load
-    useEffect(() => {
-        if (products.length > 0 && lockedPriorityIds.length === 0) {
-            const sorted = [...products].sort((a, b) => a.seoScore - b.seoScore).slice(0, 5);
-            setLockedPriorityIds(sorted.map(p => p.id));
-        }
-    }, [products, lockedPriorityIds]);
-
-    const priorityProducts = useMemo(() => {
-        if (lockedPriorityIds.length > 0) {
-            const list = products.filter(p => lockedPriorityIds.includes(p.id));
-            if (list.length > 0) return list;
-        }
-        return [...products].sort((a, b) => a.seoScore - b.seoScore).slice(0, 5);
-    }, [products, lockedPriorityIds]);
-
-    // 2. Calculate Batch Health Grade - STABLE LOGIC
+    // Stable derivation of health score
     const healthData = useMemo(() => {
-        if (priorityProducts.length === 0) {
-            return { grade: '...', missingTags: 0, lowSeo: 0, avgScore: 20 };
-        }
-        
-        const totalScore = priorityProducts.reduce((acc, p) => {
-            // ONLY items in savedBatchIds get 98. Others keep their ORIGINAL low score.
-            const currentScore = savedBatchIds.includes(p.id) ? 98 : Math.max(20, p.seoScore);
-            return acc + currentScore;
-        }, 0);
-        
-        const avgBatchScore = totalScore / priorityProducts.length;
-        
-        // Final Gradings based on average
-        let grade = 'C-';
-        if (avgBatchScore >= 95) grade = 'A+';
-        else if (avgBatchScore >= 85) grade = 'A';
-        else if (avgBatchScore >= 75) grade = 'A-';
-        else if (avgBatchScore >= 65) grade = 'B';
-        else if (avgBatchScore >= 55) grade = 'C';
+        if (products.length === 0) return { grade: '...', issues: 0, missingTags: 0, lowSeo: 0 };
         
         const missingTags = products.filter(p => p.tags.length < 13).length;
         const lowSeo = products.filter(p => p.seoScore < 70).length;
+        const shortTitles = products.filter(p => p.title.length < 40).length;
+        const totalIssues = missingTags + lowSeo + shortTitles;
         
-        return { grade, missingTags, lowSeo, avgScore: Math.round(avgBatchScore) };
-    }, [priorityProducts, savedBatchIds, products]);
+        const ratio = totalIssues / Math.max(1, products.length * 2);
+        let grade = 'A+';
+        if (ratio > 0.6) grade = 'C-';
+        else if (ratio > 0.4) grade = 'C';
+        else if (ratio > 0.2) grade = 'B';
+        else if (ratio > 0.1) grade = 'A-';
+        else if (ratio > 0) grade = 'A';
+        
+        return { grade, issues: totalIssues, missingTags, lowSeo };
+    }, [products]);
 
     const healthScore = isScanning ? '...' : healthData.grade;
 
-    // Chart Data mapping
     const revenueData = useMemo(() => {
         return salesData && salesData.recent_orders.length > 0
             ? [...salesData.recent_orders].reverse().map(order => ({
@@ -139,22 +112,24 @@ const DashboardPage: React.FC = () => {
     };
 
     const handleFixAll = async () => {
-        if (priorityProducts.length === 0) return;
+        if (products.length === 0) return;
         setIsFixing(true);
         setFixList([]);
         setFixProgress(['loading', 'pending', 'pending', 'pending', 'pending']);
         
+        const productsToFix = [...products].sort((a, b) => a.seoScore - b.seoScore).slice(0, 5);
         const newFixes: FixItem[] = [];
-        for (let i = 0; i < priorityProducts.length; i++) {
+        
+        for (let i = 0; i < productsToFix.length; i++) {
             setFixProgress(prev => prev.map((s, idx) => idx === i ? 'loading' : s));
-            const result = await optimizeItem(priorityProducts[i]);
+            const result = await optimizeItem(productsToFix[i]);
             if (result) {
                 newFixes.push(result);
                 setFixProgress(prev => prev.map((s, idx) => idx === i ? 'done' : s));
             } else {
                 setFixProgress(prev => prev.map((s, idx) => idx === i ? 'pending' : s));
             }
-            if (i < priorityProducts.length - 1) {
+            if (i < productsToFix.length - 1) {
                 setFixProgress(prev => prev.map((s, idx) => idx === i + 1 ? 'loading' : s));
             }
         }
@@ -194,7 +169,7 @@ const DashboardPage: React.FC = () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
                 body: JSON.stringify({
-                    listing_id: String(item.listing_id),
+                    listing_id: item.listing_id,
                     payload: {
                         title: item.optimized.title,
                         description: item.optimized.description,
@@ -207,9 +182,6 @@ const DashboardPage: React.FC = () => {
             if (!response.ok) throw new Error(resData.error || 'Update failed');
             
             showToast({ type: 'success', message: 'Saved successfully to Etsy!' });
-            
-            // CRITICAL: PROGRESSION HAPPENS HERE
-            setSavedBatchIds(prev => [...prev, item.id]);
             setFixList(prev => prev.filter(f => f.id !== item.id));
             refreshProducts();
         } catch (error: any) {
@@ -246,7 +218,7 @@ const DashboardPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('dashboard_title')}</h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1">SEO Intelligence Center v3.1</p>
+                    <p className="text-gray-500 dark:text-gray-400 mt-1">SEO Intelligence Center v2.8</p>
                 </div>
                 <div className="flex items-center gap-2 mt-4 sm:mt-0">
                     <button className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-500/10 rounded-full">
@@ -258,28 +230,28 @@ const DashboardPage: React.FC = () => {
 
             {/* Health Card */}
             <div className="relative overflow-hidden bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-card border border-gray-100 dark:border-gray-700">
-                <div className={"absolute -top-24 -right-24 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-20 transition-all duration-700 " + (healthScore.startsWith('A') ? 'bg-green-400' : 'bg-purple-400')}></div>
+                <div className={"absolute -top-24 -right-24 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-20 " + (healthScore.startsWith('A') ? 'bg-green-400' : 'bg-purple-400')}></div>
                 <div className="relative z-10 flex flex-col lg:flex-row gap-8 items-center">
                     <div className="flex-shrink-0">
                         <div className="relative w-40 h-40 flex items-center justify-center">
                             <svg className="w-full h-full transform -rotate-90">
                                 <circle cx="80" cy="80" r="70" className="stroke-current text-gray-200 dark:text-gray-700" strokeWidth="12" fill="transparent" />
-                                <circle cx="80" cy="80" r="70" className={"stroke-current transition-all duration-1000 " + (healthScore.startsWith('A') ? 'text-green-500' : 'text-purple-600')} strokeWidth="12" fill="transparent" strokeDasharray="440" strokeDashoffset={440 - (440 * (Math.max(20, healthData.avgScore) / 100))} strokeLinecap="round" />
+                                <circle cx="80" cy="80" r="70" className={"stroke-current transition-all duration-1000 " + (healthScore.startsWith('A') ? 'text-green-500' : 'text-purple-600')} strokeWidth="12" fill="transparent" strokeDasharray="440" strokeDashoffset={healthScore.startsWith('A') ? "40" : "220"} strokeLinecap="round" />
                             </svg>
-                            <div className="absolute flex flex-col items-center justify-center text-center">
-                                <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-tighter">Batch Rank</span>
+                            <div className="absolute flex flex-col items-center justify-center">
+                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Score</span>
                                 <span className={"text-5xl font-black " + (healthScore.startsWith('A') ? 'text-green-500' : 'text-purple-600')}>{healthScore}</span>
                             </div>
                         </div>
                     </div>
                     <div className="flex-grow w-full">
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{isScanning ? 'Syncing Batch Data...' : (savedBatchIds.length === 5 ? 'Priority Batch Perfect!' : 'Priority Batch Needs Attention')}</h2>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{isScanning ? 'Analyzing listings...' : 'Store Health Status'}</h2>
                         <div className="space-y-3">
                             <div className="flex items-center p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800">
-                                <Tag className="w-5 h-5 text-purple-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{isScanning ? 'Loading tags...' : `${healthData.missingTags} products in your store have low tag counts`}</span>
+                                <AlertTriangle className="w-5 h-5 text-amber-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{isScanning ? 'Syncing tags...' : `${healthData.missingTags} products need tag optimization`}</span>
                             </div>
                             <div className="flex items-center p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800">
-                                <Zap className="w-5 h-5 text-amber-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{isScanning ? 'Analyzing scores...' : `${healthData.lowSeo} listings are performing below SEO standards`}</span>
+                                <AlertCircle className="w-5 h-5 text-red-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{isScanning ? 'Scanning SEO gaps...' : `${healthData.lowSeo} products have critical SEO issues`}</span>
                             </div>
                         </div>
                     </div>
@@ -287,7 +259,7 @@ const DashboardPage: React.FC = () => {
                         {(isFixing || fixProgress.length > 0) && (
                             <div className="flex gap-2 mb-2">
                                 {fixProgress.map((status, i) => (
-                                    <div key={i} className={"w-4 h-4 rounded-md transition-all duration-500 " + (status === 'done' ? 'bg-green-500 scale-110 shadow-[0_0_10px_#22c55e]' : status === 'loading' ? 'bg-orange-500 animate-pulse' : 'bg-gray-200 dark:bg-gray-700')}></div>
+                                    <div key={i} className={"w-4 h-4 rounded-md transition-all duration-500 " + (status === 'done' ? 'bg-green-500 scale-110' : status === 'loading' ? 'bg-orange-500 animate-pulse' : 'bg-gray-200 dark:bg-gray-700')}></div>
                                 ))}
                             </div>
                         )}
