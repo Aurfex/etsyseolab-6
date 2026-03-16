@@ -115,9 +115,9 @@ const DashboardPage: React.FC = () => {
         if (products.length === 0) return;
         setIsFixing(true);
         setFixList([]);
-        setFixProgress(['loading', 'pending', 'pending', 'pending', 'pending']);
+        setFixProgress(['loading', 'pending']);
         
-        const productsToFix = [...products].sort((a, b) => a.seoScore - b.seoScore).slice(0, 5);
+        const productsToFix = [...products].sort((a, b) => a.seoScore - b.seoScore).slice(0, 2);
         const newFixes: FixItem[] = [];
         
         for (let i = 0; i < productsToFix.length; i++) {
@@ -265,7 +265,7 @@ const DashboardPage: React.FC = () => {
                             </div>
                         )}
                         <button onClick={handleFixAll} disabled={isFixing || isScanning} className="w-full lg:w-64 py-4 px-6 rounded-2xl font-bold text-white shadow-lg bg-[#F1641E] hover:bg-[#D95A1B] disabled:bg-gray-400 transition-all active:scale-95">
-                            {isFixing ? <RefreshCw className="w-5 h-5 animate-spin mx-auto" /> : "✨ FIX 5 PRIORITY ITEMS"}
+                            {isFixing ? <RefreshCw className="w-5 h-5 animate-spin mx-auto" /> : "✨ FIX 2 PRIORITY ITEMS"}
                         </button>
                     </div>
                 </div>
