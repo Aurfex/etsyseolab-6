@@ -3,8 +3,6 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import axios from 'axios';
 import { Product, OptimizationResult } from '../types';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-
 async function fetchImageAsBase64(url: string) {
     try {
         const response = await axios.get(url, { responseType: 'arraybuffer' });
@@ -40,13 +38,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: 'Invalid product data.' });
     }
 
-    if (!process.env.GEMINI_API_KEY) {
+    if (!process.env.GEMINI_API_KEY && !process.env.GOOGLE_API_KEY) {
         return res.status(500).json({ error: 'GEMINI_API_KEY is not configured in Vercel environment variables.' });
     }
 
     try {
         console.log('Starting Gemini optimization for:', product.id);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
         
         let promptParts: any[] = [];
         
