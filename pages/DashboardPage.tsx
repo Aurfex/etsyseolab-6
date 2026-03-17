@@ -44,6 +44,8 @@ const DashboardPage: React.FC = () => {
     const { t, language } = useTranslation();
     const storeNiche = auth.user?.niche || 'Jewelry';
 
+    console.log("Dashboard Debug: Language is", language);
+
     // State
     const [isFixing, setIsFixing] = useState(false);
     const [fixList, setFixList] = useState<FixItem[]>([]);
