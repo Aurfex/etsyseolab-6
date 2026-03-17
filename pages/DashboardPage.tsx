@@ -78,8 +78,8 @@ const DashboardPage: React.FC = () => {
     }, [products, showToast]);
 
     const canScan = useMemo(() => {
-        return products.length > 0 && !isScanning && !isFixing;
-    }, [products.length, isScanning, isFixing]);
+        return products.length > 0 && !isScanning && !isFixing && priorityBatch.length === 0;
+    }, [products.length, isScanning, isFixing, priorityBatch.length]);
 
     const healthData = useMemo(() => {
         if (products.length === 0 || priorityBatch.length === 0 || (savedBatchIds.length === priorityBatch.length)) {
