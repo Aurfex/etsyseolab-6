@@ -410,13 +410,13 @@ const DashboardPage: React.FC = () => {
                                 <Clock className="w-5 h-5 animate-pulse" />
                             </span>
                             <div>
-                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Jewelry Sales Countdown</h3>
-                                <p className="text-[10px] text-gray-400 font-medium">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{t('dash_sales_countdown_title')}</h3>
+                                <p className="text-[10px] text-gray-400 font-medium">{new Date().toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                             </div>
                         </div>
                         <span className="text-xs font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1">
                             <Info className="w-3 h-3" />
-                            Global Markets 2026
+                            {t('dash_global_markets')}
                         </span>
                     </div>
 
@@ -440,7 +440,7 @@ const DashboardPage: React.FC = () => {
                                     <div className="text-right">
                                         <div className="flex items-baseline gap-1">
                                             <span className="text-2xl font-black text-orange-600 leading-none">{event.daysRemaining}</span>
-                                            <span className="text-[10px] font-bold text-gray-400">DAYS</span>
+                                            <span className="text-[10px] font-bold text-gray-400 uppercase">{t('dash_days_left')}</span>
                                         </div>
                                         <div className="w-16 h-1 bg-gray-100 dark:bg-gray-700 rounded-full mt-1.5 overflow-hidden">
                                             <div className="h-full bg-orange-500 rounded-full transition-all duration-1000" style={{ width: `${Math.max(10, 100 - (event.daysRemaining / 2))}%` }}></div>
@@ -448,9 +448,9 @@ const DashboardPage: React.FC = () => {
                                     </div>
                                     <button 
                                         onClick={() => handleOptimizeForEvent(event)}
-                                        className="px-5 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[10px] font-black rounded-xl hover:scale-105 active:scale-95 transition-all shadow-md shadow-gray-200 dark:shadow-none"
+                                        className="px-5 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[10px] font-black rounded-xl hover:scale-105 active:scale-95 transition-all shadow-md shadow-gray-200 dark:shadow-none uppercase"
                                     >
-                                        OPTIMIZE
+                                        {t('dash_optimize_btn')}
                                     </button>
                                 </div>
                             </div>
@@ -460,13 +460,13 @@ const DashboardPage: React.FC = () => {
 
                 <div className="col-span-1 flex flex-col gap-6">
                     <div className="bg-gradient-to-br from-[#FAFAFA] to-[#F0F0F0] dark:from-[#1E1E1E] dark:to-[#2D2D2D] p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm h-full flex flex-col">
-                        <div className="flex items-center gap-3 mb-3"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"><Search className="w-4 h-4" /></span><h3 className="font-bold text-gray-900 dark:text-white">Competitor Radar</h3></div>
+                        <div className="flex items-center gap-3 mb-3"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"><Search className="w-4 h-4" /></span><h3 className="font-bold text-gray-900 dark:text-white">{t('dash_radar_title')}</h3></div>
                         <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-4">3 Top competitors in <b>{storeNiche}</b> recently updated their tags. Check your rank now.</p>
-                        <button onClick={() => setPage('competitor')} className="w-full py-2 bg-[#F1641E] hover:bg-[#D95A1B] text-white text-sm font-semibold rounded-xl transition-colors mt-auto">View Analysis</button>
+                        <button onClick={() => setPage('competitor')} className="w-full py-2 bg-[#F1641E] hover:bg-[#D95A1B] text-white text-sm font-semibold rounded-xl transition-colors mt-auto">{t('dash_radar_btn')}</button>
                     </div>
 
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card border border-gray-100 dark:border-gray-700 h-full">
-                        <div className="flex items-center gap-3 mb-6"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"><Flame className="w-4 h-4" /></span><h3 className="font-bold text-gray-900 dark:text-white">Trending Keywords</h3></div>
+                        <div className="flex items-center gap-3 mb-6"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"><Flame className="w-4 h-4" /></span><h3 className="font-bold text-gray-900 dark:text-white">{t('dash_trending_keywords')}</h3></div>
                         <ul className="space-y-6">
                             <li className="flex justify-between items-center group/item"><div className="flex flex-col"><span className="text-sm font-bold text-gray-700 dark:text-gray-300">1. Art Deco {storeNiche}</span><span className="text-[10px] text-gray-400">High Volume</span></div><span className="text-xs text-green-500 font-black">+156%</span></li>
                             <li className="flex justify-between items-center group/item"><div className="flex flex-col"><span className="text-sm font-bold text-gray-700 dark:text-gray-300">2. Custom 14K Gold {storeNiche}</span><span className="text-[10px] text-gray-400">Low Competition</span></div><span className="text-xs text-green-500 font-black">+112%</span></li>
@@ -479,10 +479,10 @@ const DashboardPage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <MetricCard icon={Package} title="Total Products" value={String(products.length)} change="" bgColor="bg-white dark:bg-gray-800" iconColor="text-blue-500"/>
-                <MetricCard icon={TrendingUp} title="Avg SEO Score" value={avgSeoScoreDisplay + "%"} change="" bgColor="bg-white dark:bg-gray-800" iconColor="text-green-500"/>
-                <MetricCard icon={DollarSign} title="Total Revenue" value={salesData ? salesData.total_revenue.toFixed(2) + ' ' + salesData.currency : '$0.00'} change="Overall" bgColor="bg-white dark:bg-gray-800" iconColor="text-indigo-500"/>
-                <MetricCard icon={Zap} title="Optimizations" value={String(optimizationsToday)} change="Today" bgColor="bg-white dark:bg-gray-800" iconColor="text-purple-500"/>
+                <MetricCard icon={Package} title={t('metric_total_products')} value={String(products.length)} change="" bgColor="bg-white dark:bg-gray-800" iconColor="text-blue-500"/>
+                <MetricCard icon={TrendingUp} title={t('metric_avg_seo_score')} value={avgSeoScoreDisplay + "%"} change="" bgColor="bg-white dark:bg-gray-800" iconColor="text-green-500"/>
+                <MetricCard icon={DollarSign} title={t('metric_total_revenue')} value={salesData ? salesData.total_revenue.toFixed(2) + ' ' + salesData.currency : '$0.00'} change="Overall" bgColor="bg-white dark:bg-gray-800" iconColor="text-indigo-500"/>
+                <MetricCard icon={Zap} title={t('metric_ai_optimizations')} value={String(optimizationsToday)} change={t('today')} bgColor="bg-white dark:bg-gray-800" iconColor="text-purple-500"/>
             </div>
 
             {/* Product Thumbnail Strip */}
@@ -491,9 +491,9 @@ const DashboardPage: React.FC = () => {
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
                             <ImageIcon className="w-4 h-4 text-purple-500" />
-                            Live Store Gallery
+                            {t('dash_live_gallery')}
                         </h3>
-                        <span className="text-[10px] text-gray-400 font-medium">Syncing {products.length} assets</span>
+                        <span className="text-[10px] text-gray-400 font-medium">{t('dash_syncing_assets', { count: products.length })}</span>
                     </div>
                     <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
                         {products.map((p) => (
