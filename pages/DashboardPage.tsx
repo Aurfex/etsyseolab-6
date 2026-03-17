@@ -52,12 +52,21 @@ const DashboardPage: React.FC = () => {
     const [savedBatchIds, setSavedBatchIds] = useState<string[]>([]);
 
     // Lock the priority batch only when scanning or products are first loaded
+    const [lastScanTime, setLastScanTime] = useState<number>(0);
+
     const handleScanProducts = useCallback(() => {
         if (products.length === 0) return;
         
+        const now = Date.now();
+        // جلوگیری از کرم‌ریزی: اگه کمتر از ۳۰ ثانیه از اسکن قبلی گذشته باشه، الکی اسکن نمی‌کنیم
+        if (now - lastScanTime < 30000 && priorityBatch.length > 0) {
+            showToast({ type: 'info', message: 'Intelligence is already up to date. Focus on the current batch!' });
+            return;
+        }
+
         setIsScanning(true);
+        setLastScanTime(now);
         // واقعی‌سازی: مدل رو مجبور می‌کنیم لیست محصولات رو دوباره با معیارهای ۲۰۲۶ چک کنه
-        // فعلاً از سورت سئو اسکور واقعی استفاده می‌کنیم که الکی نباشه
         setTimeout(() => {
             const worst = [...products]
                 .sort((a, b) => {
