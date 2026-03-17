@@ -22,6 +22,7 @@ export interface OptimizationResult {
   description: string;
   tags: string[];
   altText: string;
+  targetEvent?: string; // NEW: track the event for prompt customization
 }
 
 export type ActivityType = 

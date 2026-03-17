@@ -22,6 +22,7 @@ interface FixItem {
     original: { title: string; description: string; tags: string[]; score: number };
     optimized: { title: string; description: string; tags: string[]; score: number };
     status: 'pending' | 'saving' | 'saved' | 'failed' | 'optimizing';
+    targetEvent?: string; // NEW: optional field
 }
 
 
@@ -51,10 +52,13 @@ const DashboardPage: React.FC = () => {
     const [priorityBatch, setPriorityBatch] = useState<Product[]>([]);
     const [savedBatchIds, setSavedBatchIds] = useState<string[]>([]);
 
+    const [activeEventName, setActiveEventName] = useState<string | null>(null);
+
     const handleScanProducts = useCallback(() => {
         if (products.length === 0) return;
         
         setIsScanning(true);
+        setActiveEventName(null); // Clear active event for general scan
         setTimeout(() => {
             const worst = [...products]
                 .filter(p => p.title && !p.title.includes('Loading'))
@@ -136,14 +140,16 @@ const DashboardPage: React.FC = () => {
             ];
     }, [salesData]);
 
-    const optimizeItem = async (p: Product): Promise<FixItem | null> => {
+    const optimizeItem = async (p: Product, eventName?: string): Promise<FixItem | null> => {
         try {
-            const optResult = await runFullOptimization(p);
+            // Updated optimization call with optional eventName
+            const optResult = await runFullOptimization(p, eventName);
             return {
                 id: p.id, listing_id: p.id, imageUrl: p.imageUrl,
                 original: { title: p.title, description: p.description, tags: p.tags, score: p.seoScore },
                 optimized: { title: optResult.title, description: optResult.description, tags: optResult.tags || p.tags, score: Math.min(100, p.seoScore + 25) },
-                status: 'pending'
+                status: 'pending',
+                targetEvent: eventName
             };
         } catch (err) {
             console.error('Failed to optimize', p.id, err);
@@ -161,7 +167,8 @@ const DashboardPage: React.FC = () => {
         for (let i = 0; i < remainingToFix.length; i++) {
             setFixProgress(prev => prev.map((s, idx) => idx === i ? 'loading' : s));
             if (i > 0) await new Promise(resolve => setTimeout(resolve, 4000));
-            const result = await optimizeItem(remainingToFix[i]);
+            // PASS THE ACTIVE EVENT NAME HERE
+            const result = await optimizeItem(remainingToFix[i], activeEventName || undefined);
             if (result) {
                 newFixes.push(result);
                 setFixProgress(prev => prev.map((s, idx) => idx === i ? 'done' : s));
@@ -178,7 +185,7 @@ const DashboardPage: React.FC = () => {
         setFixList(prev => prev.map(f => f.id === item.id ? { ...f, status: 'optimizing' } : f));
         const p = products.find(prod => prod.id === item.id);
         if (!p) return;
-        const result = await optimizeItem(p);
+        const result = await optimizeItem(p, activeEventName || undefined);
         if (result) { setFixList(prev => prev.map(f => f.id === item.id ? result : f)); }
         else { setFixList(prev => prev.map(f => f.id === item.id ? { ...f, status: 'failed' } : f)); }
     };
@@ -245,6 +252,8 @@ const DashboardPage: React.FC = () => {
             type: 'info', 
             message: `Hasti AI: Preparing strategic ${event.niche} SEO batch for ${event.name}...` 
         });
+        
+        setActiveEventName(event.name); // Set the active event context
         
         // Find products matching the niche
         const targetKeywords = event.niche.toLowerCase().split(' ');

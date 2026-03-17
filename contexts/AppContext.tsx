@@ -26,7 +26,7 @@ interface AppContextType {
   effectiveTheme: 'light' | 'dark';
   updateSettings: (newSettings: Settings) => void;
   resetSettings: () => void;
-  runFullOptimization: (product: Product) => Promise<OptimizationResult>;
+  runFullOptimization: (product: Product, eventName?: string) => Promise<OptimizationResult>;
   runAutomationTask: (type: ActivityType, tKey: string) => Promise<void>;
   runAutopilotFix: (productsToFix: Product[]) => Promise<void>;
   analyzeCompetitor: (url: string) => Promise<void>;
@@ -543,12 +543,21 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         showToast({ tKey: 'toast_settings_reset', type: 'success' });
     }, [showToast]);
 
-    const runFullOptimization = useCallback(async (product: Product): Promise<OptimizationResult> => {
+    const runFullOptimization = useCallback(async (product: Product, eventName?: string): Promise<OptimizationResult> => {
         if (!settings.mockMode) {
              addLog({ type: 'title_optimization', tKey: 'log_optimization_started', subtitle: product.title, status: 'Processing' });
         }
         try {
-            const result = await apiRunFullOptimization(product);
+            // Updated fetch with targetEvent
+            const response = await fetch('/api/optimize', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ product, targetEvent: eventName })
+            });
+
+            if (!response.ok) throw new Error('AI Optimization failed.');
+            const result = await response.json();
+            
             const newSeoScore = Math.min(99, product.seoScore + Math.floor(Math.random() * 15) + 5);
             setProducts(prev => prev.map(p => p.id === product.id ? { ...p, ...result, seoScore: newSeoScore } : p));
             addLog({ type: 'title_optimization', tKey: 'log_optimization_successful', subtitle: product.title, status: 'Success', change: `SEO +${newSeoScore - product.seoScore}%` });
