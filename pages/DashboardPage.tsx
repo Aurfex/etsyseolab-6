@@ -297,9 +297,24 @@ const DashboardPage: React.FC = () => {
     return (
         <div className="space-y-8 animate-fade-in w-full h-full min-h-[400px]">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('dashboard_title')}</h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1">SEO Intelligence Center v2.8</p>
+                <div className="flex items-center gap-6">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('dashboard_title')}</h1>
+                        <p className="text-gray-500 dark:text-gray-400 mt-1">SEO Intelligence Center v2.8</p>
+                    </div>
+                    
+                    {/* Top-Level Sync Status Indicator */}
+                    {isInitialLoading ? (
+                        <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-xl shadow-sm animate-pulse-subtle">
+                            <RefreshCw className="w-5 h-5 text-blue-500 animate-spin" />
+                            <span className="text-sm font-bold text-blue-700 dark:text-blue-300 tracking-wide uppercase">Syncing Store Data...</span>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-xl shadow-sm animate-fade-in">
+                            <Check className="w-5 h-5 text-green-500" />
+                            <span className="text-sm font-bold text-green-700 dark:text-green-300 tracking-wide uppercase">Sync Complete</span>
+                        </div>
+                    )}
                 </div>
                 <div className="flex items-center gap-2 mt-4 sm:mt-0">
                     <button className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-500/10 rounded-full">
@@ -502,16 +517,6 @@ const DashboardPage: React.FC = () => {
                 <MetricCard icon={DollarSign} title={t('metric_total_revenue')} value={salesData ? salesData.total_revenue.toFixed(2) + ' ' + salesData.currency : '...'} change="Overall" bgColor="bg-white dark:bg-gray-800" iconColor="text-indigo-500"/>
                 <MetricCard icon={Zap} title={t('metric_ai_optimizations')} value={!isInitialLoading ? String(optimizationsToday) : '...'} change={t('today')} bgColor="bg-white dark:bg-gray-800" iconColor="text-purple-500"/>
             </div>
-
-            {/* Simple Inline Loader */}
-            {isInitialLoading && (
-                <div className="flex items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-3xl border border-dashed border-gray-200 dark:border-gray-700">
-                    <div className="flex flex-col items-center gap-3">
-                        <RefreshCw className="w-8 h-8 text-[#F1641E] animate-spin" />
-                        <p className="text-sm font-bold text-gray-500 animate-pulse">Syncing your Etsy treasures...</p>
-                    </div>
-                </div>
-            )}
 
             {/* Product Thumbnail Strip */}
             {!isInitialLoading && products.length > 0 && (
