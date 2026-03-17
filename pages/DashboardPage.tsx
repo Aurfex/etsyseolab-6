@@ -60,7 +60,14 @@ const DashboardPage: React.FC = () => {
         const now = Date.now();
         // جلوگیری از کرم‌ریزی: اگه کمتر از ۳۰ ثانیه از اسکن قبلی گذشته باشه، الکی اسکن نمی‌کنیم
         if (now - lastScanTime < 30000 && priorityBatch.length > 0) {
-            showToast({ type: 'info', message: 'Intelligence is already up to date. Focus on the current batch!' });
+            const insults = [
+                'Intelligence is up to date. Focus!',
+                'Don\'t spam the scan, honey. Fix the current batch first.',
+                'Are you bored? Use that energy to save these 3 items!',
+                'Slow down! The AI needs a breather too.'
+            ];
+            const randomMsg = insults[Math.floor(Math.random() * insults.length)];
+            showToast({ type: 'info', message: randomMsg });
             return;
         }
 
