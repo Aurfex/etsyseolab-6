@@ -1,56 +1,3 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Package, TrendingUp, Zap, Activity, FileText, Tag, Image as ImageIcon, Check, Info, AlertTriangle, AlertCircle, RefreshCw, DollarSign, Search, Flame, RotateCw, XCircle } from 'lucide-react';
-import type { ElementType } from 'react';
-import { useAppContext } from '../contexts/AppContext';
-import { ActivityLog, Product } from '../types';
-import { useTranslation } from '../contexts/LanguageContext';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
-interface MetricCardProps {
-  icon: ElementType;
-  title: string;
-  value: string;
-  change: string;
-  bgColor: string;
-  iconColor: string;
-}
-
-interface FixItem {
-    id: string;
-    listing_id: string;
-    imageUrl?: string;
-    original: { title: string; description: string; tags: string[]; score: number };
-    optimized: { title: string; description: string; tags: string[]; score: number };
-    status: 'pending' | 'saving' | 'saved' | 'failed' | 'optimizing';
-}
-
-
-const MetricCard: React.FC<MetricCardProps> = ({ icon: Icon, title, value, change, bgColor, iconColor }) => (
-  <div className={`p-5 rounded-2xl shadow-card dark:shadow-card-dark ${bgColor} border border-gray-100 dark:border-gray-800`}>
-    <div className="flex justify-between items-start">
-      <div className="flex flex-col">
-        <span className="text-sm text-gray-500 dark:text-gray-400">{title}</span>
-        <span className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{value}</span>
-        <span className="text-xs text-gray-500 dark:text-gray-400 mt-2">{change}</span>
-      </div>
-      <Icon className={`w-6 h-6 ${iconColor}`} />
-    </div>
-  </div>
-);
-
-const DashboardPage: React.FC = () => {
-    const { products, activityLogs, salesData, fetchSalesData, runAutopilotFix, runFullOptimization, showToast, auth, refreshProducts } = useAppContext();
-    const { t } = useTranslation();
-    const storeNiche = auth.user?.niche || 'Jewelry';
-
-    // State
-    const [isFixing, setIsFixing] = useState(false);
-    const [fixList, setFixList] = useState<FixItem[]>([]);
-    const [fixProgress, setFixProgress] = useState<('pending' | 'loading' | 'done')[]>([]);
-    const [isScanning, setIsScanning] = useState(false);
-    const [priorityBatch, setPriorityBatch] = useState<Product[]>([]);
-    const [savedBatchIds, setSavedBatchIds] = useState<string[]>([]);
-
     // Lock the priority batch only when scanning or products are first loaded
     const handleScanProducts = useCallback(() => {
         if (products.length === 0) return;
@@ -71,14 +18,7 @@ const DashboardPage: React.FC = () => {
             setSavedBatchIds([]); 
             setFixList([]); 
             setIsScanning(false);
-            
-            // اگه محصولات واقعاً داغون نبودن، پیغام بدیم که فعلاً اوکیه
-            const isStoreHealthy = worst.every(p => p.seoScore > 85);
-            if (isStoreHealthy) {
-                showToast({ type: 'success', message: 'No critical issues found! Your store is looking sharp.' });
-            } else {
-                showToast({ type: 'success', message: 'Market Intelligence: 3 high-priority listings identified.' });
-            }
+            showToast({ type: 'success', message: 'Market Intelligence: 3 high-priority listings identified.' });
         }, 1500);
     }, [products, showToast]);
 
@@ -87,41 +27,29 @@ const DashboardPage: React.FC = () => {
         return products.length > 0 && !isScanning && !isFixing;
     }, [products.length, isScanning, isFixing]);
 
-    useEffect(() => {
-        // ONLY lock if we have REAL products from the API, not the initial empty state or placeholders
-        // We check for products.length > 0 AND that they aren't placeholder titles
-        const hasRealData = products.length > 0 && products.some(p => p.title && !p.title.includes('Loading') && !p.title.includes('Listing'));
-        
-        if (hasRealData && priorityBatch.length === 0) {
-            handleScanProducts();
-        }
-    }, [products, priorityBatch.length, handleScanProducts]);
-
+    // Removed auto-scan useEffect to ensure it only scans on user click or manual trigger
+    // Also ensuring no placeholders are locked initially
+    
     // Stable derivation of health score based on the FIXED priority batch
     const healthData = useMemo(() => {
-        if (products.length === 0 || priorityBatch.length === 0) return { grade: '...', issues: 0, missingTags: 0, lowSeo: 0, scorePercent: 40, summaries: [] };
+        // If no scan has been performed yet, show empty/inactive state
+        if (products.length === 0 || priorityBatch.length === 0) return { grade: '-', issues: 0, missingTags: 0, lowSeo: 0, scorePercent: 0, summaries: [] };
         
         let batchTotalScore = 0;
         let batchIssues = 0;
         const summaries: { id: string; text: string; status: 'warning' | 'success'; title: string }[] = [];
         
+        // Filter out products that have been saved successfully from the display list if desired, 
+        // but here we keep them for the rank calculation until the whole batch is done.
         priorityBatch.forEach((p) => {
             const isSaved = savedBatchIds.includes(p.id);
             const shortTitle = p.title.length > 25 ? p.title.substring(0, 25) + '...' : p.title;
             
             if (isSaved) {
                 batchTotalScore += 98;
-                summaries.push({ 
-                    id: p.id, 
-                    title: shortTitle, 
-                    text: `SEO Optimized & Published!`, 
-                    status: 'success' 
-                });
+                // We won't add to summaries to "remove" it from the list per your request
             } else {
-                // Get real-time data from products list if available, else use initial priorityBatch data
                 const currentP = products.find(prod => prod.id === p.id) || p;
-                
-                // Show "tokhmi" score initially (before save)
                 batchTotalScore += Math.max(15, Math.min(45, currentP.seoScore));
                 
                 const issues = [];
@@ -140,26 +68,31 @@ const DashboardPage: React.FC = () => {
                 if (currentP.seoScore < 70) batchIssues++;
             }
         });
+
+        // Check if all 3 are finished
+        const allDone = savedBatchIds.length === priorityBatch.length && priorityBatch.length > 0;
         
-        const avgScore = batchTotalScore / priorityBatch.length;
+        const avgScore = allDone ? 0 : (batchTotalScore / priorityBatch.length);
         
-        let grade = 'F';
-        if (avgScore >= 90) grade = 'A+';
+        let grade = '-';
+        if (allDone) grade = '-'; // Inactive when done
+        else if (avgScore >= 90) grade = 'A+';
         else if (avgScore >= 80) grade = 'A';
         else if (avgScore >= 70) grade = 'B';
         else if (avgScore >= 55) grade = 'C';
         else if (avgScore >= 40) grade = 'D';
+        else if (avgScore > 0) grade = 'F';
         
-        return { grade, issues: batchIssues, missingTags: batchIssues, lowSeo: batchIssues, scorePercent: avgScore, summaries };
+        return { grade, issues: batchIssues, missingTags: batchIssues, lowSeo: batchIssues, scorePercent: allDone ? 0 : avgScore, summaries, allDone };
     }, [priorityBatch, savedBatchIds, products]);
 
-    const healthScore = isScanning ? '...' : healthData.grade;
+    const healthScore = isScanning ? '...' : (healthData.allDone ? '-' : healthData.grade);
 
     // Use specific SEO Score for the metric card
     const batchSeoScoreDisplay = useMemo(() => {
-        if (isScanning || priorityBatch.length === 0) return 0;
+        if (isScanning || priorityBatch.length === 0 || healthData.allDone) return 0;
         return Math.round(healthData.scorePercent);
-    }, [isScanning, healthData.scorePercent, priorityBatch.length]);
+    }, [isScanning, healthData.scorePercent, priorityBatch.length, healthData.allDone]);
 
     const revenueData = useMemo(() => {
         return salesData && salesData.recent_orders.length > 0
@@ -205,14 +138,17 @@ const DashboardPage: React.FC = () => {
         if (priorityBatch.length === 0) return;
         setIsFixing(true);
         setFixList([]);
-        setFixProgress(priorityBatch.map(() => 'pending'));
+        
+        // Match progress to currently NOT saved items
+        const remainingToFix = priorityBatch.filter(p => !savedBatchIds.includes(p.id));
+        setFixProgress(remainingToFix.map(() => 'pending'));
         
         const newFixes: FixItem[] = [];
         
-        for (let i = 0; i < priorityBatch.length; i++) {
+        for (let i = 0; i < remainingToFix.length; i++) {
             setFixProgress(prev => prev.map((s, idx) => idx === i ? 'loading' : s));
             if (i > 0) await new Promise(resolve => setTimeout(resolve, 4000)); // Delay to prevent 429
-            const result = await optimizeItem(priorityBatch[i]);
+            const result = await optimizeItem(remainingToFix[i]);
             if (result) {
                 newFixes.push(result);
                 setFixProgress(prev => prev.map((s, idx) => idx === i ? 'done' : s));
@@ -287,10 +223,10 @@ const DashboardPage: React.FC = () => {
         if (auth.isAuthenticated) fetchSalesData();
     }, [auth.isAuthenticated]);
 
+    // Ensure we start in an inactive state
     useEffect(() => {
         if (products.length > 0) {
-            const timer = setTimeout(() => setIsScanning(false), 2000);
-            return () => clearTimeout(timer);
+            // We just let scan handle it manually
         }
     }, [products.length]);
 
@@ -304,6 +240,8 @@ const DashboardPage: React.FC = () => {
             ? Math.round(products.reduce((acc, p) => acc + p.seoScore, 0) / products.length)
             : 0;
     }, [products]);
+
+    const isBatchActive = priorityBatch.length > 0 && !healthData.allDone;
 
     return (
         <div className="space-y-8 animate-fade-in w-full h-full min-h-[400px]">
@@ -322,48 +260,47 @@ const DashboardPage: React.FC = () => {
 
             {/* Health Card */}
             <div className="relative overflow-hidden bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-card border border-gray-100 dark:border-gray-700">
-                <div className={"absolute -top-24 -right-24 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-20 " + (healthScore.startsWith('A') ? 'bg-green-400' : 'bg-purple-400')}></div>
+                <div className={"absolute -top-24 -right-24 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-20 " + (isBatchActive ? (healthScore.startsWith('A') ? 'bg-green-400' : 'bg-purple-400') : 'bg-gray-400')}></div>
                 <div className="relative z-10 flex flex-col lg:flex-row gap-8 items-center">
                     <div className="flex-shrink-0">
                         <div className="relative w-40 h-40 flex items-center justify-center">
                             <svg className="w-full h-full transform -rotate-90">
                                 <circle cx="80" cy="80" r="70" className="stroke-current text-gray-200 dark:text-gray-700" strokeWidth="12" fill="transparent" />
-                                <circle cx="80" cy="80" r="70" className={"stroke-current transition-all duration-1000 " + (healthScore.startsWith('A') ? 'text-green-500' : 'text-purple-600')} strokeWidth="12" fill="transparent" strokeDasharray="440" strokeDashoffset={440 - (440 * (Math.max(20, healthData.scorePercent || 0) / 100))} strokeLinecap="round" />
+                                <circle cx="80" cy="80" r="70" className={"stroke-current transition-all duration-1000 " + (isBatchActive ? (healthScore.startsWith('A') ? 'text-green-500' : 'text-purple-600') : 'text-gray-300')} strokeWidth="12" fill="transparent" strokeDasharray="440" strokeDashoffset={440 - (440 * (Math.max(0, batchSeoScoreDisplay || 0) / 100))} strokeLinecap="round" />
                             </svg>
                             <div className="absolute flex flex-col items-center justify-center">
                                 <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Score</span>
-                                <span className={"text-5xl font-black " + (healthScore.startsWith('A') ? 'text-green-500' : 'text-purple-600')}>{healthScore}</span>
+                                <span className={"text-5xl font-black " + (isBatchActive ? (healthScore.startsWith('A') ? 'text-green-500' : 'text-purple-600') : 'text-gray-300')}>{healthScore}</span>
                             </div>
                         </div>
                     </div>
                     <div className="flex-grow w-full">
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{isScanning ? 'Analyzing listings...' : (savedBatchIds.length === priorityBatch.length && priorityBatch.length > 0 ? 'Batch Optimized!' : 'Priority Batch Status')}</h2>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{isScanning ? 'Deep Analysis...' : (!isBatchActive ? 'Market Intelligence Idle' : 'Priority Batch Status')}</h2>
                         <div className="space-y-3">
-                            {!isScanning && healthData.summaries.map((summary, idx) => (
-                                <div key={idx} className="flex items-center p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800">
-                                    {summary.status === 'success' ? (
-                                        <div className="flex items-center text-green-500 font-bold">
-                                            <Check className="w-5 h-5 mr-3" />
-                                            <span className="text-sm"><span className="text-green-600 mr-2">[{summary.title}]</span> {summary.text}</span>
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center w-full">
-                                            <AlertTriangle className="w-5 h-5 text-amber-500 mr-3" />
-                                            <span className="text-sm text-gray-700 dark:text-gray-300">
-                                                <span className="text-orange-500 font-semibold mr-2">[{summary.title}]</span> 
-                                                {summary.text}
-                                            </span>
-                                        </div>
-                                    )}
+                            {isBatchActive && !isScanning && healthData.summaries.map((summary, idx) => (
+                                <div key={idx} className="flex items-center p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800 animate-slide-in">
+                                    <div className="flex items-center w-full">
+                                        <AlertTriangle className="w-5 h-5 text-amber-500 mr-3" />
+                                        <span className="text-sm text-gray-700 dark:text-gray-300">
+                                            <span className="text-orange-500 font-semibold mr-2">[{summary.title}]</span> 
+                                            {summary.text}
+                                        </span>
+                                    </div>
                                 </div>
                             ))}
+                            {!isBatchActive && !isScanning && (
+                                <div className="p-4 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl flex flex-col items-center justify-center text-gray-400">
+                                    <Search className="w-8 h-8 mb-2 opacity-20" />
+                                    <p className="text-sm">Click SCAN to identify 2026 SEO opportunities</p>
+                                </div>
+                            )}
                             {isScanning && (
                                 <>
                                     <div className="flex items-center p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800">
-                                        <AlertTriangle className="w-5 h-5 text-amber-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">Syncing tags...</span>
+                                        <AlertTriangle className="w-5 h-5 text-amber-500 mr-3 animate-pulse" /><span className="text-sm text-gray-700 dark:text-gray-300">Searching listings for SEO gaps...</span>
                                     </div>
                                     <div className="flex items-center p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800">
-                                        <AlertCircle className="w-5 h-5 text-red-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">Scanning SEO gaps...</span>
+                                        <Zap className="w-5 h-5 text-purple-500 mr-3 animate-bounce" /><span className="text-sm text-gray-700 dark:text-gray-300">Applying 2026 Etsy Standards...</span>
                                     </div>
                                 </>
                             )}
@@ -381,8 +318,8 @@ const DashboardPage: React.FC = () => {
                             {isScanning ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                             SCAN PRODUCTS
                         </button>
-                        <button onClick={handleFixAll} disabled={isFixing || isScanning || priorityBatch.length === 0} className="w-full lg:w-64 py-4 px-6 rounded-2xl font-bold text-white shadow-lg bg-[#F1641E] hover:bg-[#D95A1B] disabled:bg-gray-400 transition-all active:scale-95">
-                            {isFixing ? <RefreshCw className="w-5 h-5 animate-spin mx-auto" /> : `✨ FIX ${priorityBatch.length} PRIORITY ITEMS`}
+                        <button onClick={handleFixAll} disabled={isFixing || isScanning || !isBatchActive} className="w-full lg:w-64 py-4 px-6 rounded-2xl font-bold text-white shadow-lg bg-[#F1641E] hover:bg-[#D95A1B] disabled:bg-gray-400 transition-all active:scale-95">
+                            {isFixing ? <RefreshCw className="w-5 h-5 animate-spin mx-auto" /> : `✨ FIX ${priorityBatch.length - savedBatchIds.length} PRIORITY ITEMS`}
                         </button>
                     </div>
                 </div>
