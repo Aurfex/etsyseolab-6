@@ -367,54 +367,58 @@ const DashboardPage: React.FC = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="col-span-1 lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card border border-gray-100 dark:border-gray-700 min-h-[300px]">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center"><DollarSign className="w-5 h-5 me-2 text-indigo-500"/>Potential Revenue Boost</h3>
-                    <div className="h-64 w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                <defs><linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#4F46E5" stopOpacity={0.3}/><stop offset="95%" stopColor="#4F46E5" stopOpacity={0}/></linearGradient><linearGradient id="colorMissed" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/><stop offset="95%" stopColor="#10B981" stopOpacity={0}/></linearGradient></defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#374151" opacity={0.2} />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#6B7280', fontSize: 12}} />
-                                <YAxis axisLine={false} tickLine={false} tick={{fill: '#6B7280', fontSize: 12}} />
-                                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                                <Area type="monotone" dataKey="actual" stroke="#4F46E5" strokeWidth={3} fillOpacity={1} fill="url(#colorActual)" />
-                                <Area type="monotone" dataKey="missed" stroke="#10B981" strokeWidth={2} strokeDasharray="5 5" fillOpacity={1} fill="url(#colorMissed)" />
-                            </AreaChart>
-                        </ResponsiveContainer>
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-100 dark:bg-orange-900/30 text-orange-600">
+                                <Clock className="w-5 h-5 animate-pulse" />
+                            </span>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Sales Countdown</h3>
+                        </div>
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                            <Info className="w-3 h-3" />
+                            Next big jewelry season
+                        </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
+                        {salesEvents.map((event, idx) => (
+                            <div key={idx} className="relative group overflow-hidden p-6 rounded-3xl bg-gray-50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-800 hover:border-orange-200 dark:hover:border-orange-800/50 transition-all">
+                                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform">
+                                    <Calendar className="w-20 h-20 text-orange-600" />
+                                </div>
+                                <div className="relative z-10">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <span className="px-3 py-1 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 text-[10px] font-bold uppercase tracking-widest">{event.niche} SEASON</span>
+                                        <span className="flex items-center gap-1 text-green-500 font-bold text-xs">
+                                            <TrendingUp className="w-3 h-3" />
+                                            Active
+                                        </span>
+                                    </div>
+                                    <h4 className="text-xl font-black text-gray-900 dark:text-white mb-1">{event.name}</h4>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Days until market peak</p>
+                                    
+                                    <div className="flex items-end gap-2">
+                                        <span className="text-5xl font-black text-orange-600 leading-none">{event.daysRemaining}</span>
+                                        <span className="text-sm font-bold text-gray-400 mb-1">DAYS LEFT</span>
+                                    </div>
+
+                                    <div className="mt-6 flex gap-2">
+                                        <button className="flex-grow py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs font-bold rounded-xl hover:opacity-90 transition-opacity">PREPARE SEO</button>
+                                        <button className="p-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 transition-colors">
+                                            <Zap className="w-4 h-4 text-orange-500" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
+
                 <div className="col-span-1 flex flex-col gap-6">
-                    <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-6 rounded-3xl border border-indigo-400/20 shadow-xl relative overflow-hidden group">
-                        <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
-                            <Calendar className="w-32 h-32 text-white" />
-                        </div>
-                        <div className="relative z-10">
-                            <div className="flex items-center gap-3 mb-4">
-                                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md text-white">
-                                    <Clock className="w-5 h-5 animate-pulse" />
-                                </span>
-                                <h3 className="font-bold text-white text-lg">Sales Countdown</h3>
-                            </div>
-                            
-                            <div className="space-y-4">
-                                {salesEvents.map((event, idx) => (
-                                    <div key={idx} className="p-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10">
-                                        <div className="flex justify-between items-start mb-1">
-                                            <span className="text-white font-bold text-sm">{event.name}</span>
-                                            <span className="px-2 py-0.5 rounded-lg bg-orange-500 text-[10px] font-black text-white uppercase tracking-wider">Hot</span>
-                                        </div>
-                                        <div className="flex items-end justify-between">
-                                            <div className="flex flex-col">
-                                                <span className="text-indigo-100 text-[10px]">Prepare SEO for {event.niche}</span>
-                                                <span className="text-white text-2xl font-black">{event.daysRemaining} <small className="text-xs font-normal opacity-70">Days</small></span>
-                                            </div>
-                                            <button className="p-2 rounded-xl bg-white text-indigo-700 hover:bg-indigo-50 transition-colors">
-                                                <Zap className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                    <div className="bg-gradient-to-br from-[#FAFAFA] to-[#F0F0F0] dark:from-[#1E1E1E] dark:to-[#2D2D2D] p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <div className="flex items-center gap-3 mb-3"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"><Search className="w-4 h-4" /></span><h3 className="font-bold text-gray-900 dark:text-white">Competitor Radar</h3></div>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-4">3 Top competitors in <b>{storeNiche}</b> recently updated their tags. Check your rank now.</p>
+                        <button onClick={() => setPage('competitor')} className="w-full py-2 bg-[#F1641E] hover:bg-[#D95A1B] text-white text-sm font-semibold rounded-xl transition-colors">View Analysis</button>
                     </div>
 
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card border border-gray-100 dark:border-gray-700">
