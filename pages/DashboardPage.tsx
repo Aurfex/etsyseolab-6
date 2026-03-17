@@ -240,6 +240,31 @@ const DashboardPage: React.FC = () => {
         return events.slice(0, 5);
     }, []);
 
+    const handleOptimizeForEvent = useCallback((event: { name: string; niche: string }) => {
+        showToast({ 
+            type: 'info', 
+            message: `Hasti AI: Preparing strategic ${event.niche} SEO batch for ${event.name}...` 
+        });
+        
+        // Scan for products that match the event's niche
+        const targetKeywords = event.niche.toLowerCase().split(' ');
+        const matches = products.filter(p => 
+            p.title.toLowerCase().includes(targetKeywords[0]) || 
+            (targetKeywords[1] && p.title.toLowerCase().includes(targetKeywords[1])) ||
+            p.description.toLowerCase().includes(targetKeywords[0])
+        ).slice(0, 3);
+
+        if (matches.length > 0) {
+            setPriorityBatch(matches);
+            setSavedBatchIds([]);
+            setFixList([]);
+            showToast({ type: 'success', message: `Found ${matches.length} relevant listings for ${event.name}. Reviewing now...` });
+        } else {
+            // Fallback to general worst products if no niche match
+            handleScanProducts();
+        }
+    }, [products, showToast, handleScanProducts]);
+
     return (
         <div className="space-y-8 animate-fade-in w-full h-full min-h-[400px]">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
@@ -407,7 +432,10 @@ const DashboardPage: React.FC = () => {
                                             <div className="h-full bg-orange-500 rounded-full" style={{ width: `${Math.max(10, 100 - (event.daysRemaining / 2))}%` }}></div>
                                         </div>
                                     </div>
-                                    <button className="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[10px] font-black rounded-xl hover:opacity-90 transition-opacity">
+                                    <button 
+                                        onClick={() => handleOptimizeForEvent(event)}
+                                        className="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[10px] font-black rounded-xl hover:opacity-90 transition-opacity"
+                                    >
                                         OPTIMIZE
                                     </button>
                                 </div>
@@ -417,15 +445,15 @@ const DashboardPage: React.FC = () => {
                 </div>
 
                 <div className="col-span-1 flex flex-col gap-6">
-                    <div className="bg-gradient-to-br from-[#FAFAFA] to-[#F0F0F0] dark:from-[#1E1E1E] dark:to-[#2D2D2D] p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <div className="bg-gradient-to-br from-[#FAFAFA] to-[#F0F0F0] dark:from-[#1E1E1E] dark:to-[#2D2D2D] p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm h-full flex flex-col">
                         <div className="flex items-center gap-3 mb-3"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"><Search className="w-4 h-4" /></span><h3 className="font-bold text-gray-900 dark:text-white">Competitor Radar</h3></div>
                         <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-4">3 Top competitors in <b>{storeNiche}</b> recently updated their tags. Check your rank now.</p>
-                        <button onClick={() => setPage('competitor')} className="w-full py-2 bg-[#F1641E] hover:bg-[#D95A1B] text-white text-sm font-semibold rounded-xl transition-colors">View Analysis</button>
+                        <button onClick={() => setPage('competitor')} className="w-full py-2 bg-[#F1641E] hover:bg-[#D95A1B] text-white text-sm font-semibold rounded-xl transition-colors mt-auto">View Analysis</button>
                     </div>
 
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card border border-gray-100 dark:border-gray-700">
-                        <div className="flex items-center gap-3 mb-4"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"><Flame className="w-4 h-4" /></span><h3 className="font-bold text-gray-900 dark:text-white">Trending Keywords</h3></div>
-                        <ul className="space-y-4">
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card border border-gray-100 dark:border-gray-700 h-full">
+                        <div className="flex items-center gap-3 mb-6"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"><Flame className="w-4 h-4" /></span><h3 className="font-bold text-gray-900 dark:text-white">Trending Keywords</h3></div>
+                        <ul className="space-y-6">
                             <li className="flex justify-between items-center group/item"><div className="flex flex-col"><span className="text-sm font-bold text-gray-700 dark:text-gray-300">1. Art Deco {storeNiche}</span><span className="text-[10px] text-gray-400">High Volume</span></div><span className="text-xs text-green-500 font-black">+156%</span></li>
                             <li className="flex justify-between items-center group/item"><div className="flex flex-col"><span className="text-sm font-bold text-gray-700 dark:text-gray-300">2. Custom 14K Gold {storeNiche}</span><span className="text-[10px] text-gray-400">Low Competition</span></div><span className="text-xs text-green-500 font-black">+112%</span></li>
                             <li className="flex justify-between items-center group/item"><div className="flex flex-col"><span className="text-sm font-bold text-gray-700 dark:text-gray-300">3. Personalized {storeNiche} Gift</span><span className="text-[10px] text-gray-400">Rising Trend</span></div><span className="text-xs text-green-500 font-black">+89%</span></li>
