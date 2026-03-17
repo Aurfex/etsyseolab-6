@@ -490,7 +490,7 @@ const DashboardPage: React.FC = () => {
             </div>
 
             {/* Simple Inline Loader */}
-            {products.length === 0 && (
+            {products.length < 5 && (
                 <div className="flex items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-3xl border border-dashed border-gray-200 dark:border-gray-700">
                     <div className="flex flex-col items-center gap-3">
                         <RefreshCw className="w-8 h-8 text-[#F1641E] animate-spin" />
@@ -500,7 +500,7 @@ const DashboardPage: React.FC = () => {
             )}
 
             {/* Product Thumbnail Strip */}
-            {products.length > 0 && (
+            {products.length >= 5 && (
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-card border border-gray-100 dark:border-gray-700 animate-fade-in">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
