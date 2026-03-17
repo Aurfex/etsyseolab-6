@@ -60,55 +60,47 @@ const DashboardPage: React.FC = () => {
 
     // Stable derivation of health score based on the priority batch
     const healthData = useMemo(() => {
-        if (products.length === 0 || lockedPriorityIds.length === 0) return { grade: '...', issues: 0, missingTags: 0, lowSeo: 0, scorePercent: 40, summaries: [] };
+        // Find the 2 worst products and lock them
+        const priorityProducts = [...products].sort((a, b) => a.seoScore - b.seoScore).slice(0, 2);
+        
+        if (products.length === 0 || priorityProducts.length === 0) return { grade: '...', issues: 0, missingTags: 0, lowSeo: 0, scorePercent: 40, summaries: [] };
         
         let batchTotalScore = 0;
         let batchIssues = 0;
         const summaries: { id: string; text: string; status: 'warning' | 'success'; title: string }[] = [];
         
-        lockedPriorityIds.forEach((id) => {
-            const isSaved = savedBatchIds.includes(id);
-            const p = products.find(prod => prod.id === id);
-            const shortTitle = p ? (p.title.length > 20 ? p.title.substring(0, 20) + '...' : p.title) : 'Unknown Product';
+        priorityProducts.forEach((p) => {
+            const isSaved = savedBatchIds.includes(p.id);
+            const shortTitle = p.title.length > 20 ? p.title.substring(0, 20) + '...' : p.title;
             
             if (isSaved) {
                 batchTotalScore += 98;
                 summaries.push({ 
-                    id, 
+                    id: p.id, 
                     title: shortTitle, 
                     text: `Optimized & Published!`, 
                     status: 'success' 
                 });
             } else {
-                if (p) {
-                    batchTotalScore += Math.max(15, Math.min(45, p.seoScore));
-                    const issues = [];
-                    if (p.tags.length < 13) {
-                        batchIssues++;
-                        issues.push(`${13 - p.tags.length} tags missing`);
-                    }
-                    if (p.title.length < 70) issues.push("Short title");
-                    
-                    summaries.push({ 
-                        id, 
-                        title: shortTitle, 
-                        text: issues.length > 0 ? issues.join(', ') : 'Needs SEO boost', 
-                        status: 'warning' 
-                    });
-                    if (p.seoScore < 70) batchIssues++;
-                } else {
-                    batchTotalScore += 30;
-                    summaries.push({ 
-                        id, 
-                        title: 'Missing', 
-                        text: `Listing data missing`, 
-                        status: 'warning' 
-                    });
+                batchTotalScore += Math.max(15, Math.min(45, p.seoScore));
+                const issues = [];
+                if (p.tags.length < 13) {
+                    batchIssues++;
+                    issues.push(`${13 - p.tags.length} tags missing`);
                 }
+                if (p.title.length < 70) issues.push("Short title");
+                
+                summaries.push({ 
+                    id: p.id, 
+                    title: shortTitle, 
+                    text: issues.length > 0 ? issues.join(', ') : 'Needs SEO boost', 
+                    status: 'warning' 
+                });
+                if (p.seoScore < 70) batchIssues++;
             }
         });
         
-        const avgScore = batchTotalScore / (lockedPriorityIds.length || 1);
+        const avgScore = batchTotalScore / (priorityProducts.length || 1);
         
         let grade = 'F';
         if (avgScore >= 90) grade = 'A+';
@@ -118,15 +110,15 @@ const DashboardPage: React.FC = () => {
         else if (avgScore >= 40) grade = 'D';
         
         return { grade, issues: batchIssues, missingTags: batchIssues, lowSeo: batchIssues, scorePercent: avgScore, summaries };
-    }, [lockedPriorityIds, savedBatchIds, products]);
+    }, [products, savedBatchIds]);
 
     const healthScore = isScanning ? '...' : healthData.grade;
 
     // Use specific SEO Score for the metric card to match the "tokhmi" batch feel
     const batchSeoScoreDisplay = useMemo(() => {
-        if (isScanning || lockedPriorityIds.length === 0) return 0;
+        if (isScanning || products.length === 0) return 0;
         return Math.round(healthData.scorePercent);
-    }, [isScanning, healthData.scorePercent, lockedPriorityIds]);
+    }, [isScanning, healthData.scorePercent, products.length]);
 
     const revenueData = useMemo(() => {
         return salesData && salesData.recent_orders.length > 0
@@ -244,7 +236,9 @@ const DashboardPage: React.FC = () => {
             // PROGRESSION TRIGGER
             setSavedBatchIds(prev => [...prev, item.id]);
             setFixList(prev => prev.filter(f => f.id !== item.id));
-            refreshProducts();
+            
+            // Small delay to ensure state updates before refresh
+            setTimeout(() => refreshProducts(), 500);
         } catch (error: any) {
             console.error('Save failed:', error);
             setFixList(prev => prev.map(f => f.id === item.id ? { ...f, status: 'failed' } : f));
