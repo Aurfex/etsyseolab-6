@@ -60,23 +60,35 @@ const DashboardPage: React.FC = () => {
 
     // Stable derivation of health score based on the priority batch
     const healthData = useMemo(() => {
-        if (products.length === 0 || lockedPriorityIds.length === 0) return { grade: '...', issues: 0, missingTags: 0, lowSeo: 0, scorePercent: 40 };
+        if (products.length === 0 || lockedPriorityIds.length === 0) return { grade: '...', issues: 0, missingTags: 0, lowSeo: 0, scorePercent: 40, summaries: [] };
         
         let batchTotalScore = 0;
         let batchIssues = 0;
+        const summaries: string[] = [];
         
-        lockedPriorityIds.forEach(id => {
+        lockedPriorityIds.forEach((id, index) => {
+            const p = products.find(prod => prod.id === id);
             if (savedBatchIds.includes(id)) {
                 batchTotalScore += 98;
+                summaries.push(`Product ${index + 1}: SEO Optimized & Live`);
             } else {
-                const p = products.find(prod => prod.id === id);
                 if (p) {
                     // Use a more strict score for the "tokhmi" items initially
                     batchTotalScore += Math.max(15, Math.min(45, p.seoScore));
-                    if (p.tags.length < 13) batchIssues++;
+                    
+                    const issues = [];
+                    if (p.tags.length < 13) {
+                        batchIssues++;
+                        issues.push(`${13 - p.tags.length} missing tags`);
+                    }
+                    if (p.title.length < 70) issues.push("Title too short");
+                    if (p.seoScore < 70) issues.push("Low authority");
+                    
+                    summaries.push(`Product ${index + 1}: ${issues.length > 0 ? issues.join(', ') : 'Needs generic SEO boost'}`);
                     if (p.seoScore < 70) batchIssues++;
                 } else {
                     batchTotalScore += 30;
+                    summaries.push(`Product ${index + 1}: Listing data missing`);
                 }
             }
         });
@@ -91,7 +103,7 @@ const DashboardPage: React.FC = () => {
         else if (avgScore >= 40) grade = 'D';
         else grade = 'F';
         
-        return { grade, issues: batchIssues, missingTags: batchIssues, lowSeo: batchIssues, scorePercent: avgScore };
+        return { grade, issues: batchIssues, missingTags: batchIssues, lowSeo: batchIssues, scorePercent: avgScore, summaries };
     }, [lockedPriorityIds, savedBatchIds, products]);
 
     const healthScore = isScanning ? '...' : healthData.grade;
@@ -282,12 +294,22 @@ const DashboardPage: React.FC = () => {
                     <div className="flex-grow w-full">
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{isScanning ? 'Analyzing listings...' : (savedBatchIds.length === lockedPriorityIds.length && lockedPriorityIds.length > 0 ? 'Batch Optimized!' : 'Priority Batch Status')}</h2>
                         <div className="space-y-3">
-                            <div className="flex items-center p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800">
-                                <AlertTriangle className="w-5 h-5 text-amber-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{isScanning ? 'Syncing tags...' : (savedBatchIds.length === lockedPriorityIds.length && lockedPriorityIds.length > 0 ? 'No missing tags in current batch' : `${healthData.missingTags} products in current priority batch need urgent tagging`)}</span>
-                            </div>
-                            <div className="flex items-center p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800">
-                                <AlertCircle className="w-5 h-5 text-red-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{isScanning ? 'Scanning SEO gaps...' : (savedBatchIds.length === lockedPriorityIds.length && lockedPriorityIds.length > 0 ? 'Priority items are now SEO-perfect' : `SEO score is critically low for ${healthData.lowSeo} priority items`)}</span>
-                            </div>
+                            {!isScanning && healthData.summaries.map((summary, idx) => (
+                                <div key={idx} className="flex items-center p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800">
+                                    {summary.includes('Optimized') ? <Check className="w-5 h-5 text-green-500 mr-3" /> : <AlertTriangle className="w-5 h-5 text-amber-500 mr-3" />}
+                                    <span className="text-sm text-gray-700 dark:text-gray-300">{summary}</span>
+                                </div>
+                            ))}
+                            {isScanning && (
+                                <>
+                                    <div className="flex items-center p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800">
+                                        <AlertTriangle className="w-5 h-5 text-amber-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">Syncing tags...</span>
+                                    </div>
+                                    <div className="flex items-center p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800">
+                                        <AlertCircle className="w-5 h-5 text-red-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">Scanning SEO gaps...</span>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                     <div className="flex-shrink-0 w-full lg:w-auto flex flex-col items-center gap-4">
