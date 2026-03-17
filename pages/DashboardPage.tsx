@@ -52,27 +52,10 @@ const DashboardPage: React.FC = () => {
     const [savedBatchIds, setSavedBatchIds] = useState<string[]>([]);
 
     // Lock the priority batch only when scanning or products are first loaded
-    const [lastScanTime, setLastScanTime] = useState<number>(0);
-
     const handleScanProducts = useCallback(() => {
         if (products.length === 0) return;
         
-        const now = Date.now();
-        // جلوگیری از کرم‌ریزی: اگه کمتر از ۳۰ ثانیه از اسکن قبلی گذشته باشه، الکی اسکن نمی‌کنیم
-        if (now - lastScanTime < 30000 && priorityBatch.length > 0) {
-            const insults = [
-                'Intelligence is up to date. Focus!',
-                'Don\'t spam the scan, honey. Fix the current batch first.',
-                'Are you bored? Use that energy to save these 3 items!',
-                'Slow down! The AI needs a breather too.'
-            ];
-            const randomMsg = insults[Math.floor(Math.random() * insults.length)];
-            showToast({ type: 'info', message: randomMsg });
-            return;
-        }
-
         setIsScanning(true);
-        setLastScanTime(now);
         // واقعی‌سازی: مدل رو مجبور می‌کنیم لیست محصولات رو دوباره با معیارهای ۲۰۲۶ چک کنه
         setTimeout(() => {
             const worst = [...products]
@@ -88,7 +71,14 @@ const DashboardPage: React.FC = () => {
             setSavedBatchIds([]); 
             setFixList([]); 
             setIsScanning(false);
-            showToast({ type: 'success', message: 'Market Intelligence: 3 high-risk listings identified.' });
+            
+            // اگه محصولات واقعاً داغون نبودن، پیغام بدیم که فعلاً اوکیه
+            const isStoreHealthy = worst.every(p => p.seoScore > 85);
+            if (isStoreHealthy) {
+                showToast({ type: 'success', message: 'No critical issues found! Your store is looking sharp.' });
+            } else {
+                showToast({ type: 'success', message: 'Market Intelligence: 3 high-priority listings identified.' });
+            }
         }, 1500);
     }, [products, showToast]);
 
