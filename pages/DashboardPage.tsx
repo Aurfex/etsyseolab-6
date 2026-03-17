@@ -41,7 +41,7 @@ const MetricCard: React.FC<MetricCardProps> = ({ icon: Icon, title, value, chang
 
 const DashboardPage: React.FC = () => {
     const { products, activityLogs, salesData, fetchSalesData, runAutopilotFix, runFullOptimization, showToast, auth, refreshProducts, setPage } = useAppContext();
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const storeNiche = auth.user?.niche || 'Jewelry';
 
     // State
