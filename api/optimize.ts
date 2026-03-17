@@ -66,10 +66,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 "2. Rewrite the Description: Start with a powerful hook, use bullet points for benefits and materials, and end with a Call to Action.\n" +
 "3. Generate EXACTLY 13 tags: Use high-volume long-tail keywords. EACH TAG MUST BE 20 CHARACTERS OR LESS. Do not repeat keywords from the title in tags if you can avoid it to maximize keyword reach.\n" +
 "4. Generate Alt Text: Descriptive and under 125 chars.\n\n" +
-"STRICT REQUIREMENTS:\n" +
+"STRICT REQUIREMENTS (CRITICAL):\n" +
 "- TITLE LENGTH: 90-140 characters. NO EXCEPTIONS.\n" +
 "- TAG COUNT: Exactly 13 tags. NO EXCEPTIONS.\n" +
-"- TAG LENGTH: Max 20 chars per tag. NO EXCEPTIONS.\n" +
+"- TAG LENGTH: MAXIMUM 20 CHARACTERS PER TAG. IF A TAG IS 21 CHARACTERS, ETSY WILL REJECT THE ENTIRE UPDATE. BE EXTREMELY STRICT.\n" +
 "- The optimized version MUST be significantly different and better for search rankings than the original.\n" +
 "- Preserve brand names or specific characters like 'Iron Man' or '14K Gold'.\n\n" +
 "Return ONLY a valid JSON object with these keys: title, description, tags (array), altText. Do not include markdown code blocks.";
@@ -85,10 +85,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         
         const jsonResult = JSON.parse(text);
 
+        // Sanitize tags: ensure each tag is max 20 chars
+        let sanitizedTags = Array.isArray(jsonResult.tags) ? jsonResult.tags : product.tags;
+        sanitizedTags = sanitizedTags.map((tag: string) => tag.substring(0, 20)).slice(0, 13);
+
         const optimization: OptimizationResult = {
             title: jsonResult.title || product.title,
             description: jsonResult.description || product.description,
-            tags: Array.isArray(jsonResult.tags) ? jsonResult.tags.slice(0, 13) : product.tags,
+            tags: sanitizedTags,
             altText: jsonResult.altText || product.title
         };
 
