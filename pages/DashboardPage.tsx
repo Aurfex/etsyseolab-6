@@ -1,13 +1,64 @@
-    // Lock the priority batch only when scanning or products are first loaded
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Package, TrendingUp, Zap, Activity, FileText, Tag, Image as ImageIcon, Check, Info, AlertTriangle, AlertCircle, RefreshCw, DollarSign, Search, Flame, RotateCw, XCircle } from 'lucide-react';
+import type { ElementType } from 'react';
+import { useAppContext } from '../contexts/AppContext';
+import { ActivityLog, Product } from '../types';
+import { useTranslation } from '../contexts/LanguageContext';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
+interface MetricCardProps {
+  icon: ElementType;
+  title: string;
+  value: string;
+  change: string;
+  bgColor: string;
+  iconColor: string;
+}
+
+interface FixItem {
+    id: string;
+    listing_id: string;
+    imageUrl?: string;
+    original: { title: string; description: string; tags: string[]; score: number };
+    optimized: { title: string; description: string; tags: string[]; score: number };
+    status: 'pending' | 'saving' | 'saved' | 'failed' | 'optimizing';
+}
+
+
+const MetricCard: React.FC<MetricCardProps> = ({ icon: Icon, title, value, change, bgColor, iconColor }) => (
+  <div className={`p-5 rounded-2xl shadow-card dark:shadow-card-dark ${bgColor} border border-gray-100 dark:border-gray-800`}>
+    <div className="flex justify-between items-start">
+      <div className="flex flex-col">
+        <span className="text-sm text-gray-500 dark:text-gray-400">{title}</span>
+        <span className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{value}</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400 mt-2">{change}</span>
+      </div>
+      <Icon className={`w-6 h-6 ${iconColor}`} />
+    </div>
+  </div>
+);
+
+const DashboardPage: React.FC = () => {
+    const { products, activityLogs, salesData, fetchSalesData, runAutopilotFix, runFullOptimization, showToast, auth, refreshProducts } = useAppContext();
+    const { t } = useTranslation();
+    const storeNiche = auth.user?.niche || 'Jewelry';
+
+    // State
+    const [isFixing, setIsFixing] = useState(false);
+    const [fixList, setFixList] = useState<FixItem[]>([]);
+    const [fixProgress, setFixProgress] = useState<('pending' | 'loading' | 'done')[]>([]);
+    const [isScanning, setIsScanning] = useState(false);
+    const [priorityBatch, setPriorityBatch] = useState<Product[]>([]);
+    const [savedBatchIds, setSavedBatchIds] = useState<string[]>([]);
+
     const handleScanProducts = useCallback(() => {
         if (products.length === 0) return;
         
         setIsScanning(true);
-        // واقعی‌سازی: مدل رو مجبور می‌کنیم لیست محصولات رو دوباره با معیارهای ۲۰۲۶ چک کنه
         setTimeout(() => {
             const worst = [...products]
+                .filter(p => p.title && !p.title.includes('Loading'))
                 .sort((a, b) => {
-                    // معیار ترکیبی: سئو اسکور پایین + تعداد تگ کم
                     const scoreA = a.seoScore + (a.tags.length * 2);
                     const scoreB = b.seoScore + (b.tags.length * 2);
                     return scoreA - scoreB;
@@ -22,77 +73,50 @@
         }, 1500);
     }, [products, showToast]);
 
-    // جلوگیری از کلیک رگباری: استفاده از تروتل یا چک کردن استیت
     const canScan = useMemo(() => {
         return products.length > 0 && !isScanning && !isFixing;
     }, [products.length, isScanning, isFixing]);
 
-    // Removed auto-scan useEffect to ensure it only scans on user click or manual trigger
-    // Also ensuring no placeholders are locked initially
-    
-    // Stable derivation of health score based on the FIXED priority batch
     const healthData = useMemo(() => {
-        // If no scan has been performed yet, show empty/inactive state
-        if (products.length === 0 || priorityBatch.length === 0) return { grade: '-', issues: 0, missingTags: 0, lowSeo: 0, scorePercent: 0, summaries: [] };
+        if (products.length === 0 || priorityBatch.length === 0 || (savedBatchIds.length === priorityBatch.length)) {
+             return { grade: '-', issues: 0, missingTags: 0, lowSeo: 0, scorePercent: 0, summaries: [], allDone: savedBatchIds.length === priorityBatch.length && priorityBatch.length > 0 };
+        }
         
         let batchTotalScore = 0;
         let batchIssues = 0;
         const summaries: { id: string; text: string; status: 'warning' | 'success'; title: string }[] = [];
         
-        // Filter out products that have been saved successfully from the display list if desired, 
-        // but here we keep them for the rank calculation until the whole batch is done.
         priorityBatch.forEach((p) => {
             const isSaved = savedBatchIds.includes(p.id);
-            const shortTitle = p.title.length > 25 ? p.title.substring(0, 25) + '...' : p.title;
-            
             if (isSaved) {
                 batchTotalScore += 98;
-                // We won't add to summaries to "remove" it from the list per your request
             } else {
                 const currentP = products.find(prod => prod.id === p.id) || p;
                 batchTotalScore += Math.max(15, Math.min(45, currentP.seoScore));
                 
                 const issues = [];
-                if (currentP.tags.length < 13) {
-                    batchIssues++;
-                    issues.push(`${13 - currentP.tags.length} tags missing`);
-                }
+                if (currentP.tags.length < 13) { batchIssues++; issues.push(`${13 - currentP.tags.length} tags missing`); }
                 if (currentP.title.length < 70) issues.push("Short title");
                 
-                summaries.push({ 
-                    id: p.id, 
-                    title: shortTitle, 
-                    text: issues.length > 0 ? issues.join(', ') : 'Needs SEO boost', 
-                    status: 'warning' 
-                });
+                const shortTitle = p.title.length > 25 ? p.title.substring(0, 25) + '...' : p.title;
+                summaries.push({ id: p.id, title: shortTitle, text: issues.length > 0 ? issues.join(', ') : 'Needs SEO boost', status: 'warning' });
                 if (currentP.seoScore < 70) batchIssues++;
             }
         });
 
-        // Check if all 3 are finished
-        const allDone = savedBatchIds.length === priorityBatch.length && priorityBatch.length > 0;
-        
-        const avgScore = allDone ? 0 : (batchTotalScore / priorityBatch.length);
-        
-        let grade = '-';
-        if (allDone) grade = '-'; // Inactive when done
-        else if (avgScore >= 90) grade = 'A+';
+        const avgScore = batchTotalScore / priorityBatch.length;
+        let grade = 'F';
+        if (avgScore >= 90) grade = 'A+';
         else if (avgScore >= 80) grade = 'A';
         else if (avgScore >= 70) grade = 'B';
         else if (avgScore >= 55) grade = 'C';
         else if (avgScore >= 40) grade = 'D';
-        else if (avgScore > 0) grade = 'F';
         
-        return { grade, issues: batchIssues, missingTags: batchIssues, lowSeo: batchIssues, scorePercent: allDone ? 0 : avgScore, summaries, allDone };
+        return { grade, issues: batchIssues, missingTags: batchIssues, lowSeo: batchIssues, scorePercent: avgScore, summaries, allDone: false };
     }, [priorityBatch, savedBatchIds, products]);
 
-    const healthScore = isScanning ? '...' : (healthData.allDone ? '-' : healthData.grade);
-
-    // Use specific SEO Score for the metric card
-    const batchSeoScoreDisplay = useMemo(() => {
-        if (isScanning || priorityBatch.length === 0 || healthData.allDone) return 0;
-        return Math.round(healthData.scorePercent);
-    }, [isScanning, healthData.scorePercent, priorityBatch.length, healthData.allDone]);
+    const healthScore = isScanning ? '...' : healthData.grade;
+    const batchSeoScoreDisplay = (isScanning || healthData.grade === '-') ? 0 : Math.round(healthData.scorePercent);
 
     const revenueData = useMemo(() => {
         return salesData && salesData.recent_orders.length > 0
@@ -116,16 +140,9 @@
         try {
             const optResult = await runFullOptimization(p);
             return {
-                id: p.id,
-                listing_id: p.id,
-                imageUrl: p.imageUrl,
+                id: p.id, listing_id: p.id, imageUrl: p.imageUrl,
                 original: { title: p.title, description: p.description, tags: p.tags, score: p.seoScore },
-                optimized: { 
-                    title: optResult.title, 
-                    description: optResult.description, 
-                    tags: optResult.tags || p.tags,
-                    score: Math.min(100, p.seoScore + 25)
-                },
+                optimized: { title: optResult.title, description: optResult.description, tags: optResult.tags || p.tags, score: Math.min(100, p.seoScore + 25) },
                 status: 'pending'
             };
         } catch (err) {
@@ -138,16 +155,12 @@
         if (priorityBatch.length === 0) return;
         setIsFixing(true);
         setFixList([]);
-        
-        // Match progress to currently NOT saved items
         const remainingToFix = priorityBatch.filter(p => !savedBatchIds.includes(p.id));
         setFixProgress(remainingToFix.map(() => 'pending'));
-        
         const newFixes: FixItem[] = [];
-        
         for (let i = 0; i < remainingToFix.length; i++) {
             setFixProgress(prev => prev.map((s, idx) => idx === i ? 'loading' : s));
-            if (i > 0) await new Promise(resolve => setTimeout(resolve, 4000)); // Delay to prevent 429
+            if (i > 0) await new Promise(resolve => setTimeout(resolve, 4000));
             const result = await optimizeItem(remainingToFix[i]);
             if (result) {
                 newFixes.push(result);
@@ -156,13 +169,8 @@
                 setFixProgress(prev => prev.map((s, idx) => idx === i ? 'pending' : s));
             }
         }
-        
-        if (newFixes.length > 0) {
-            setFixList(newFixes);
-            showToast({ type: 'success', message: 'AI Analysis complete!' });
-        } else {
-            showToast({ type: 'error', message: 'Analysis failed.' });
-        }
+        if (newFixes.length > 0) { setFixList(newFixes); showToast({ type: 'success', message: 'AI Analysis complete!' }); }
+        else { showToast({ type: 'error', message: 'Analysis failed.' }); }
         setIsFixing(false);
     };
 
@@ -171,46 +179,27 @@
         const p = products.find(prod => prod.id === item.id);
         if (!p) return;
         const result = await optimizeItem(p);
-        if (result) {
-            setFixList(prev => prev.map(f => f.id === item.id ? result : f));
-        } else {
-            setFixList(prev => prev.map(f => f.id === item.id ? { ...f, status: 'failed' } : f));
-        }
+        if (result) { setFixList(prev => prev.map(f => f.id === item.id ? result : f)); }
+        else { setFixList(prev => prev.map(f => f.id === item.id ? { ...f, status: 'failed' } : f)); }
     };
 
-    const handleCancelFix = (item: FixItem) => {
-        setFixList(prev => prev.filter(f => f.id !== item.id));
-    };
+    const handleCancelFix = (item: FixItem) => { setFixList(prev => prev.filter(f => f.id !== item.id)); };
 
     const handleSaveFix = async (item: FixItem) => {
         setFixList(prev => prev.map(f => f.id === item.id ? { ...f, status: 'saving' } : f));
         try {
             const token = auth.token || sessionStorage.getItem('etsy_token');
             if (!token) throw new Error('Unauthorized: No token found');
-
             const response = await fetch('/api/etsy-update', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                body: JSON.stringify({
-                    listing_id: item.listing_id,
-                    payload: {
-                        title: item.optimized.title,
-                        description: item.optimized.description,
-                        tags: item.optimized.tags
-                    }
-                })
+                body: JSON.stringify({ listing_id: item.listing_id, payload: { title: item.optimized.title, description: item.optimized.description, tags: item.optimized.tags } })
             });
-            
             const resData = await response.json();
             if (!response.ok) throw new Error(resData.error || 'Update failed');
-            
             showToast({ type: 'success', message: 'Saved successfully to Etsy!' });
-            
-            // PROGRESSION TRIGGER
             setSavedBatchIds(prev => [...prev, item.id]);
             setFixList(prev => prev.filter(f => f.id !== item.id));
-            
-            // Small delay to ensure state updates before refresh
             setTimeout(() => refreshProducts(), 500);
         } catch (error: any) {
             console.error('Save failed:', error);
@@ -219,27 +208,12 @@
         }
     };
 
-    useEffect(() => {
-        if (auth.isAuthenticated) fetchSalesData();
-    }, [auth.isAuthenticated]);
-
-    // Ensure we start in an inactive state
-    useEffect(() => {
-        if (products.length > 0) {
-            // We just let scan handle it manually
-        }
-    }, [products.length]);
+    useEffect(() => { if (auth.isAuthenticated) fetchSalesData(); }, [auth.isAuthenticated]);
 
     const optimizationsToday = activityLogs.filter(log => 
         log.timestamp.toDateString() === new Date().toDateString() &&
         (log.type === 'title_optimization' || log.type === 'tag_enhancement' || log.type === 'description_rewrite' || log.type === 'image_optimization')
     ).length;
-
-    const avgSeoScoreDisplay = useMemo(() => {
-        return products.length > 0 
-            ? Math.round(products.reduce((acc, p) => acc + p.seoScore, 0) / products.length)
-            : 0;
-    }, [products]);
 
     const isBatchActive = priorityBatch.length > 0 && !healthData.allDone;
 
@@ -258,7 +232,6 @@
                 </div>
             </div>
 
-            {/* Health Card */}
             <div className="relative overflow-hidden bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-card border border-gray-100 dark:border-gray-700">
                 <div className={"absolute -top-24 -right-24 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-20 " + (isBatchActive ? (healthScore.startsWith('A') ? 'bg-green-400' : 'bg-purple-400') : 'bg-gray-400')}></div>
                 <div className="relative z-10 flex flex-col lg:flex-row gap-8 items-center">
@@ -325,7 +298,6 @@
                 </div>
             </div>
 
-            {/* AI Review List */}
             {fixList.length > 0 && (
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-xl border border-purple-200 dark:border-purple-800/50 animate-fade-in">
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center"><Zap className="w-6 h-6 mr-2 text-purple-500" /> AI Batch SEO Review</h3>
@@ -371,7 +343,6 @@
                 </div>
             )}
 
-            {/* Metrics */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="col-span-1 lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card border border-gray-100 dark:border-gray-700 min-h-[300px]">
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center"><DollarSign className="w-5 h-5 me-2 text-indigo-500"/>Potential Revenue Boost</h3>
@@ -407,7 +378,7 @@
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <MetricCard icon={Package} title="Total Products" value={String(products.length)} change="" bgColor="bg-white dark:bg-gray-800" iconColor="text-blue-500"/>
-                <MetricCard icon={TrendingUp} title="Batch SEO Score" value={batchSeoScoreDisplay + "%"} change="Priority Items" bgColor="bg-white dark:bg-gray-800" iconColor="text-orange-500"/>
+                <MetricCard icon={TrendingUp} title="Avg SEO Score" value={avgSeoScoreDisplay + "%"} change="" bgColor="bg-white dark:bg-gray-800" iconColor="text-green-500"/>
                 <MetricCard icon={DollarSign} title="Total Revenue" value={salesData ? salesData.total_revenue.toFixed(2) + ' ' + salesData.currency : '$0.00'} change="Overall" bgColor="bg-white dark:bg-gray-800" iconColor="text-indigo-500"/>
                 <MetricCard icon={Zap} title="Optimizations" value={String(optimizationsToday)} change="Today" bgColor="bg-white dark:bg-gray-800" iconColor="text-purple-500"/>
             </div>
