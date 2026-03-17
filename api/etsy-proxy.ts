@@ -168,12 +168,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const shopId = await getShopId(headers);
       if (!shopId) return res.status(404).json({ error: 'No Etsy shop found.' });
 
-      const listingsResponse = await axios.get(
-        `https://openapi.etsy.com/v3/application/shops/${shopId}/listings?limit=100&includes=Images,Inventory`,
-        { headers }
-      );
+      // INCREASE LIMIT TO 1000 (Max Etsy limit per request is usually 100, so we might need multiple pages if 1000 is needed)
+      // For now, let's try increasing to 1000 as per common API practices, or use recursion.
+      // Actually Etsy v3 limit is 100, so we'll fetch two pages to get 170+ products.
+      
+      const fetchPage = async (offset = 0) => {
+          const resp = await axios.get(
+            `https://openapi.etsy.com/v3/application/shops/${shopId}/listings?limit=100&offset=${offset}&includes=Images,Inventory`,
+            { headers }
+          );
+          return resp.data;
+      };
 
-      const formattedProducts = (listingsResponse.data?.results || []).map((listing: any) => {
+      const page1 = await fetchPage(0);
+      const page2 = (page1.count > 100) ? await fetchPage(100) : { results: [] };
+      
+      const allResults = [...(page1.results || []), ...(page2.results || [])];
+
+      const formattedProducts = allResults.map((listing: any) => {
         const imgList = listing.images || listing.Images || [];
         const images = imgList.map((i: any) => ({
           url: i.url_fullxfull || i.url_570xN
@@ -364,12 +376,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const shopId = await getShopId(headers);
       if (!shopId) return res.status(404).json({ error: 'No Etsy shop found.' });
 
-      const listingsResponse = await axios.get(
-        `https://openapi.etsy.com/v3/application/shops/${shopId}/listings?limit=100&includes=Images,Inventory`,
-        { headers }
-      );
+      const fetchPage = async (offset = 0) => {
+        const resp = await axios.get(
+          `https://openapi.etsy.com/v3/application/shops/${shopId}/listings?limit=100&offset=${offset}&includes=Images,Inventory`,
+          { headers }
+        );
+        return resp.data;
+      };
 
-      const formattedProducts = (listingsResponse.data?.results || []).map((listing: any) => {
+      const page1 = await fetchPage(0);
+      const page2 = (page1.count > 100) ? await fetchPage(100) : { results: [] };
+      const allResults = [...(page1.results || []), ...(page2.results || [])];
+
+      const formattedProducts = allResults.map((listing: any) => {
         const imgList = listing.images || listing.Images || [];
         const images = imgList.map((i: any) => ({
           url: i.url_fullxfull || i.url_570xN
