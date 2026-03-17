@@ -47,18 +47,31 @@ const DashboardPage: React.FC = () => {
     const [isFixing, setIsFixing] = useState(false);
     const [fixList, setFixList] = useState<FixItem[]>([]);
     const [fixProgress, setFixProgress] = useState<('pending' | 'loading' | 'done')[]>([]);
-    const [isScanning, setIsScanning] = useState(true);
+    const [isScanning, setIsScanning] = useState(false);
     const [priorityBatch, setPriorityBatch] = useState<Product[]>([]);
     const [savedBatchIds, setSavedBatchIds] = useState<string[]>([]);
 
-    // Lock the priority batch only once or when products are first loaded
-    useEffect(() => {
-        // ONLY lock if we have REAL products from the API, not the initial empty state or placeholders
-        if (products.length > 5 && priorityBatch.length === 0) {
-            const worst = [...products].sort((a, b) => a.seoScore - b.seoScore).slice(0, 2);
-            setPriorityBatch(worst);
+    // Lock the priority batch only when scanning or products are first loaded
+    const handleScanProducts = useCallback(() => {
+        if (products.length > 0) {
+            setIsScanning(true);
+            // Simulate deep scan for 2 seconds
+            setTimeout(() => {
+                const worst = [...products].sort((a, b) => a.seoScore - b.seoScore).slice(0, 3);
+                setPriorityBatch(worst);
+                setSavedBatchIds([]); // Reset saved IDs on new scan
+                setFixList([]); // Clear previous fix list
+                setIsScanning(false);
+                showToast({ type: 'success', message: 'Deep Scan Complete: 3 Priority items identified.' });
+            }, 2000);
         }
-    }, [products, priorityBatch.length]);
+    }, [products, showToast]);
+
+    useEffect(() => {
+        if (products.length > 5 && priorityBatch.length === 0) {
+            handleScanProducts();
+        }
+    }, [products.length, priorityBatch.length, handleScanProducts]);
 
     // Stable derivation of health score based on the FIXED priority batch
     const healthData = useMemo(() => {
@@ -83,6 +96,8 @@ const DashboardPage: React.FC = () => {
             } else {
                 // Get real-time data from products list if available, else use initial priorityBatch data
                 const currentP = products.find(prod => prod.id === p.id) || p;
+                
+                // Show "tokhmi" score initially (before save)
                 batchTotalScore += Math.max(15, Math.min(45, currentP.seoScore));
                 
                 const issues = [];
@@ -338,8 +353,12 @@ const DashboardPage: React.FC = () => {
                                 ))}
                             </div>
                         )}
-                        <button onClick={handleFixAll} disabled={isFixing || isScanning} className="w-full lg:w-64 py-4 px-6 rounded-2xl font-bold text-white shadow-lg bg-[#F1641E] hover:bg-[#D95A1B] disabled:bg-gray-400 transition-all active:scale-95">
-                            {isFixing ? <RefreshCw className="w-5 h-5 animate-spin mx-auto" /> : "✨ FIX 2 PRIORITY ITEMS"}
+                        <button onClick={handleScanProducts} disabled={isScanning || isFixing} className="w-full lg:w-64 py-3 px-6 rounded-2xl font-bold text-[#F1641E] border-2 border-[#F1641E] hover:bg-[#F1641E] hover:text-white transition-all active:scale-95 flex items-center justify-center gap-2">
+                            {isScanning ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                            SCAN PRODUCTS
+                        </button>
+                        <button onClick={handleFixAll} disabled={isFixing || isScanning || priorityBatch.length === 0} className="w-full lg:w-64 py-4 px-6 rounded-2xl font-bold text-white shadow-lg bg-[#F1641E] hover:bg-[#D95A1B] disabled:bg-gray-400 transition-all active:scale-95">
+                            {isFixing ? <RefreshCw className="w-5 h-5 animate-spin mx-auto" /> : `✨ FIX ${priorityBatch.length} PRIORITY ITEMS`}
                         </button>
                     </div>
                 </div>
