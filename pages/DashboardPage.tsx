@@ -484,6 +484,29 @@ const DashboardPage: React.FC = () => {
                 <MetricCard icon={DollarSign} title="Total Revenue" value={salesData ? salesData.total_revenue.toFixed(2) + ' ' + salesData.currency : '$0.00'} change="Overall" bgColor="bg-white dark:bg-gray-800" iconColor="text-indigo-500"/>
                 <MetricCard icon={Zap} title="Optimizations" value={String(optimizationsToday)} change="Today" bgColor="bg-white dark:bg-gray-800" iconColor="text-purple-500"/>
             </div>
+
+            {/* Product Thumbnail Strip */}
+            {products.length > 0 && (
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-card border border-gray-100 dark:border-gray-700 animate-fade-in">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <ImageIcon className="w-4 h-4 text-purple-500" />
+                            Live Store Gallery
+                        </h3>
+                        <span className="text-[10px] text-gray-400 font-medium">Syncing {products.length} assets</span>
+                    </div>
+                    <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                        {products.map((p) => (
+                            <div key={p.id} className="flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 group relative cursor-pointer active:scale-95 transition-all">
+                                <img src={p.imageUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt={p.title} />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <span className="text-[8px] text-white font-bold px-1.5 py-0.5 bg-purple-600 rounded">SEO {p.seoScore}%</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
