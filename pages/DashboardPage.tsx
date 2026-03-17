@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Package, TrendingUp, Zap, Activity, FileText, Tag, Image as ImageIcon, Check, Info, AlertTriangle, AlertCircle, RefreshCw, DollarSign, Search, Flame, RotateCw, XCircle } from 'lucide-react';
+import { Package, TrendingUp, Zap, Activity, FileText, Tag, Image as ImageIcon, Check, Info, AlertTriangle, AlertCircle, RefreshCw, DollarSign, Search, Flame, RotateCw, XCircle, Calendar, Clock } from 'lucide-react';
 import type { ElementType } from 'react';
 import { useAppContext } from '../contexts/AppContext';
 import { ActivityLog, Product } from '../types';
@@ -223,6 +223,22 @@ const DashboardPage: React.FC = () => {
 
     const isBatchActive = priorityBatch.length > 0 && !healthData.allDone;
 
+    const salesEvents = useMemo(() => {
+        const now = new Date();
+        const events = [
+            { name: "Mother's Day", date: new Date(now.getFullYear(), 4, 11), niche: "Jewelry" }, // May 11, 2025 (approx)
+            { name: "Wedding Season Peak", date: new Date(now.getFullYear(), 5, 1), niche: "Jewelry" },
+            { name: "Father's Day", date: new Date(now.getFullYear(), 5, 15), niche: "Gifts" },
+            { name: "Early Holiday Prep", date: new Date(now.getFullYear(), 9, 1), niche: "All" },
+        ].map(event => {
+            const diff = event.date.getTime() - now.getTime();
+            const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+            return { ...event, daysRemaining: days };
+        }).filter(e => e.daysRemaining > 0).sort((a, b) => a.daysRemaining - b.daysRemaining);
+        
+        return events.slice(0, 2);
+    }, []);
+
     return (
         <div className="space-y-8 animate-fade-in w-full h-full min-h-[400px]">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
@@ -367,11 +383,40 @@ const DashboardPage: React.FC = () => {
                     </div>
                 </div>
                 <div className="col-span-1 flex flex-col gap-6">
-                    <div className="bg-gradient-to-br from-[#FAFAFA] to-[#F0F0F0] dark:from-[#1E1E1E] dark:to-[#2D2D2D] p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                        <div className="flex items-center gap-3 mb-3"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"><Search className="w-4 h-4" /></span><h3 className="font-bold text-gray-900 dark:text-white">Competitor Radar</h3></div>
-                        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-4">3 Top competitors in <b>{storeNiche}</b> recently updated their tags. Check your rank now.</p>
-                        <button onClick={() => setPage('competitor')} className="w-full py-2 bg-[#F1641E] hover:bg-[#D95A1B] text-white text-sm font-semibold rounded-xl transition-colors">View Analysis</button>
+                    <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-6 rounded-3xl border border-indigo-400/20 shadow-xl relative overflow-hidden group">
+                        <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
+                            <Calendar className="w-32 h-32 text-white" />
+                        </div>
+                        <div className="relative z-10">
+                            <div className="flex items-center gap-3 mb-4">
+                                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md text-white">
+                                    <Clock className="w-5 h-5 animate-pulse" />
+                                </span>
+                                <h3 className="font-bold text-white text-lg">Sales Countdown</h3>
+                            </div>
+                            
+                            <div className="space-y-4">
+                                {salesEvents.map((event, idx) => (
+                                    <div key={idx} className="p-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10">
+                                        <div className="flex justify-between items-start mb-1">
+                                            <span className="text-white font-bold text-sm">{event.name}</span>
+                                            <span className="px-2 py-0.5 rounded-lg bg-orange-500 text-[10px] font-black text-white uppercase tracking-wider">Hot</span>
+                                        </div>
+                                        <div className="flex items-end justify-between">
+                                            <div className="flex flex-col">
+                                                <span className="text-indigo-100 text-[10px]">Prepare SEO for {event.niche}</span>
+                                                <span className="text-white text-2xl font-black">{event.daysRemaining} <small className="text-xs font-normal opacity-70">Days</small></span>
+                                            </div>
+                                            <button className="p-2 rounded-xl bg-white text-indigo-700 hover:bg-indigo-50 transition-colors">
+                                                <Zap className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
+
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card border border-gray-100 dark:border-gray-700">
                         <div className="flex items-center gap-3 mb-4"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"><Flame className="w-4 h-4" /></span><h3 className="font-bold text-gray-900 dark:text-white">Trending Keywords</h3></div>
                         <ul className="space-y-3">
