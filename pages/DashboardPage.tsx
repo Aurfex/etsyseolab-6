@@ -53,7 +53,8 @@ const DashboardPage: React.FC = () => {
 
     // Lock the priority batch only once or when products are first loaded
     useEffect(() => {
-        if (products.length > 0 && priorityBatch.length === 0) {
+        // ONLY lock if we have REAL products from the API, not the initial empty state or placeholders
+        if (products.length > 5 && priorityBatch.length === 0) {
             const worst = [...products].sort((a, b) => a.seoScore - b.seoScore).slice(0, 2);
             setPriorityBatch(worst);
         }
