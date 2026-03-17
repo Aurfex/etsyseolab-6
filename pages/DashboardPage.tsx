@@ -215,6 +215,12 @@ const DashboardPage: React.FC = () => {
         (log.type === 'title_optimization' || log.type === 'tag_enhancement' || log.type === 'description_rewrite' || log.type === 'image_optimization')
     ).length;
 
+    const avgSeoScoreDisplay = useMemo(() => {
+        return products.length > 0 
+            ? Math.round(products.reduce((acc, p) => acc + p.seoScore, 0) / products.length)
+            : 0;
+    }, [products]);
+
     const isBatchActive = priorityBatch.length > 0 && !healthData.allDone;
 
     return (
