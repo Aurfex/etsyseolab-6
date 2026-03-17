@@ -62,7 +62,7 @@ const DashboardPage: React.FC = () => {
         if (products.length > 0) {
             const timer = setTimeout(() => {
                 setIsInitialLoading(false);
-            }, 1500);
+            }, 3000); // Increased to 3 seconds for visibility
             return () => clearTimeout(timer);
         } else {
             setIsInitialLoading(true);

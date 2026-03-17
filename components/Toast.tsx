@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { CheckCircle, XCircle, Info } from 'lucide-react';
+import { CheckCircle, XCircle, Info, RefreshCw } from 'lucide-react';
 import { ToastData } from '../types';
 import { useTranslation } from '../contexts/LanguageContext';
 
@@ -13,9 +13,10 @@ const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
   
   useEffect(() => {
     if (toast) {
+      const duration = toast.type === 'info' ? 10000 : 5000;
       const timer = setTimeout(() => {
         onClose();
-      }, 5000);
+      }, duration);
       return () => clearTimeout(timer);
     }
   }, [toast, onClose]);
@@ -38,7 +39,7 @@ const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
       borderColor: 'border-red-200 dark:border-red-700'
     },
     info: {
-      icon: Info,
+      icon: RefreshCw,
       barColor: 'bg-blue-500',
       textColor: 'text-blue-800 dark:text-blue-200',
       bgColor: 'bg-blue-50 dark:bg-blue-900/40',
@@ -52,13 +53,13 @@ const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
 
   return (
     <div
-      className={`fixed top-5 right-5 z-50 w-full max-w-sm rounded-lg shadow-lg overflow-hidden border ${config.bgColor} ${config.borderColor} animate-fade-in-up`}
+      className={`fixed top-5 right-5 z-[9999] w-full max-w-sm rounded-lg shadow-2xl overflow-hidden border ${config.bgColor} ${config.borderColor} animate-fade-in-up`}
       role="alert"
     >
       <div className="flex">
         <div className={`w-2 ${config.barColor}`}></div>
         <div className="flex items-center p-4">
-          <Icon className={`w-6 h-6 ${config.textColor}`} />
+          <Icon className={`w-6 h-6 ${config.textColor} ${toast.type === 'info' ? 'animate-spin' : ''}`} />
           <p className={`ms-3 font-medium text-sm ${config.textColor}`}>
             {message}
           </p>
