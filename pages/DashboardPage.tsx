@@ -71,27 +71,36 @@ const DashboardPage: React.FC = () => {
             } else {
                 const p = products.find(prod => prod.id === id);
                 if (p) {
-                    batchTotalScore += Math.max(20, Math.min(60, p.seoScore));
+                    // Use a more strict score for the "tokhmi" items initially
+                    batchTotalScore += Math.max(15, Math.min(45, p.seoScore));
                     if (p.tags.length < 13) batchIssues++;
                     if (p.seoScore < 70) batchIssues++;
                 } else {
-                    batchTotalScore += 40;
+                    batchTotalScore += 30;
                 }
             }
         });
         
         const avgScore = batchTotalScore / lockedPriorityIds.length;
         
-        let grade = 'C-';
-        if (avgScore >= 95) grade = 'A+';
+        let grade = 'D';
+        if (avgScore >= 90) grade = 'A+';
         else if (avgScore >= 80) grade = 'A';
-        else if (avgScore >= 65) grade = 'B';
-        else if (avgScore >= 50) grade = 'C';
+        else if (avgScore >= 70) grade = 'B';
+        else if (avgScore >= 55) grade = 'C';
+        else if (avgScore >= 40) grade = 'D';
+        else grade = 'F';
         
         return { grade, issues: batchIssues, missingTags: batchIssues, lowSeo: batchIssues, scorePercent: avgScore };
     }, [lockedPriorityIds, savedBatchIds, products]);
 
     const healthScore = isScanning ? '...' : healthData.grade;
+
+    // Use specific SEO Score for the metric card to match the "tokhmi" batch feel
+    const batchSeoScoreDisplay = useMemo(() => {
+        if (isScanning || lockedPriorityIds.length === 0) return 0;
+        return Math.round(healthData.scorePercent);
+    }, [isScanning, healthData.scorePercent, lockedPriorityIds]);
 
     const revenueData = useMemo(() => {
         return salesData && salesData.recent_orders.length > 0
@@ -274,10 +283,10 @@ const DashboardPage: React.FC = () => {
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{isScanning ? 'Analyzing listings...' : (savedBatchIds.length === lockedPriorityIds.length && lockedPriorityIds.length > 0 ? 'Batch Optimized!' : 'Priority Batch Status')}</h2>
                         <div className="space-y-3">
                             <div className="flex items-center p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800">
-                                <AlertTriangle className="w-5 h-5 text-amber-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{isScanning ? 'Syncing tags...' : (savedBatchIds.length === lockedPriorityIds.length && lockedPriorityIds.length > 0 ? 'No missing tags in current batch' : `${healthData.missingTags} products in batch need tag optimization`)}</span>
+                                <AlertTriangle className="w-5 h-5 text-amber-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{isScanning ? 'Syncing tags...' : (savedBatchIds.length === lockedPriorityIds.length && lockedPriorityIds.length > 0 ? 'No missing tags in current batch' : `${healthData.missingTags} products in current priority batch need urgent tagging`)}</span>
                             </div>
                             <div className="flex items-center p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800">
-                                <AlertCircle className="w-5 h-5 text-red-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{isScanning ? 'Scanning SEO gaps...' : (savedBatchIds.length === lockedPriorityIds.length && lockedPriorityIds.length > 0 ? 'Batch SEO scores are excellent' : `${healthData.lowSeo} products in batch have critical SEO issues`)}</span>
+                                <AlertCircle className="w-5 h-5 text-red-500 mr-3" /><span className="text-sm text-gray-700 dark:text-gray-300">{isScanning ? 'Scanning SEO gaps...' : (savedBatchIds.length === lockedPriorityIds.length && lockedPriorityIds.length > 0 ? 'Priority items are now SEO-perfect' : `SEO score is critically low for ${healthData.lowSeo} priority items`)}</span>
                             </div>
                         </div>
                     </div>
@@ -378,7 +387,7 @@ const DashboardPage: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <MetricCard icon={Package} title="Total Products" value={String(products.length)} change="" bgColor="bg-white dark:bg-gray-800" iconColor="text-blue-500"/>
-                <MetricCard icon={TrendingUp} title="Avg SEO Score" value={avgSeoScoreDisplay + "%"} change="" bgColor="bg-white dark:bg-gray-800" iconColor="text-green-500"/>
+                <MetricCard icon={TrendingUp} title="Batch SEO Score" value={batchSeoScoreDisplay + "%"} change="Priority Items" bgColor="bg-white dark:bg-gray-800" iconColor="text-orange-500"/>
                 <MetricCard icon={DollarSign} title="Total Revenue" value={salesData ? salesData.total_revenue.toFixed(2) + ' ' + salesData.currency : '$0.00'} change="Overall" bgColor="bg-white dark:bg-gray-800" iconColor="text-indigo-500"/>
                 <MetricCard icon={Zap} title="Optimizations" value={String(optimizationsToday)} change="Today" bgColor="bg-white dark:bg-gray-800" iconColor="text-purple-500"/>
             </div>
