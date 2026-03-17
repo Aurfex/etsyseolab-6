@@ -660,6 +660,7 @@ const fr: Translations = {
     "dash_trending_keywords": "Mots-clés Tendances",
     "dash_live_gallery": "Galerie de la Boutique",
     "dash_syncing_assets": "Sync de {{count}} articles",
+    "Connecting to Etsy inventory...": "Connexion à l'inventaire Etsy...",
     "dash_seo_label": "SEO",
     "dash_no_listings": "Aucune fiche trouvée. Connectez votre boutique Etsy.",
     "add_product_step_basics": "Analyse + Infos de base",

@@ -659,6 +659,7 @@ const en: Translations = {
     "dash_trending_keywords": "Trending Keywords",
     "dash_live_gallery": "Live Store Gallery",
     "dash_syncing_assets": "Syncing {{count}} assets",
+    "Connecting to Etsy inventory...": "Connecting to Etsy inventory...",
     "dash_seo_label": "SEO",
     "dash_no_listings": "No listings found. Connect your Etsy shop to see your products.",
     "add_product_step_basics": "Analyze + Basics",
