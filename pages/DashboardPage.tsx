@@ -64,21 +64,24 @@ const DashboardPage: React.FC = () => {
         
         let batchTotalScore = 0;
         let batchIssues = 0;
-        const summaries: string[] = [];
+        const summaries: { id: string; text: string; status: 'warning' | 'success'; title: string }[] = [];
         
-        lockedPriorityIds.forEach((id, index) => {
+        lockedPriorityIds.forEach((id) => {
             const isSaved = savedBatchIds.includes(id);
             const p = products.find(prod => prod.id === id);
+            const shortTitle = p ? (p.title.length > 20 ? p.title.substring(0, 20) + '...' : p.title) : 'Unknown Product';
             
             if (isSaved) {
-                // If saved, give it a high score
                 batchTotalScore += 98;
-                summaries.push(`Product ${index + 1}: SEO Optimized & Published!`);
+                summaries.push({ 
+                    id, 
+                    title: shortTitle, 
+                    text: `Optimized & Published!`, 
+                    status: 'success' 
+                });
             } else {
                 if (p) {
-                    // Use a more strict score for the "tokhmi" items initially
                     batchTotalScore += Math.max(15, Math.min(45, p.seoScore));
-                    
                     const issues = [];
                     if (p.tags.length < 13) {
                         batchIssues++;
@@ -86,24 +89,33 @@ const DashboardPage: React.FC = () => {
                     }
                     if (p.title.length < 70) issues.push("Short title");
                     
-                    summaries.push(`Product ${index + 1}: ${issues.length > 0 ? issues.join(', ') : 'Needs generic SEO boost'}`);
+                    summaries.push({ 
+                        id, 
+                        title: shortTitle, 
+                        text: issues.length > 0 ? issues.join(', ') : 'Needs SEO boost', 
+                        status: 'warning' 
+                    });
                     if (p.seoScore < 70) batchIssues++;
                 } else {
                     batchTotalScore += 30;
-                    summaries.push(`Product ${index + 1}: Listing data missing`);
+                    summaries.push({ 
+                        id, 
+                        title: 'Missing', 
+                        text: `Listing data missing`, 
+                        status: 'warning' 
+                    });
                 }
             }
         });
         
-        const avgScore = batchTotalScore / lockedPriorityIds.length;
+        const avgScore = batchTotalScore / (lockedPriorityIds.length || 1);
         
-        let grade = 'D';
+        let grade = 'F';
         if (avgScore >= 90) grade = 'A+';
         else if (avgScore >= 80) grade = 'A';
         else if (avgScore >= 70) grade = 'B';
         else if (avgScore >= 55) grade = 'C';
         else if (avgScore >= 40) grade = 'D';
-        else grade = 'F';
         
         return { grade, issues: batchIssues, missingTags: batchIssues, lowSeo: batchIssues, scorePercent: avgScore, summaries };
     }, [lockedPriorityIds, savedBatchIds, products]);
@@ -298,16 +310,19 @@ const DashboardPage: React.FC = () => {
                         <div className="space-y-3">
                             {!isScanning && healthData.summaries.map((summary, idx) => (
                                 <div key={idx} className="flex items-center p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800">
-                                    {summary.includes('Published') ? (
+                                    {summary.status === 'success' ? (
                                         <div className="flex items-center text-green-500 font-bold">
                                             <Check className="w-5 h-5 mr-3" />
-                                            <span className="text-sm">{summary}</span>
+                                            <span className="text-sm"><span className="text-green-600 mr-2">[{summary.title}]</span> {summary.text}</span>
                                         </div>
                                     ) : (
-                                        <>
+                                        <div className="flex items-center w-full">
                                             <AlertTriangle className="w-5 h-5 text-amber-500 mr-3" />
-                                            <span className="text-sm text-gray-700 dark:text-gray-300">{summary}</span>
-                                        </>
+                                            <span className="text-sm text-gray-700 dark:text-gray-300">
+                                                <span className="text-orange-500 font-semibold mr-2">[{summary.title}]</span> 
+                                                {summary.text}
+                                            </span>
+                                        </div>
                                     )}
                                 </div>
                             ))}
