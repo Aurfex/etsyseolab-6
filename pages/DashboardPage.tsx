@@ -88,10 +88,14 @@ const DashboardPage: React.FC = () => {
     }, [products.length, isScanning, isFixing]);
 
     useEffect(() => {
-        if (products.length > 5 && priorityBatch.length === 0) {
+        // ONLY lock if we have REAL products from the API, not the initial empty state or placeholders
+        // We check for products.length > 0 AND that they aren't placeholder titles
+        const hasRealData = products.length > 0 && products.some(p => p.title && !p.title.includes('Loading') && !p.title.includes('Listing'));
+        
+        if (hasRealData && priorityBatch.length === 0) {
             handleScanProducts();
         }
-    }, [products.length, priorityBatch.length, handleScanProducts]);
+    }, [products, priorityBatch.length, handleScanProducts]);
 
     // Stable derivation of health score based on the FIXED priority batch
     const healthData = useMemo(() => {
