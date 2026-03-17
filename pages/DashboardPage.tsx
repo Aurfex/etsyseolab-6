@@ -226,17 +226,18 @@ const DashboardPage: React.FC = () => {
     const salesEvents = useMemo(() => {
         const now = new Date();
         const events = [
-            { name: "Mother's Day", date: new Date(now.getFullYear(), 4, 11), niche: "Jewelry" }, // May 11, 2025 (approx)
-            { name: "Wedding Season Peak", date: new Date(now.getFullYear(), 5, 1), niche: "Jewelry" },
-            { name: "Father's Day", date: new Date(now.getFullYear(), 5, 15), niche: "Gifts" },
-            { name: "Early Holiday Prep", date: new Date(now.getFullYear(), 9, 1), niche: "All" },
+            { name: "Mother's Day", date: new Date(now.getFullYear(), 4, 11), niche: "Jewelry Gifts" }, // May 11
+            { name: "Wedding Season Peak", date: new Date(now.getFullYear(), 5, 1), niche: "Bridal Jewelry" }, // June 1
+            { name: "Father's Day", date: new Date(now.getFullYear(), 5, 15), niche: "Men's Jewelry" }, // June 15
+            { name: "Summer Solstice", date: new Date(now.getFullYear(), 5, 21), niche: "Boho Jewelry" }, // June 21
+            { name: "Christmas in July", date: new Date(now.getFullYear(), 6, 25), niche: "Early Holiday Sales" }, // July 25
         ].map(event => {
             const diff = event.date.getTime() - now.getTime();
             const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
             return { ...event, daysRemaining: days };
         }).filter(e => e.daysRemaining > 0).sort((a, b) => a.daysRemaining - b.daysRemaining);
         
-        return events.slice(0, 2);
+        return events.slice(0, 5);
     }, []);
 
     return (
@@ -372,42 +373,43 @@ const DashboardPage: React.FC = () => {
                             <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-100 dark:bg-orange-900/30 text-orange-600">
                                 <Clock className="w-5 h-5 animate-pulse" />
                             </span>
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Sales Countdown</h3>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Jewelry Sales Countdown</h3>
                         </div>
                         <span className="text-xs font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1">
                             <Info className="w-3 h-3" />
-                            Next big jewelry season
+                            Global Markets 2026
                         </span>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
+                    <div className="flex flex-col gap-3">
                         {salesEvents.map((event, idx) => (
-                            <div key={idx} className="relative group overflow-hidden p-6 rounded-3xl bg-gray-50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-800 hover:border-orange-200 dark:hover:border-orange-800/50 transition-all">
-                                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform">
-                                    <Calendar className="w-20 h-20 text-orange-600" />
+                            <div key={idx} className="group relative overflow-hidden p-4 rounded-2xl bg-gray-50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-800 hover:border-orange-200 dark:hover:border-orange-800/50 transition-all flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm">
+                                        <Calendar className="w-5 h-5 text-orange-500" />
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <h4 className="font-bold text-gray-900 dark:text-white">{event.name}</h4>
+                                            <span className="px-2 py-0.5 rounded-md bg-orange-100 dark:bg-orange-900/30 text-orange-600 text-[9px] font-black uppercase tracking-tighter">{event.niche}</span>
+                                        </div>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">Strategic SEO window active</p>
+                                    </div>
                                 </div>
-                                <div className="relative z-10">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <span className="px-3 py-1 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 text-[10px] font-bold uppercase tracking-widest">{event.niche} SEASON</span>
-                                        <span className="flex items-center gap-1 text-green-500 font-bold text-xs">
-                                            <TrendingUp className="w-3 h-3" />
-                                            Active
-                                        </span>
+                                
+                                <div className="flex items-center gap-6">
+                                    <div className="text-right">
+                                        <div className="flex items-baseline gap-1">
+                                            <span className="text-2xl font-black text-orange-600 leading-none">{event.daysRemaining}</span>
+                                            <span className="text-[10px] font-bold text-gray-400">DAYS</span>
+                                        </div>
+                                        <div className="w-16 h-1 bg-gray-200 dark:bg-gray-700 rounded-full mt-1 overflow-hidden">
+                                            <div className="h-full bg-orange-500 rounded-full" style={{ width: `${Math.max(10, 100 - (event.daysRemaining / 2))}%` }}></div>
+                                        </div>
                                     </div>
-                                    <h4 className="text-xl font-black text-gray-900 dark:text-white mb-1">{event.name}</h4>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Days until market peak</p>
-                                    
-                                    <div className="flex items-end gap-2">
-                                        <span className="text-5xl font-black text-orange-600 leading-none">{event.daysRemaining}</span>
-                                        <span className="text-sm font-bold text-gray-400 mb-1">DAYS LEFT</span>
-                                    </div>
-
-                                    <div className="mt-6 flex gap-2">
-                                        <button className="flex-grow py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs font-bold rounded-xl hover:opacity-90 transition-opacity">PREPARE SEO</button>
-                                        <button className="p-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 transition-colors">
-                                            <Zap className="w-4 h-4 text-orange-500" />
-                                        </button>
-                                    </div>
+                                    <button className="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[10px] font-black rounded-xl hover:opacity-90 transition-opacity">
+                                        OPTIMIZE
+                                    </button>
                                 </div>
                             </div>
                         ))}
