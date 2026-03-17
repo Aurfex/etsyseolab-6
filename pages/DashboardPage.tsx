@@ -67,10 +67,13 @@ const DashboardPage: React.FC = () => {
         const summaries: string[] = [];
         
         lockedPriorityIds.forEach((id, index) => {
+            const isSaved = savedBatchIds.includes(id);
             const p = products.find(prod => prod.id === id);
-            if (savedBatchIds.includes(id)) {
+            
+            if (isSaved) {
+                // If saved, give it a high score
                 batchTotalScore += 98;
-                summaries.push(`Product ${index + 1}: SEO Optimized & Live`);
+                summaries.push(`Product ${index + 1}: SEO Optimized & Published!`);
             } else {
                 if (p) {
                     // Use a more strict score for the "tokhmi" items initially
@@ -79,10 +82,9 @@ const DashboardPage: React.FC = () => {
                     const issues = [];
                     if (p.tags.length < 13) {
                         batchIssues++;
-                        issues.push(`${13 - p.tags.length} missing tags`);
+                        issues.push(`${13 - p.tags.length} tags missing`);
                     }
-                    if (p.title.length < 70) issues.push("Title too short");
-                    if (p.seoScore < 70) issues.push("Low authority");
+                    if (p.title.length < 70) issues.push("Short title");
                     
                     summaries.push(`Product ${index + 1}: ${issues.length > 0 ? issues.join(', ') : 'Needs generic SEO boost'}`);
                     if (p.seoScore < 70) batchIssues++;
@@ -296,8 +298,17 @@ const DashboardPage: React.FC = () => {
                         <div className="space-y-3">
                             {!isScanning && healthData.summaries.map((summary, idx) => (
                                 <div key={idx} className="flex items-center p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800">
-                                    {summary.includes('Optimized') ? <Check className="w-5 h-5 text-green-500 mr-3" /> : <AlertTriangle className="w-5 h-5 text-amber-500 mr-3" />}
-                                    <span className="text-sm text-gray-700 dark:text-gray-300">{summary}</span>
+                                    {summary.includes('Published') ? (
+                                        <div className="flex items-center text-green-500 font-bold">
+                                            <Check className="w-5 h-5 mr-3" />
+                                            <span className="text-sm">{summary}</span>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <AlertTriangle className="w-5 h-5 text-amber-500 mr-3" />
+                                            <span className="text-sm text-gray-700 dark:text-gray-300">{summary}</span>
+                                        </>
+                                    )}
                                 </div>
                             ))}
                             {isScanning && (
