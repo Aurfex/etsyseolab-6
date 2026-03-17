@@ -481,11 +481,21 @@ const DashboardPage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <MetricCard icon={Package} title={t('metric_total_products')} value={String(products.length)} change="" bgColor="bg-white dark:bg-gray-800" iconColor="text-blue-500"/>
-                <MetricCard icon={TrendingUp} title={t('metric_avg_seo_score')} value={avgSeoScoreDisplay + "%"} change="" bgColor="bg-white dark:bg-gray-800" iconColor="text-green-500"/>
-                <MetricCard icon={DollarSign} title={t('metric_total_revenue')} value={salesData ? salesData.total_revenue.toFixed(2) + ' ' + salesData.currency : '$0.00'} change="Overall" bgColor="bg-white dark:bg-gray-800" iconColor="text-indigo-500"/>
-                <MetricCard icon={Zap} title={t('metric_ai_optimizations')} value={String(optimizationsToday)} change={t('today')} bgColor="bg-white dark:bg-gray-800" iconColor="text-purple-500"/>
+                <MetricCard icon={Package} title={t('metric_total_products')} value={products.length > 0 ? String(products.length) : '...'} change="" bgColor="bg-white dark:bg-gray-800" iconColor="text-blue-500"/>
+                <MetricCard icon={TrendingUp} title={t('metric_avg_seo_score')} value={products.length > 0 ? avgSeoScoreDisplay + "%" : '...'} change="" bgColor="bg-white dark:bg-gray-800" iconColor="text-green-500"/>
+                <MetricCard icon={DollarSign} title={t('metric_total_revenue')} value={salesData ? salesData.total_revenue.toFixed(2) + ' ' + salesData.currency : '...'} change="Overall" bgColor="bg-white dark:bg-gray-800" iconColor="text-indigo-500"/>
+                <MetricCard icon={Zap} title={t('metric_ai_optimizations')} value={products.length > 0 ? String(optimizationsToday) : '...'} change={t('today')} bgColor="bg-white dark:bg-gray-800" iconColor="text-purple-500"/>
             </div>
+
+            {/* Simple Inline Loader */}
+            {products.length === 0 && (
+                <div className="flex items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-3xl border border-dashed border-gray-200 dark:border-gray-700">
+                    <div className="flex flex-col items-center gap-3">
+                        <RefreshCw className="w-8 h-8 text-[#F1641E] animate-spin" />
+                        <p className="text-sm font-bold text-gray-500 animate-pulse">Syncing your Etsy treasures...</p>
+                    </div>
+                </div>
+            )}
 
             {/* Product Thumbnail Strip */}
             {products.length > 0 && (
