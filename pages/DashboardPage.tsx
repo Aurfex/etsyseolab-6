@@ -47,6 +47,7 @@ const DashboardPage: React.FC = () => {
     console.log("Dashboard Debug: Language is", language);
 
     // State
+    const [isInitialLoading, setIsInitialLoading] = useState(true);
     const [isFixing, setIsFixing] = useState(false);
     const [fixList, setFixList] = useState<FixItem[]>([]);
     const [fixProgress, setFixProgress] = useState<('pending' | 'loading' | 'done')[]>([]);
@@ -55,8 +56,21 @@ const DashboardPage: React.FC = () => {
     const [savedBatchIds, setSavedBatchIds] = useState<string[]>([]);
     const [activeEventName, setActiveEventName] = useState<string | null>(null);
 
+    // Controlled loading state: stay in loading for at least 1.5 seconds to avoid flickering
+    // and wait until products are actually there from the context
+    useEffect(() => {
+        if (products.length > 0) {
+            const timer = setTimeout(() => {
+                setIsInitialLoading(false);
+            }, 1500);
+            return () => clearTimeout(timer);
+        } else {
+            setIsInitialLoading(true);
+        }
+    }, [products.length]);
+
     // DEBUG: Force logs to see what's happening
-    console.log("Dashboard Render - Products:", products.length);
+    console.log("Dashboard Render - Products:", products.length, "Loading:", isInitialLoading);
 
     const handleScanProducts = useCallback(() => {
         if (products.length === 0) return;
@@ -483,14 +497,14 @@ const DashboardPage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <MetricCard icon={Package} title={t('metric_total_products')} value={products.length > 0 ? String(products.length) : '...'} change="" bgColor="bg-white dark:bg-gray-800" iconColor="text-blue-500"/>
-                <MetricCard icon={TrendingUp} title={t('metric_avg_seo_score')} value={products.length > 0 ? avgSeoScoreDisplay + "%" : '...'} change="" bgColor="bg-white dark:bg-gray-800" iconColor="text-green-500"/>
+                <MetricCard icon={Package} title={t('metric_total_products')} value={!isInitialLoading ? String(products.length) : '...'} change="" bgColor="bg-white dark:bg-gray-800" iconColor="text-blue-500"/>
+                <MetricCard icon={TrendingUp} title={t('metric_avg_seo_score')} value={!isInitialLoading ? avgSeoScoreDisplay + "%" : '...'} change="" bgColor="bg-white dark:bg-gray-800" iconColor="text-green-500"/>
                 <MetricCard icon={DollarSign} title={t('metric_total_revenue')} value={salesData ? salesData.total_revenue.toFixed(2) + ' ' + salesData.currency : '...'} change="Overall" bgColor="bg-white dark:bg-gray-800" iconColor="text-indigo-500"/>
-                <MetricCard icon={Zap} title={t('metric_ai_optimizations')} value={products.length > 0 ? String(optimizationsToday) : '...'} change={t('today')} bgColor="bg-white dark:bg-gray-800" iconColor="text-purple-500"/>
+                <MetricCard icon={Zap} title={t('metric_ai_optimizations')} value={!isInitialLoading ? String(optimizationsToday) : '...'} change={t('today')} bgColor="bg-white dark:bg-gray-800" iconColor="text-purple-500"/>
             </div>
 
             {/* Simple Inline Loader */}
-            {products.length < 5 && (
+            {isInitialLoading && (
                 <div className="flex items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-3xl border border-dashed border-gray-200 dark:border-gray-700">
                     <div className="flex flex-col items-center gap-3">
                         <RefreshCw className="w-8 h-8 text-[#F1641E] animate-spin" />
@@ -500,7 +514,7 @@ const DashboardPage: React.FC = () => {
             )}
 
             {/* Product Thumbnail Strip */}
-            {products.length >= 5 && (
+            {!isInitialLoading && products.length > 0 && (
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-card border border-gray-100 dark:border-gray-700 animate-fade-in">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
