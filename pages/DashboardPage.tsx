@@ -226,11 +226,11 @@ const DashboardPage: React.FC = () => {
     const salesEvents = useMemo(() => {
         const now = new Date();
         const events = [
-            { name: "Mother's Day", date: new Date(now.getFullYear(), 4, 11), niche: "Jewelry Gifts" }, // May 11
-            { name: "Wedding Season Peak", date: new Date(now.getFullYear(), 5, 1), niche: "Bridal Jewelry" }, // June 1
-            { name: "Father's Day", date: new Date(now.getFullYear(), 5, 15), niche: "Men's Jewelry" }, // June 15
-            { name: "Summer Solstice", date: new Date(now.getFullYear(), 5, 21), niche: "Boho Jewelry" }, // June 21
-            { name: "Christmas in July", date: new Date(now.getFullYear(), 6, 25), niche: "Early Holiday Sales" }, // July 25
+            { name: "Mother's Day", date: new Date(now.getFullYear(), 4, 11), range: "May 1 - May 11", niche: "Jewelry Gifts" },
+            { name: "Wedding Season Peak", date: new Date(now.getFullYear(), 5, 1), range: "June 1 - Aug 31", niche: "Bridal Jewelry" },
+            { name: "Father's Day", date: new Date(now.getFullYear(), 5, 15), range: "June 1 - June 15", niche: "Men's Jewelry" },
+            { name: "Summer Solstice", date: new Date(now.getFullYear(), 5, 21), range: "June 21", niche: "Boho Jewelry" },
+            { name: "Christmas in July", date: new Date(now.getFullYear(), 6, 25), range: "July 1 - July 25", niche: "Early Holiday Sales" },
         ].map(event => {
             const diff = event.date.getTime() - now.getTime();
             const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
@@ -246,7 +246,7 @@ const DashboardPage: React.FC = () => {
             message: `Hasti AI: Preparing strategic ${event.niche} SEO batch for ${event.name}...` 
         });
         
-        // Scan for products that match the event's niche
+        // Find products matching the niche
         const targetKeywords = event.niche.toLowerCase().split(' ');
         const matches = products.filter(p => 
             p.title.toLowerCase().includes(targetKeywords[0]) || 
@@ -258,10 +258,12 @@ const DashboardPage: React.FC = () => {
             setPriorityBatch(matches);
             setSavedBatchIds([]);
             setFixList([]);
-            showToast({ type: 'success', message: `Found ${matches.length} relevant listings for ${event.name}. Reviewing now...` });
+            // SCROLL TO TOP so user sees the Priority Batch section
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            showToast({ type: 'success', message: `Found ${matches.length} relevant listings for ${event.name}. Check the Priority Batch above!` });
         } else {
-            // Fallback to general worst products if no niche match
             handleScanProducts();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }, [products, showToast, handleScanProducts]);
 
@@ -398,7 +400,10 @@ const DashboardPage: React.FC = () => {
                             <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-100 dark:bg-orange-900/30 text-orange-600">
                                 <Clock className="w-5 h-5 animate-pulse" />
                             </span>
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Jewelry Sales Countdown</h3>
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Jewelry Sales Countdown</h3>
+                                <p className="text-[10px] text-gray-400 font-medium">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                            </div>
                         </div>
                         <span className="text-xs font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1">
                             <Info className="w-3 h-3" />
@@ -406,19 +411,19 @@ const DashboardPage: React.FC = () => {
                         </span>
                     </div>
 
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-4">
                         {salesEvents.map((event, idx) => (
-                            <div key={idx} className="group relative overflow-hidden p-4 rounded-2xl bg-gray-50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-800 hover:border-orange-200 dark:hover:border-orange-800/50 transition-all flex items-center justify-between">
+                            <div key={idx} className="group relative overflow-hidden p-4 rounded-2xl bg-white dark:bg-gray-800 shadow-card dark:shadow-card-dark border border-gray-100 dark:border-gray-700 hover:border-orange-200 dark:hover:border-orange-800/50 transition-all flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <div className="flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm">
+                                    <div className="flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800">
                                         <Calendar className="w-5 h-5 text-orange-500" />
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2">
-                                            <h4 className="font-bold text-gray-900 dark:text-white">{event.name}</h4>
+                                            <h4 className="font-bold text-gray-900 dark:text-white leading-none">{event.name}</h4>
                                             <span className="px-2 py-0.5 rounded-md bg-orange-100 dark:bg-orange-900/30 text-orange-600 text-[9px] font-black uppercase tracking-tighter">{event.niche}</span>
                                         </div>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">Strategic SEO window active</p>
+                                        <p className="text-[10px] text-gray-400 mt-1 font-medium">{event.range}</p>
                                     </div>
                                 </div>
                                 
@@ -428,13 +433,13 @@ const DashboardPage: React.FC = () => {
                                             <span className="text-2xl font-black text-orange-600 leading-none">{event.daysRemaining}</span>
                                             <span className="text-[10px] font-bold text-gray-400">DAYS</span>
                                         </div>
-                                        <div className="w-16 h-1 bg-gray-200 dark:bg-gray-700 rounded-full mt-1 overflow-hidden">
-                                            <div className="h-full bg-orange-500 rounded-full" style={{ width: `${Math.max(10, 100 - (event.daysRemaining / 2))}%` }}></div>
+                                        <div className="w-16 h-1 bg-gray-100 dark:bg-gray-700 rounded-full mt-1.5 overflow-hidden">
+                                            <div className="h-full bg-orange-500 rounded-full transition-all duration-1000" style={{ width: `${Math.max(10, 100 - (event.daysRemaining / 2))}%` }}></div>
                                         </div>
                                     </div>
                                     <button 
                                         onClick={() => handleOptimizeForEvent(event)}
-                                        className="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[10px] font-black rounded-xl hover:opacity-90 transition-opacity"
+                                        className="px-5 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[10px] font-black rounded-xl hover:scale-105 active:scale-95 transition-all shadow-md shadow-gray-200 dark:shadow-none"
                                     >
                                         OPTIMIZE
                                     </button>
