@@ -35,6 +35,7 @@ const CompetitorRadarPage: React.FC = () => {
     { name: 'Your SEO', score: isOptimized ? 94 : 68, color: '#8B5CF6' },
     { name: 'Mejuri (Competitor)', score: 92, color: '#10B981' },
     { name: 'GLDN (Competitor)', score: 95, color: '#3B82F6' },
+    { name: 'Catbird (Competitor)', score: 89, color: '#F59E0B' },
   ], [isOptimized]);
 
   const handleSaveToEtsyMock = () => {
