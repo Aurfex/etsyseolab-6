@@ -48,47 +48,48 @@ const DashboardPage: React.FC = () => {
     const [fixList, setFixList] = useState<FixItem[]>([]);
     const [fixProgress, setFixProgress] = useState<('pending' | 'loading' | 'done')[]>([]);
     const [isScanning, setIsScanning] = useState(true);
-    const [lockedPriorityIds, setLockedPriorityIds] = useState<string[]>([]);
+    const [priorityBatch, setPriorityBatch] = useState<Product[]>([]);
     const [savedBatchIds, setSavedBatchIds] = useState<string[]>([]);
 
+    // Lock the priority batch only once or when products are first loaded
     useEffect(() => {
-        if (products.length > 0 && lockedPriorityIds.length === 0) {
-            const sorted = [...products].sort((a, b) => a.seoScore - b.seoScore).slice(0, 2);
-            setLockedPriorityIds(sorted.map(p => p.id));
+        if (products.length > 0 && priorityBatch.length === 0) {
+            const worst = [...products].sort((a, b) => a.seoScore - b.seoScore).slice(0, 2);
+            setPriorityBatch(worst);
         }
-    }, [products, lockedPriorityIds]);
+    }, [products, priorityBatch.length]);
 
-    // Stable derivation of health score based on the priority batch
+    // Stable derivation of health score based on the FIXED priority batch
     const healthData = useMemo(() => {
-        // Find the 2 worst products and lock them
-        const priorityProducts = [...products].sort((a, b) => a.seoScore - b.seoScore).slice(0, 2);
-        
-        if (products.length === 0 || priorityProducts.length === 0) return { grade: '...', issues: 0, missingTags: 0, lowSeo: 0, scorePercent: 40, summaries: [] };
+        if (products.length === 0 || priorityBatch.length === 0) return { grade: '...', issues: 0, missingTags: 0, lowSeo: 0, scorePercent: 40, summaries: [] };
         
         let batchTotalScore = 0;
         let batchIssues = 0;
         const summaries: { id: string; text: string; status: 'warning' | 'success'; title: string }[] = [];
         
-        priorityProducts.forEach((p) => {
+        priorityBatch.forEach((p) => {
             const isSaved = savedBatchIds.includes(p.id);
-            const shortTitle = p.title.length > 20 ? p.title.substring(0, 20) + '...' : p.title;
+            const shortTitle = p.title.length > 25 ? p.title.substring(0, 25) + '...' : p.title;
             
             if (isSaved) {
                 batchTotalScore += 98;
                 summaries.push({ 
                     id: p.id, 
                     title: shortTitle, 
-                    text: `Optimized & Published!`, 
+                    text: `SEO Optimized & Published!`, 
                     status: 'success' 
                 });
             } else {
-                batchTotalScore += Math.max(15, Math.min(45, p.seoScore));
+                // Get real-time data from products list if available, else use initial priorityBatch data
+                const currentP = products.find(prod => prod.id === p.id) || p;
+                batchTotalScore += Math.max(15, Math.min(45, currentP.seoScore));
+                
                 const issues = [];
-                if (p.tags.length < 13) {
+                if (currentP.tags.length < 13) {
                     batchIssues++;
-                    issues.push(`${13 - p.tags.length} tags missing`);
+                    issues.push(`${13 - currentP.tags.length} tags missing`);
                 }
-                if (p.title.length < 70) issues.push("Short title");
+                if (currentP.title.length < 70) issues.push("Short title");
                 
                 summaries.push({ 
                     id: p.id, 
@@ -96,11 +97,11 @@ const DashboardPage: React.FC = () => {
                     text: issues.length > 0 ? issues.join(', ') : 'Needs SEO boost', 
                     status: 'warning' 
                 });
-                if (p.seoScore < 70) batchIssues++;
+                if (currentP.seoScore < 70) batchIssues++;
             }
         });
         
-        const avgScore = batchTotalScore / (priorityProducts.length || 1);
+        const avgScore = batchTotalScore / priorityBatch.length;
         
         let grade = 'F';
         if (avgScore >= 90) grade = 'A+';
@@ -110,15 +111,15 @@ const DashboardPage: React.FC = () => {
         else if (avgScore >= 40) grade = 'D';
         
         return { grade, issues: batchIssues, missingTags: batchIssues, lowSeo: batchIssues, scorePercent: avgScore, summaries };
-    }, [products, savedBatchIds]);
+    }, [priorityBatch, savedBatchIds, products]);
 
     const healthScore = isScanning ? '...' : healthData.grade;
 
-    // Use specific SEO Score for the metric card to match the "tokhmi" batch feel
+    // Use specific SEO Score for the metric card
     const batchSeoScoreDisplay = useMemo(() => {
-        if (isScanning || products.length === 0) return 0;
+        if (isScanning || priorityBatch.length === 0) return 0;
         return Math.round(healthData.scorePercent);
-    }, [isScanning, healthData.scorePercent, products.length]);
+    }, [isScanning, healthData.scorePercent, priorityBatch.length]);
 
     const revenueData = useMemo(() => {
         return salesData && salesData.recent_orders.length > 0
@@ -161,26 +162,22 @@ const DashboardPage: React.FC = () => {
     };
 
     const handleFixAll = async () => {
-        if (products.length === 0) return;
+        if (priorityBatch.length === 0) return;
         setIsFixing(true);
         setFixList([]);
-        setFixProgress(['loading', 'pending']);
+        setFixProgress(priorityBatch.map(() => 'pending'));
         
-        const productsToFix = [...products].sort((a, b) => a.seoScore - b.seoScore).slice(0, 2);
         const newFixes: FixItem[] = [];
         
-        for (let i = 0; i < productsToFix.length; i++) {
+        for (let i = 0; i < priorityBatch.length; i++) {
             setFixProgress(prev => prev.map((s, idx) => idx === i ? 'loading' : s));
             if (i > 0) await new Promise(resolve => setTimeout(resolve, 4000)); // Delay to prevent 429
-            const result = await optimizeItem(productsToFix[i]);
+            const result = await optimizeItem(priorityBatch[i]);
             if (result) {
                 newFixes.push(result);
                 setFixProgress(prev => prev.map((s, idx) => idx === i ? 'done' : s));
             } else {
                 setFixProgress(prev => prev.map((s, idx) => idx === i ? 'pending' : s));
-            }
-            if (i < productsToFix.length - 1) {
-                setFixProgress(prev => prev.map((s, idx) => idx === i + 1 ? 'loading' : s));
             }
         }
         
@@ -300,7 +297,7 @@ const DashboardPage: React.FC = () => {
                         </div>
                     </div>
                     <div className="flex-grow w-full">
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{isScanning ? 'Analyzing listings...' : (savedBatchIds.length === lockedPriorityIds.length && lockedPriorityIds.length > 0 ? 'Batch Optimized!' : 'Priority Batch Status')}</h2>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{isScanning ? 'Analyzing listings...' : (savedBatchIds.length === priorityBatch.length && priorityBatch.length > 0 ? 'Batch Optimized!' : 'Priority Batch Status')}</h2>
                         <div className="space-y-3">
                             {!isScanning && healthData.summaries.map((summary, idx) => (
                                 <div key={idx} className="flex items-center p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800">
