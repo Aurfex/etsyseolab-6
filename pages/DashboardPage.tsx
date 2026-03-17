@@ -53,8 +53,10 @@ const DashboardPage: React.FC = () => {
     const [isScanning, setIsScanning] = useState(false);
     const [priorityBatch, setPriorityBatch] = useState<Product[]>([]);
     const [savedBatchIds, setSavedBatchIds] = useState<string[]>([]);
-
     const [activeEventName, setActiveEventName] = useState<string | null>(null);
+
+    // DEBUG: Force logs to see what's happening
+    console.log("Dashboard Render - Products:", products.length);
 
     const handleScanProducts = useCallback(() => {
         if (products.length === 0) return;
