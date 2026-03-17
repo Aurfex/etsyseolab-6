@@ -32,9 +32,9 @@ const CompetitorRadarPage: React.FC = () => {
 
   // Mock comparison data for the chart
   const chartData = useMemo(() => [
-    { name: 'Your SEO', score: isOptimized ? 91 : 62, color: '#8B5CF6' },
-    { name: 'Top 10 Avg', score: 88, color: '#10B981' },
-    { name: 'Best Match', score: 94, color: '#3B82F6' },
+    { name: 'Your SEO', score: isOptimized ? 94 : 68, color: '#8B5CF6' },
+    { name: 'Mejuri (Competitor)', score: 92, color: '#10B981' },
+    { name: 'GLDN (Competitor)', score: 95, color: '#3B82F6' },
   ], [isOptimized]);
 
   const handleSaveToEtsyMock = () => {
@@ -234,7 +234,7 @@ const CompetitorRadarPage: React.FC = () => {
           <Card className="lg:col-span-3">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">{t('comp_gap_title')}</h3>
               <div className="flex flex-wrap gap-2">
-                  {['minimalist wedding', 'art deco style', 'personalized bridesmaid', 'solid 14k gold', 'dainty everyday wear', 'luxury gift box'].map(tag => (
+                  {['14K Gold Minimalist', 'Art Deco Wedding Ring', 'Personalized Anniversary Gift', 'Solid Gold Jewelry', 'Dainty Everyday Necklace', 'Luxury Gift Box Packaging'].map(tag => (
                       <span key={tag} className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-xs font-medium flex items-center border border-gray-200 dark:border-gray-600">
                           <AlertCircle className="w-3 h-3 mr-1.5 text-purple-500" />
                           {tag}

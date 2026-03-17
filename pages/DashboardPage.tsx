@@ -375,8 +375,9 @@ const DashboardPage: React.FC = () => {
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card border border-gray-100 dark:border-gray-700">
                         <div className="flex items-center gap-3 mb-4"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"><Flame className="w-4 h-4" /></span><h3 className="font-bold text-gray-900 dark:text-white">Trending Keywords</h3></div>
                         <ul className="space-y-3">
-                            <li className="flex justify-between items-center"><span className="text-sm font-medium text-gray-700 dark:text-gray-300">1. Unique {storeNiche}</span><span className="text-xs text-green-500 font-bold">+124%</span></li>
-                            <li className="flex justify-between items-center"><span className="text-sm font-medium text-gray-700 dark:text-gray-300">2. Custom {storeNiche} gift</span><span className="text-xs text-green-500 font-bold">+89%</span></li>
+                            <li className="flex justify-between items-center"><span className="text-sm font-medium text-gray-700 dark:text-gray-300">1. Art Deco {storeNiche}</span><span className="text-xs text-green-500 font-bold">+156%</span></li>
+                            <li className="flex justify-between items-center"><span className="text-sm font-medium text-gray-700 dark:text-gray-300">2. Custom 14K Gold {storeNiche}</span><span className="text-xs text-green-500 font-bold">+112%</span></li>
+                            <li className="flex justify-between items-center"><span className="text-sm font-medium text-gray-700 dark:text-gray-300">3. Personalized {storeNiche} Gift</span><span className="text-xs text-green-500 font-bold">+89%</span></li>
                         </ul>
                     </div>
                 </div>

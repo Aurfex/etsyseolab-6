@@ -38,12 +38,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: 'Invalid product data.' });
     }
 
+    // Determine the niche from the product or context
+    // In a real app, you might get this from the user's profile
+    const userNiche = product.description?.toLowerCase().includes('jewelry') || product.title.toLowerCase().includes('jewelry') 
+        ? 'Jewelry' 
+        : 'Handmade Crafts';
+
     if (!process.env.GEMINI_API_KEY && !process.env.GOOGLE_API_KEY) {
         return res.status(500).json({ error: 'GEMINI_API_KEY is not configured in Vercel environment variables.' });
     }
 
     try {
-        console.log('Starting Gemini optimization for:', product.id);
+        console.log('Starting Gemini optimization for:', product.id, 'Niche:', userNiche);
         const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
@@ -57,22 +63,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             if (imageData) promptParts.push(imageData);
         }
 
-        const promptText = "Analyze this Etsy product and its image (if provided).\n" +
-"Original Title: \"" + product.title + "\"\n" +
-"Original Description: \"" + (product.description || '') + "\"\n" +
-"Original Tags: " + JSON.stringify(product.tags || []) + "\n\n" +
-"TASK (ETSY SEO 2026 STRATEGY):\n" +
-"1. Optimize the Title (Target: 90-140 chars). Put the most important keywords in the first 40 characters for mobile visibility. Use '|' or commas to separate keyword phrases.\n" +
-"2. Rewrite the Description: Start with a powerful hook, use bullet points for benefits and materials, and end with a Call to Action.\n" +
-"3. Generate EXACTLY 13 tags: Use high-volume long-tail keywords. EACH TAG MUST BE 20 CHARACTERS OR LESS. Do not repeat keywords from the title in tags if you can avoid it to maximize keyword reach.\n" +
-"4. Generate Alt Text: Descriptive and under 125 chars.\n\n" +
-"STRICT REQUIREMENTS (CRITICAL):\n" +
-"- TITLE LENGTH: 90-140 characters. NO EXCEPTIONS.\n" +
-"- TAG COUNT: Exactly 13 tags. NO EXCEPTIONS.\n" +
-"- TAG LENGTH: MAXIMUM 20 CHARACTERS PER TAG. IF A TAG IS 21 CHARACTERS, ETSY WILL REJECT THE ENTIRE UPDATE. BE EXTREMELY STRICT.\n" +
-"- The optimized version MUST be significantly different and better for search rankings than the original.\n" +
-"- Preserve brand names or specific characters like 'Iron Man' or '14K Gold'.\n\n" +
-"Return ONLY a valid JSON object with these keys: title, description, tags (array), altText. Do not include markdown code blocks.";
+        const promptText = `Analyze this Etsy product and its image (if provided).
+Niche: ${userNiche}
+Original Title: "${product.title}"
+Original Description: "${product.description || ''}"
+Original Tags: ${JSON.stringify(product.tags || [])}
+
+TASK (ETSY SEO 2026 STRATEGY):
+1. Optimize the Title (Target: 90-140 chars). Put the most important ${userNiche} keywords in the first 40 characters for mobile visibility. Use '|' or commas to separate keyword phrases.
+2. Rewrite the Description: Start with a powerful hook relevant to ${userNiche} buyers, use bullet points for benefits and materials (e.g., 14K Gold, Sterling Silver if applicable), and end with a Call to Action.
+3. Generate EXACTLY 13 tags: Use high-volume long-tail keywords specifically for the ${userNiche} market. EACH TAG MUST BE 20 CHARACTERS OR LESS. 
+4. Generate Alt Text: Descriptive and under 125 chars.
+
+STRICT REQUIREMENTS (CRITICAL):
+- TITLE LENGTH: 90-140 characters. NO EXCEPTIONS.
+- TAG COUNT: Exactly 13 tags. NO EXCEPTIONS.
+- TAG LENGTH: MAXIMUM 20 CHARACTERS PER TAG.
+- If it's Jewelry, focus on materials (Gold, Silver), occasion (Wedding, Anniversary), and style (Minimalist, Art Deco).
+- Return ONLY a valid JSON object with these keys: title, description, tags (array), altText. Do not include markdown code blocks.`;
 
         promptParts.push(promptText);
 
