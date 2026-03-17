@@ -56,13 +56,13 @@ const DashboardPage: React.FC = () => {
     const [savedBatchIds, setSavedBatchIds] = useState<string[]>([]);
     const [activeEventName, setActiveEventName] = useState<string | null>(null);
 
-    // Controlled loading state: stay in loading for at least 1.5 seconds to avoid flickering
-    // and wait until products are actually there from the context
+    // Controlled loading state: stay in loading for at least 4 seconds to ensure thumbnails hydrate
     useEffect(() => {
-        if (products.length > 0) {
+        // We wait until products.length is greater than 5 to ensure we aren't seeing just the first fast-loaded items
+        if (products.length > 5) {
             const timer = setTimeout(() => {
                 setIsInitialLoading(false);
-            }, 3000); // Increased to 3 seconds for visibility
+            }, 4000); 
             return () => clearTimeout(timer);
         } else {
             setIsInitialLoading(true);
