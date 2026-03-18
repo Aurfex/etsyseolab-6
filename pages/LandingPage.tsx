@@ -98,7 +98,7 @@ const FaqItem = ({ question, answer }: { question: string, answer: string }) => 
 };
 
 const LandingPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, language, setLanguage } = useTranslation();
   const { setPage, login } = useAppContext();
 
   const testimonials = [
@@ -158,6 +158,9 @@ const LandingPage: React.FC = () => {
             <span className="text-xl font-bold text-gray-900 dark:text-white tracking-tight uppercase">ETSY SEOLAB</span>
           </div>
           <div className="hidden md:flex items-center space-x-8 text-sm font-medium">
+            <button onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')} className="hover:text-purple-600 transition-colors font-bold text-[#F1641E]">
+              {language === 'en' ? 'FR' : 'EN'}
+            </button>
             <a href="#features" className="hover:text-purple-600 transition-colors">{t('landing_nav_features')}</a>
             <a href="#pricing" className="hover:text-purple-600 transition-colors">{t('landing_nav_pricing')}</a>
             <button 
@@ -358,6 +361,9 @@ const LandingPage: React.FC = () => {
             <span className="text-lg font-bold tracking-tight text-gray-900 dark:text-white uppercase">ETSY SEOLAB</span>
           </div>
           <div className="flex space-x-8 text-sm text-gray-500">
+            <button onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')} className="hover:text-purple-600 transition-colors font-bold text-[#F1641E]">
+              {language === 'en' ? 'FR' : 'EN'}
+            </button>
             <button onClick={() => setPage('privacy')} className="hover:text-purple-600 transition-colors">{t('landing_nav_privacy')}</button>
             <button onClick={() => setPage('terms')} className="hover:text-purple-600 transition-colors">{t('landing_nav_terms')}</button>
             <button onClick={() => setPage('contact')} className="hover:text-purple-600 transition-colors">{t('landing_nav_contact')}</button>

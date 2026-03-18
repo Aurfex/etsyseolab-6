@@ -5,10 +5,15 @@ import { useTranslation } from '../contexts/LanguageContext';
 
 const PrivacyPolicyPage: React.FC = () => {
   const { setPage, auth } = useAppContext();
-  const { t } = useTranslation();
+  const { t, language, setLanguage } = useTranslation();
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-white p-8 md:p-20">
+    <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-white p-8 md:p-20 relative">
+      <div className="absolute top-8 right-8">
+        <button onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')} className="px-4 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 rounded-full font-bold hover:opacity-80 transition-opacity">
+          {language === 'en' ? 'FR' : 'EN'}
+        </button>
+      </div>
       <div className="max-w-3xl mx-auto">
         <button 
           onClick={() => setPage(auth.isAuthenticated ? 'dashboard' : 'landing')}

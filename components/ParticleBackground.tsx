@@ -164,7 +164,7 @@ const ParticleBackground: React.FC = () => {
         left: 0,
         width: '100%',
         height: '100%',
-        zIndex: 9999, // NUCLEAR OPTION: Put it on top of EVERYTHING
+        zIndex: 0, // Put it behind content but above the main background
         pointerEvents: 'none',
         background: 'transparent'
       }}
