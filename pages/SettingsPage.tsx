@@ -91,7 +91,7 @@ const SettingsPage: React.FC = () => {
                 <SettingsGroup title={t('settings_autopilot')}>
                     <div>
                         <label className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('settings_frequency')}</label>
-                        <select name="frequency" value={settings.autopilot.frequency} onChange={e => handleSettingChange('autopilot', 'frequency', e.target.value)} className="mt-1 block w-full bg-gray-100 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 rounded-md p-2">
+                        <select name="frequency" value={settings.autopilot.frequency} onChange={e => handleSettingChange('autopilot', 'frequency', e.target.value)} className="mt-1 block w-full bg-gray-100 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-[#F1641E]">
                             <option value="6h">{t('automation_freq_6h')}</option>
                             <option value="daily">{t('automation_freq_daily')}</option>
                             <option value="weekly">{t('automation_freq_weekly')}</option>
@@ -164,14 +164,14 @@ const SettingsPage: React.FC = () => {
                 <SettingsGroup title={t('settings_preferences')}>
                     <div>
                         <label className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('settings_language')}</label>
-                        <select value={language} onChange={e => handleSettingChange('language', 'language', e.target.value as Language)} className="mt-1 block w-full bg-gray-100 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 rounded-md p-2">
+                        <select value={language} onChange={e => handleSettingChange('language', 'language', e.target.value as Language)} className="mt-1 block w-full bg-gray-100 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-[#F1641E]">
                             <option value="en">English</option>
                             <option value="fr">French (Français)</option>
                         </select>
                     </div>
                      <div>
                         <label className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('settings_theme')}</label>
-                        <select name="theme" value={settings.theme} onChange={e => handleSettingChange('theme', 'theme', e.target.value as Theme)} className="mt-1 block w-full bg-gray-100 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 rounded-md p-2">
+                        <select name="theme" value={settings.theme} onChange={e => handleSettingChange('theme', 'theme', e.target.value as Theme)} className="mt-1 block w-full bg-gray-100 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-[#F1641E]">
                             <option value="light">{t('theme_light')}</option>
                             <option value="dark">{t('theme_dark')}</option>
                             <option value="system">{t('theme_system')}</option>
