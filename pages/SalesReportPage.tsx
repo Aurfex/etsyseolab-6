@@ -219,7 +219,7 @@ const SalesReportPage: React.FC = () => {
                         <button
                             onClick={handleGeneratePDF}
                             disabled={isGenerating || isFetching}
-                            className={`mt-4 px-10 py-4 rounded-2xl font-bold text-white shadow-lg transition-all flex items-center gap-2 mx-auto ${isGenerating || isFetching ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700 hover:scale-105'}`}
+                            className={`mt-4 px-10 py-4 rounded-2xl font-bold text-white shadow-lg transition-all flex items-center gap-2 mx-auto ${isGenerating || isFetching ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#F1641E] hover:bg-[#D95A1B] hover:scale-105'}`}
                         >
                             {isGenerating ? (
                                 <>

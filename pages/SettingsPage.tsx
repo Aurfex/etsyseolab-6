@@ -133,7 +133,7 @@ const SettingsPage: React.FC = () => {
             <Card>
                 <SettingsGroup title="Subscription & Billing">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="p-4 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white">
+                        <div className="p-4 rounded-xl bg-gradient-to-br from-[#F1641E] to-[#D95A1B] text-white">
                             <p className="text-xs opacity-80 uppercase tracking-widest font-bold">Current Plan</p>
                             <h4 className="text-2xl font-black mt-1">Growth Plan</h4>
                             <p className="text-sm mt-4 opacity-90">$19/month • Renews April 10, 2026</p>

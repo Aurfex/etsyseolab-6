@@ -37,11 +37,11 @@ body {
 
 @layer components {
   .input-field {
-    @apply bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-xl focus:ring-purple-500 focus:border-purple-500 block w-full p-3 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-purple-500 dark:focus:border-purple-500 transition-all outline-none;
+    @apply bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-xl focus:ring-[#F1641E] focus:border-[#F1641E] block w-full p-3 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-[#F1641E] dark:focus:border-[#F1641E] transition-all outline-none;
   }
   
   .btn-primary {
-    @apply px-6 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 shadow-lg shadow-purple-500/20 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+    @apply px-6 py-3 bg-[#F1641E] text-white rounded-xl font-bold hover:bg-[#D95A1B] shadow-lg shadow-[#F1641E]/20 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
   }
   
   .btn-secondary {

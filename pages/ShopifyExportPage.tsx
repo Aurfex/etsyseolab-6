@@ -177,7 +177,7 @@ const ShopifyExportPage: React.FC = () => {
                         <button
                             onClick={handleExport}
                             disabled={isExporting || selectedIds.length === 0}
-                            className={`mt-4 px-10 py-4 rounded-2xl font-bold text-white shadow-lg transition-all flex items-center gap-2 mx-auto ${isExporting ? 'bg-gray-400' : selectedIds.length === 0 ? 'bg-gray-300 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 hover:scale-105'}`}
+                            className={`mt-4 px-10 py-4 rounded-2xl font-bold text-white shadow-lg transition-all flex items-center gap-2 mx-auto ${isExporting ? 'bg-gray-400' : selectedIds.length === 0 ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#F1641E] hover:bg-[#D95A1B] hover:scale-105'}`}
                         >
                             {isExporting ? (
                                 <>

@@ -287,7 +287,7 @@ const PricingCalculatorPage: React.FC = () => {
             </div>
           </div>
 
-          <button onClick={exportCsv} className="w-full mt-2 inline-flex items-center justify-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg">
+          <button onClick={exportCsv} className="w-full mt-2 inline-flex items-center justify-center gap-2 bg-[#F1641E] hover:bg-[#D95A1B] text-white px-4 py-2 rounded-xl transition-colors font-bold">
             <Download className="w-4 h-4" /> Export CSV
           </button>
         </div>
