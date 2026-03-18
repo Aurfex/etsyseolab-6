@@ -369,7 +369,7 @@ const LandingPage: React.FC = () => {
             <button onClick={() => setPage('contact')} className="hover:text-purple-600 transition-colors">{t('landing_nav_contact')}</button>
           </div>
           <div className="text-sm text-gray-500">
-            © 2026 dXb Tech. Built with ❤️ for Etsy Sellers.
+            © 2026 dXb Tech Ltd. Built with ❤️ for Etsy Sellers.
           </div>
         </div>
       </footer>

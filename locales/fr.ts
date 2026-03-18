@@ -24,7 +24,7 @@ const fr: Translations = {
     "terms_s3_title": "3. Abonnement et frais",
     "terms_s3_desc": "Certaines fonctionnalités nécessitent un abonnement payant. Les frais ne sont pas remboursables, sauf si la loi l'exige. Nous nous réservons le droit de modifier nos prix avec un préavis de 30 jours.",
     "terms_s4_title": "4. Limitation de responsabilité",
-    "terms_s4_desc": "dXb Tech ne pourra être tenu responsable des dommages indirects, accessoires ou consécutifs résultant de votre utilisation du service ou de toute modification apportée à vos fiches Etsy.",
+    "terms_s4_desc": "dXb Tech Ltd. ne pourra être tenu responsable des dommages indirects, accessoires ou consécutifs résultant de votre utilisation du service ou de toute modification apportée à vos fiches Etsy.",
     // Nav
     "nav_dashboard": "Tableau de Bord",
     "nav_optimizer": "Optimiseur SEO",
@@ -628,7 +628,7 @@ const fr: Translations = {
     "landing_cta_title": "Prêt à développer votre empire Etsy ?",
     "landing_cta_subtitle": "Rejoignez des milliers de vendeurs qui utilisent déjà l'IA pour dominer leur niche.",
     "landing_cta_btn": "Commencer votre essai gratuit",
-    "landing_footer_rights": "© 2026 dXb Tech. Tous droits réservés.",
+    "landing_footer_rights": "© 2026 dXb Tech Ltd. Tous droits réservés.",
     "dash_health_score": "Score de Santé",
     "dash_health_needs_attention": "Votre boutique nécessite votre attention",
     "dash_health_perfect": "Votre boutique est parfaitement optimisée !",
