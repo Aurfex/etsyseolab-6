@@ -149,7 +149,7 @@ const SettingsPage: React.FC = () => {
                             <button 
                                 onClick={() => handleUpgrade('elite')}
                                 disabled={isRedirecting}
-                                className="w-full py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-xl text-sm font-bold hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-all disabled:opacity-50"
+                                className="w-full py-2 bg-orange-100 dark:bg-orange-900/30 text-purple-700 dark:text-orange-300 rounded-xl text-sm font-bold hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-all disabled:opacity-50"
                             >
                                 Upgrade to Elite
                             </button>

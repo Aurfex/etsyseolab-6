@@ -248,7 +248,7 @@ const AutopilotPage: React.FC = () => {
 
       <Card>
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center mb-2">
-          <Bot className="w-5 h-5 me-2 text-purple-500" />
+          <Bot className="w-5 h-5 me-2 text-[#F1641E]" />
           {t('auto_status_title')}
         </h3>
         <div className="mt-2 bg-green-50 dark:bg-green-900/20 p-4 rounded-lg flex justify-between items-center">
@@ -264,7 +264,7 @@ const AutopilotPage: React.FC = () => {
         </div>
 
         <div className="mt-4 flex gap-3">
-          <button onClick={runScan} disabled={isScanning} className="inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-60">
+          <button onClick={runScan} disabled={isScanning} className="inline-flex items-center gap-2 bg-[#F1641E] text-white px-4 py-2 rounded-lg disabled:opacity-60">
             {isScanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />} {t('auto_btn_scan')}
           </button>
           
@@ -343,7 +343,7 @@ const AutopilotPage: React.FC = () => {
             <button
               key={k}
               onClick={() => setFilterType(k)}
-              className={`px-3 py-1.5 rounded-lg border font-medium transition-colors ${filterType === k ? 'bg-purple-600 text-white border-purple-600' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+              className={`px-3 py-1.5 rounded-lg border font-medium transition-colors ${filterType === k ? 'bg-[#F1641E] text-white border-purple-600' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
             >
               {k === 'all' ? t('auto_filter_all') : t(`auto_filter_${k}`)}
             </button>

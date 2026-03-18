@@ -213,11 +213,11 @@ const ImageSeoPage: React.FC = () => {
         </div>
         <div>
           <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('image_seo_images_label')}</label>
-          <input type="file" multiple accept="image/*" onChange={onFileChange} className="mt-1 w-full text-sm text-gray-700 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 dark:file:bg-purple-900/50 dark:file:text-purple-300" />
+          <input type="file" multiple accept="image/*" onChange={onFileChange} className="mt-1 w-full text-sm text-gray-700 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-purple-700 hover:file:bg-orange-100 dark:file:bg-purple-900/50 dark:file:text-purple-300" />
           <p className="text-xs text-gray-500 mt-1">{t('image_seo_selected')} {files.length}</p>
         </div>
 
-        <button onClick={generateNames} disabled={!canRun || isProcessing} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 text-white font-semibold disabled:opacity-60">
+        <button onClick={generateNames} disabled={!canRun || isProcessing} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#F1641E] text-white font-semibold disabled:opacity-60">
           {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
           {isProcessing ? t('image_seo_generating') : t('image_seo_generate_btn')}
         </button>

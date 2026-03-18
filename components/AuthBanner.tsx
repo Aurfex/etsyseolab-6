@@ -18,7 +18,7 @@ export const AuthBanner: React.FC = () => {
             <div className="flex flex-col sm:flex-row justify-between items-center text-center sm:text-left">
                 <div>
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center justify-center sm:justify-start">
-                        {auth.isAuthenticated ? '✅ Connected to Etsy Shop' : <><Shield className="w-6 h-6 me-2 text-purple-500"/>{t('auth_banner_title')}</>}
+                        {auth.isAuthenticated ? '✅ Connected to Etsy Shop' : <><Shield className="w-6 h-6 me-2 text-[#F1641E]"/>{t('auth_banner_title')}</>}
                     </h3>
                     <p className="text-gray-500 dark:text-gray-400 mt-1">
                         {auth.isAuthenticated ? 'Your shop is linked and ready for optimization!' : t('auth_banner_subtitle')}

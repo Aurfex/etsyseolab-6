@@ -352,11 +352,11 @@ const DashboardPage: React.FC = () => {
                         <div className="relative w-40 h-40 flex items-center justify-center">
                             <svg className="w-full h-full transform -rotate-90">
                                 <circle cx="80" cy="80" r="70" className="stroke-current text-gray-200 dark:text-gray-700" strokeWidth="12" fill="transparent" />
-                                <circle cx="80" cy="80" r="70" className={"stroke-current transition-all duration-1000 " + (isBatchActive ? (healthScore.startsWith('A') ? 'text-green-500' : 'text-purple-600') : 'text-gray-300')} strokeWidth="12" fill="transparent" strokeDasharray="440" strokeDashoffset={440 - (440 * (Math.max(0, batchSeoScoreDisplay || 0) / 100))} strokeLinecap="round" />
+                                <circle cx="80" cy="80" r="70" className={"stroke-current transition-all duration-1000 " + (isBatchActive ? (healthScore.startsWith('A') ? 'text-green-500' : 'text-[#F1641E]') : 'text-gray-300')} strokeWidth="12" fill="transparent" strokeDasharray="440" strokeDashoffset={440 - (440 * (Math.max(0, batchSeoScoreDisplay || 0) / 100))} strokeLinecap="round" />
                             </svg>
                             <div className="absolute flex flex-col items-center justify-center">
                                 <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Score</span>
-                                <span className={"text-5xl font-black " + (isBatchActive ? (healthScore.startsWith('A') ? 'text-green-500' : 'text-purple-600') : 'text-gray-300')}>{healthScore}</span>
+                                <span className={"text-5xl font-black " + (isBatchActive ? (healthScore.startsWith('A') ? 'text-green-500' : 'text-[#F1641E]') : 'text-gray-300')}>{healthScore}</span>
                             </div>
                         </div>
                     </div>
@@ -386,7 +386,7 @@ const DashboardPage: React.FC = () => {
                                         <AlertTriangle className="w-5 h-5 text-amber-500 mr-3 animate-pulse" /><span className="text-sm text-gray-700 dark:text-gray-300">Searching listings for SEO gaps...</span>
                                     </div>
                                     <div className="flex items-center p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800">
-                                        <Zap className="w-5 h-5 text-purple-500 mr-3 animate-bounce" /><span className="text-sm text-gray-700 dark:text-gray-300">Applying 2026 Etsy Standards...</span>
+                                        <Zap className="w-5 h-5 text-[#F1641E] mr-3 animate-bounce" /><span className="text-sm text-gray-700 dark:text-gray-300">Applying 2026 Etsy Standards...</span>
                                     </div>
                                 </>
                             )}
@@ -413,11 +413,11 @@ const DashboardPage: React.FC = () => {
 
             {fixList.length > 0 && (
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-xl border border-purple-200 dark:border-purple-800/50 animate-fade-in">
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center"><Zap className="w-6 h-6 mr-2 text-purple-500" /> AI Batch SEO Review</h3>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center"><Zap className="w-6 h-6 mr-2 text-[#F1641E]" /> AI Batch SEO Review</h3>
                     <div className="space-y-6">
                         {fixList.map(item => (
                             <div key={item.id} className="p-5 rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30 flex flex-col gap-4 relative">
-                                {item.status === 'optimizing' && <div className="absolute inset-0 bg-white/60 dark:bg-gray-900/60 z-20 flex items-center justify-center backdrop-blur-sm rounded-2xl"><RefreshCw className="w-8 h-8 text-purple-500 animate-spin" /></div>}
+                                {item.status === 'optimizing' && <div className="absolute inset-0 bg-white/60 dark:bg-gray-900/60 z-20 flex items-center justify-center backdrop-blur-sm rounded-2xl"><RefreshCw className="w-8 h-8 text-[#F1641E] animate-spin" /></div>}
                                 <div className="flex flex-col md:flex-row gap-6">
                                     <div className="w-32 h-32 flex-shrink-0 rounded-xl overflow-hidden border border-gray-200 shadow-sm bg-white">
                                         <img src={item.imageUrl || 'https://via.placeholder.com/150'} className="w-full h-full object-contain" alt="" />
@@ -444,7 +444,7 @@ const DashboardPage: React.FC = () => {
                                 </div>
                                 <div className="flex justify-end items-center gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                                     <button onClick={() => handleCancelFix(item)} className="p-2 text-gray-400 hover:text-red-500 transition-colors"><XCircle className="w-5 h-5" /></button>
-                                    <button onClick={() => handleRegenerate(item)} className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-xl transition-all"><RotateCw className="w-4 h-4" /> Regenerate</button>
+                                    <button onClick={() => handleRegenerate(item)} className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#F1641E] dark:text-purple-400 hover:bg-orange-50 dark:hover:bg-purple-900/20 rounded-xl transition-all"><RotateCw className="w-4 h-4" /> Regenerate</button>
                                     <button onClick={() => handleSaveFix(item)} disabled={item.status === 'saving'} className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-xl shadow-lg disabled:bg-gray-400 transition-all">
                                         {item.status === 'saving' ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                                         Save to Etsy
@@ -553,7 +553,7 @@ const DashboardPage: React.FC = () => {
                 <MetricCard icon={Package} title={t('metric_total_products')} value={!isInitialLoading ? String(products.length) : '...'} change="" bgColor="bg-white dark:bg-gray-800" iconColor="text-blue-500"/>
                 <MetricCard icon={TrendingUp} title={t('metric_avg_seo_score')} value={!isInitialLoading ? avgSeoScoreDisplay + "%" : '...'} change="" bgColor="bg-white dark:bg-gray-800" iconColor="text-green-500"/>
                 <MetricCard icon={DollarSign} title={t('metric_total_revenue')} value={salesData ? salesData.total_revenue.toFixed(2) + ' ' + salesData.currency : '...'} change="Overall" bgColor="bg-white dark:bg-gray-800" iconColor="text-indigo-500"/>
-                <MetricCard icon={Zap} title={t('metric_ai_optimizations')} value={!isInitialLoading ? String(optimizationsToday) : '...'} change={t('today')} bgColor="bg-white dark:bg-gray-800" iconColor="text-purple-500"/>
+                <MetricCard icon={Zap} title={t('metric_ai_optimizations')} value={!isInitialLoading ? String(optimizationsToday) : '...'} change={t('today')} bgColor="bg-white dark:bg-gray-800" iconColor="text-[#F1641E]"/>
             </div>
 
             {/* Product Thumbnail Strip */}
@@ -561,7 +561,7 @@ const DashboardPage: React.FC = () => {
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-card border border-gray-100 dark:border-gray-700 animate-fade-in">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                            <ImageIcon className="w-4 h-4 text-purple-500" />
+                            <ImageIcon className="w-4 h-4 text-[#F1641E]" />
                             {t('dash_live_gallery')}
                         </h3>
                         <span className="text-[10px] text-gray-400 font-medium">{t('dash_syncing_assets', { count: products.length })}</span>
@@ -571,7 +571,7 @@ const DashboardPage: React.FC = () => {
                             <div key={p.id} className="flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 group relative cursor-pointer active:scale-95 transition-all">
                                 <img src={p.imageUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt={p.title} />
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <span className="text-[8px] text-white font-bold px-1.5 py-0.5 bg-purple-600 rounded">SEO {p.seoScore}%</span>
+                                    <span className="text-[8px] text-white font-bold px-1.5 py-0.5 bg-[#F1641E] rounded">SEO {p.seoScore}%</span>
                                 </div>
                             </div>
                         ))}

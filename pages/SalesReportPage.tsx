@@ -148,7 +148,7 @@ const SalesReportPage: React.FC = () => {
                                 type="date" 
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none text-gray-900 dark:text-white"
+                                className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-[#F1641E] focus:border-transparent transition-all outline-none text-gray-900 dark:text-white"
                             />
                         </div>
                     </div>
@@ -160,7 +160,7 @@ const SalesReportPage: React.FC = () => {
                                 type="date" 
                                 value={endDate}
                                 onChange={(e) => setEndDate(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none text-gray-900 dark:text-white"
+                                className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-[#F1641E] focus:border-transparent transition-all outline-none text-gray-900 dark:text-white"
                             />
                         </div>
                     </div>
@@ -178,9 +178,9 @@ const SalesReportPage: React.FC = () => {
 
                 {/* LIVE DATA DASHBOARD */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div className="p-6 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-2xl border border-purple-100 dark:border-purple-800/50">
+                    <div className="p-6 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-2xl border border-orange-100 dark:border-purple-800/50">
                         <div className="flex items-center gap-3 mb-2">
-                            <DollarSign className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                            <DollarSign className="w-5 h-5 text-[#F1641E] dark:text-purple-400" />
                             <h3 className="font-bold text-gray-700 dark:text-gray-300">Total Revenue (Range)</h3>
                         </div>
                         {isFetching ? (

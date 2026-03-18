@@ -63,7 +63,7 @@ const SuggestionCard: React.FC<{suggestion: SuggestedQuestion}> = ({ suggestion 
                     </div>
                 </div>
             ) : (
-                 <button onClick={handleGenerate} disabled={suggestion.isGenerating} className="w-full mt-3 bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300 font-semibold py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-purple-200 dark:hover:bg-purple-900 transition-colors disabled:opacity-50">
+                 <button onClick={handleGenerate} disabled={suggestion.isGenerating} className="w-full mt-3 bg-orange-100 text-purple-700 dark:bg-purple-900/50 dark:text-orange-300 font-semibold py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-purple-200 dark:hover:bg-purple-900 transition-colors disabled:opacity-50">
                     {suggestion.isGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Bot className="w-5 h-5" />}
                     <span>{suggestion.isGenerating ? t('faq_generating_answer_button') : t('faq_generate_answer_button')}</span>
                 </button>
@@ -153,7 +153,7 @@ const FaqPage: React.FC = () => {
 
     const renderContent = () => {
         if (isFaqLoading) {
-            return <div className="flex justify-center items-center h-64"><Loader2 className="w-12 h-12 text-purple-500 animate-spin" /></div>;
+            return <div className="flex justify-center items-center h-64"><Loader2 className="w-12 h-12 text-[#F1641E] animate-spin" /></div>;
         }
         if (faqError) {
             return <ErrorDisplay message={faqError} />;
@@ -163,7 +163,7 @@ const FaqPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 <div className="lg:col-span-1 space-y-6">
                     <Card>
-                        <button onClick={handleScan} disabled={isScanning} className="w-full bg-purple-600 text-white font-semibold py-3 rounded-lg flex items-center justify-center space-x-2 hover:bg-purple-700 transition-opacity disabled:opacity-50">
+                        <button onClick={handleScan} disabled={isScanning} className="w-full bg-[#F1641E] text-white font-semibold py-3 rounded-lg flex items-center justify-center space-x-2 hover:bg-[#D95A1B] transition-opacity disabled:opacity-50">
                             {isScanning ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
                             <span>{isScanning ? t('faq_scanning_button') : t('faq_scan_button')}</span>
                         </button>
@@ -202,7 +202,7 @@ const FaqPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
-                        <HelpCircle className="w-8 h-8 me-3 text-purple-500" />
+                        <HelpCircle className="w-8 h-8 me-3 text-[#F1641E]" />
                         {t('faq_page_title')}
                     </h1>
                     <p className="text-gray-500 dark:text-gray-400 mt-1">{t('faq_page_subtitle')}</p>

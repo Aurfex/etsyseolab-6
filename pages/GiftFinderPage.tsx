@@ -18,7 +18,7 @@ const QuizSelect: React.FC<{label: string, id: keyof GiftFinderQuiz, value: stri
             name={id}
             value={value}
             onChange={onChange}
-            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md bg-gray-50 dark:bg-gray-700"
+            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-[#F1641E] focus:border-[#F1641E] sm:text-sm rounded-md bg-gray-50 dark:bg-gray-700"
         >
             {children}
         </select>
@@ -44,7 +44,7 @@ const ResultProductCard: React.FC<{product: RecommendedProduct; index: number}> 
                     </div>
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 flex-grow">{product.description.substring(0, 80)}...</p>
-                <button className="mt-4 w-full bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300 font-semibold py-2.5 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900 transition-colors flex items-center justify-center gap-2">
+                <button className="mt-4 w-full bg-orange-100 text-purple-700 dark:bg-purple-900/50 dark:text-orange-300 font-semibold py-2.5 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900 transition-colors flex items-center justify-center gap-2">
                     <ShoppingCart className="w-4 h-4" />
                     Add to Cart
                 </button>
@@ -94,7 +94,7 @@ const GiftFinderPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
-                        <Gift className="w-8 h-8 me-3 text-purple-500" />
+                        <Gift className="w-8 h-8 me-3 text-[#F1641E]" />
                         {t('gift_finder_page_title')}
                     </h1>
                     <p className="text-gray-500 dark:text-gray-400 mt-1">{t('gift_finder_page_subtitle')}</p>
@@ -106,7 +106,7 @@ const GiftFinderPage: React.FC = () => {
                 <div className="lg:col-span-1">
                     <Card>
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center mb-4">
-                            <Bot className="w-5 h-5 me-2 text-purple-500" />
+                            <Bot className="w-5 h-5 me-2 text-[#F1641E]" />
                             {t('gift_finder_quiz_title')}
                         </h3>
                         <form onSubmit={handleSubmit} className="space-y-4">
@@ -150,7 +150,7 @@ const GiftFinderPage: React.FC = () => {
                     <Card className="min-h-[50vh]">
                         {isLoading && (
                             <div className="flex flex-col items-center justify-center h-full text-center">
-                                <Loader2 className="w-12 h-12 text-purple-500 animate-spin" />
+                                <Loader2 className="w-12 h-12 text-[#F1641E] animate-spin" />
                                 <p className="mt-4 text-lg font-semibold text-gray-700 dark:text-gray-300">{t('gift_finder_finding_button')}</p>
                                 <p className="text-gray-500">Our AI is searching for the perfect items...</p>
                             </div>
@@ -170,7 +170,7 @@ const GiftFinderPage: React.FC = () => {
                                         <button className="p-2 text-gray-500 dark:text-gray-400 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Share"><Share2 className="w-4 h-4"/></button>
                                     </div>
                                 </div>
-                                <p className="text-gray-600 dark:text-gray-300 mb-6 bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg italic">
+                                <p className="text-gray-600 dark:text-gray-300 mb-6 bg-orange-50 dark:bg-purple-900/20 p-4 rounded-lg italic">
                                    "{results.responseText}"
                                 </p>
                                 

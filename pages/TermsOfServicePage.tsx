@@ -17,7 +17,7 @@ const TermsOfServicePage: React.FC = () => {
       <div className="max-w-3xl mx-auto">
         <button 
           onClick={() => setPage(auth.isAuthenticated ? 'dashboard' : 'landing')}
-          className="flex items-center text-sm font-medium text-purple-600 mb-8 hover:opacity-80 transition-opacity"
+          className="flex items-center text-sm font-medium text-[#F1641E] mb-8 hover:opacity-80 transition-opacity"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           {t('terms_back')}

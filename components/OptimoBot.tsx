@@ -74,7 +74,7 @@ const OptimoBot: React.FC = () => {
         <>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="fixed bottom-6 right-6 bg-purple-600 text-white rounded-full w-14 h-14 shadow-2xl hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-4 focus:ring-offset-gray-950 focus:ring-purple-500 transition-all hover:scale-110 z-50 overflow-hidden flex items-center justify-center border-2 border-white/20"
+                className="fixed bottom-6 right-6 bg-[#F1641E] text-white rounded-full w-14 h-14 shadow-2xl hover:bg-[#D95A1B] focus:outline-none focus:ring-2 focus:ring-offset-4 focus:ring-offset-gray-950 focus:ring-[#F1641E] transition-all hover:scale-110 z-50 overflow-hidden flex items-center justify-center border-2 border-white/20"
                 aria-label="Toggle Hasti AI Chat"
             >
                 {isOpen ? <X className="w-7 h-7" /> : <img src="/hasti_avatar.png" alt="Hasti AI" className="w-full h-full object-cover" />}
@@ -82,9 +82,9 @@ const OptimoBot: React.FC = () => {
 
             {isOpen && (
                 <div className="fixed bottom-24 right-6 w-80 h-[32rem] bg-gray-900/95 backdrop-blur-xl border border-gray-700/50 rounded-2xl shadow-2xl flex flex-col animate-fade-in-up z-50 overflow-hidden">
-                    <div className="flex items-center justify-between p-4 border-b border-gray-700/50 bg-purple-900/30">
+                    <div className="flex items-center justify-between p-4 border-b border-gray-700/50 bg-orange-900/30">
                         <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-purple-500/50 shadow-inner">
+                            <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-[#F1641E]/50 shadow-inner">
                                 <img src="/hasti_avatar.png" alt="Hasti" className="w-full h-full object-cover" />
                             </div>
                             <div>
@@ -119,7 +119,7 @@ const OptimoBot: React.FC = () => {
                                 )}
                                 <div className={`p-3.5 rounded-2xl shadow-sm max-w-[85%] text-sm leading-relaxed border ${
                                     msg.sender === 'user' 
-                                        ? 'bg-purple-600 text-white rounded-tr-none border-purple-500/50' 
+                                        ? 'bg-[#F1641E] text-white rounded-tr-none border-[#F1641E]/50' 
                                         : 'bg-gray-800/80 text-gray-200 rounded-tl-none border-gray-700/50'
                                 }`}>
                                     <p>{msg.text}</p>
@@ -154,7 +154,7 @@ const OptimoBot: React.FC = () => {
                             <button 
                                 onClick={handleSend}
                                 disabled={!inputValue.trim() || isLoading}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg text-purple-400 hover:text-white hover:bg-purple-600 transition-all disabled:opacity-50 disabled:hover:bg-transparent disabled:text-gray-600"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg text-purple-400 hover:text-white hover:bg-[#F1641E] transition-all disabled:opacity-50 disabled:hover:bg-transparent disabled:text-gray-600"
                             >
                                 <Send className="w-5 h-5" />
                             </button>

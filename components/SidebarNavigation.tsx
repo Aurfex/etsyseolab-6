@@ -60,10 +60,10 @@ const SidebarNavigation: React.FC = () => {
         <aside className={`fixed top-0 left-0 h-screen z-20 flex flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transition-width duration-300 ease-in-out ${isSidebarCollapsed ? 'w-full md:w-20' : 'w-64'}`}>
             <div className={`flex items-center border-b border-gray-200 dark:border-gray-800 px-4 transition-all ${isSidebarCollapsed ? 'h-16 justify-center' : 'h-16 justify-between'}`}>
                 <div className={`flex items-center gap-2 overflow-hidden ${isSidebarCollapsed ? 'hidden' : ''}`}>
-                    <Zap className="h-7 w-7 text-purple-500 flex-shrink-0" />
+                    <Zap className="h-7 w-7 text-[#F1641E] flex-shrink-0" />
                     <span className="text-xl font-bold text-gray-900 dark:text-white">ETSY SEOLAB</span>
                 </div>
-                 <Zap className={`h-7 w-7 text-purple-500 flex-shrink-0 ${isSidebarCollapsed ? '' : 'hidden'}`} />
+                 <Zap className={`h-7 w-7 text-[#F1641E] flex-shrink-0 ${isSidebarCollapsed ? '' : 'hidden'}`} />
                 <button onClick={toggleSidebar} className={`p-2 rounded-full hidden lg:block text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800 transition-colors`}>
                     {isSidebarCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
                 </button>
@@ -141,21 +141,21 @@ const NavItem: React.FC<{
       title={collapsed ? label : undefined}
       className={`relative flex items-center w-full h-11 px-3 rounded-lg text-sm font-medium transition-colors duration-200 group
         ${isActive && !disabled
-          ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-200'
+          ? 'bg-orange-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-200'
           : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
         }
         ${collapsed ? 'justify-center' : ''}
         ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
       `}
     >
-      <Icon className={`w-5 h-5 flex-shrink-0 ${isActive && !disabled ? 'text-purple-600 dark:text-purple-300' : ''}`} />
+      <Icon className={`w-5 h-5 flex-shrink-0 ${isActive && !disabled ? 'text-[#F1641E] dark:text-orange-300' : ''}`} />
       <span className={`ml-3 whitespace-nowrap overflow-hidden transition-opacity ${collapsed ? 'opacity-0 w-0' : 'opacity-100'}`}>{label}</span>
       
       {disabled && !collapsed && (
           <Lock className="w-4 h-4 ml-auto text-gray-500" />
       )}
 
-      {isActive && !disabled && <div className={`absolute top-1/2 -translate-y-1/2 h-6 w-1 bg-purple-600 rounded-full ${language === 'fa' ? 'right-0' : 'left-0'}`}></div>}
+      {isActive && !disabled && <div className={`absolute top-1/2 -translate-y-1/2 h-6 w-1 bg-[#F1641E] rounded-full ${language === 'fa' ? 'right-0' : 'left-0'}`}></div>}
        {!collapsed && (
         <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-30 lg:hidden">
             {label}

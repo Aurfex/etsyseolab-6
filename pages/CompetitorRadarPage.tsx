@@ -104,7 +104,7 @@ const CompetitorRadarPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
-            <Radar className="w-8 h-8 me-3 text-purple-500" />
+            <Radar className="w-8 h-8 me-3 text-[#F1641E]" />
             {t('competitor_title')}
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">{t('comp_page_desc')}</p>
@@ -114,11 +114,11 @@ const CompetitorRadarPage: React.FC = () => {
       {/* STEP 1: SELECT PRODUCT */}
       <Card className="relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
-            <Radar className="w-32 h-32 text-purple-500 animate-pulse" />
+            <Radar className="w-32 h-32 text-[#F1641E] animate-pulse" />
         </div>
         
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center mb-1">
-          <Search className="w-5 h-5 me-2 text-purple-500" />
+          <Search className="w-5 h-5 me-2 text-[#F1641E]" />
           {t('comp_target_title')}
         </h3>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t('comp_target_desc')}</p>
@@ -127,7 +127,7 @@ const CompetitorRadarPage: React.FC = () => {
           <select
             value={selectedProductId}
             onChange={(e) => setSelectedProductId(e.target.value)}
-            className="md:col-span-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl p-3 text-sm focus:ring-2 focus:ring-purple-500 outline-none transition-all text-gray-900 dark:text-white"
+            className="md:col-span-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#F1641E] outline-none transition-all text-gray-900 dark:text-white"
           >
             <option value="">{t('comp_select_placeholder')}</option>
             {products.map(p => (
@@ -172,8 +172,8 @@ const CompetitorRadarPage: React.FC = () => {
                     </BarChart>
                 </ResponsiveContainer>
             </div>
-            <div className="mt-4 p-4 bg-purple-50 dark:bg-purple-900/10 rounded-xl border border-purple-100 dark:border-purple-800/50">
-                <p className="text-sm text-purple-800 dark:text-purple-300 leading-relaxed">
+            <div className="mt-4 p-4 bg-orange-50 dark:bg-orange-900/10 rounded-xl border border-orange-100 dark:border-purple-800/50">
+                <p className="text-sm text-orange-800 dark:text-orange-300 leading-relaxed">
                     <Sparkles className="w-4 h-4 inline mr-1 mb-1" />
                     <strong>{t('comp_ai_insight_title')}</strong> {trendsLoading ? "Analyzing market..." : (insight || 'Your competitors are using more specific "long-tail" keywords in their first 40 characters.')}
                 </p>
@@ -211,11 +211,11 @@ const CompetitorRadarPage: React.FC = () => {
 
           {/* AI Fix Preview Section */}
           {showFixPreview && (
-            <Card className="lg:col-span-3 border-2 border-dashed border-purple-400 dark:border-purple-500/50 animate-pulse-subtle bg-purple-50/30 dark:bg-purple-900/5">
+            <Card className="lg:col-span-3 border-2 border-dashed border-purple-400 dark:border-[#F1641E]/50 animate-pulse-subtle bg-orange-50/30 dark:bg-purple-900/5">
                 <div className="flex justify-between items-start mb-6">
                     <div>
                         <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
-                            <Sparkles className="w-6 h-6 mr-2 text-purple-500" />
+                            <Sparkles className="w-6 h-6 mr-2 text-[#F1641E]" />
                             {t('comp_preview_title')}
                         </h3>
                         <p className="text-sm text-gray-500">{t('comp_preview_desc')}</p>
@@ -248,7 +248,7 @@ const CompetitorRadarPage: React.FC = () => {
                 <div className="mt-8 flex justify-end">
                     <button 
                         onClick={handleSaveToEtsyMock}
-                        className="px-8 py-3 bg-purple-600 text-white font-bold rounded-xl shadow-lg shadow-purple-500/20 hover:bg-purple-700 transition-all flex items-center"
+                        className="px-8 py-3 bg-[#F1641E] text-white font-bold rounded-xl shadow-lg shadow-purple-500/20 hover:bg-[#D95A1B] transition-all flex items-center"
                     >
                         <Save className="w-5 h-5 mr-2" />
                         {t('comp_btn_apply_save')}
@@ -263,7 +263,7 @@ const CompetitorRadarPage: React.FC = () => {
               <div className="flex flex-wrap gap-2">
                   {['14K Gold Minimalist', 'Art Deco Wedding Ring', 'Personalized Anniversary Gift', 'Solid Gold Jewelry', 'Dainty Everyday Necklace', 'Luxury Gift Box Packaging'].map(tag => (
                       <span key={tag} className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-xs font-medium flex items-center border border-gray-200 dark:border-gray-600">
-                          <AlertCircle className="w-3 h-3 mr-1.5 text-purple-500" />
+                          <AlertCircle className="w-3 h-3 mr-1.5 text-[#F1641E]" />
                           {tag}
                       </span>
                   ))}

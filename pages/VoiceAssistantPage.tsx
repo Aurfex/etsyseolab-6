@@ -33,11 +33,11 @@ const MessageBubble: React.FC<{message: AssistantMessage}> = ({ message }) => {
     return (
         <div className={`flex items-start gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}>
             {!isUser && (
-                <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0">
                     <Bot className="w-5 h-5 text-purple-400" />
                 </div>
             )}
-            <div className={`max-w-md space-y-2 p-3 rounded-2xl ${isUser ? 'bg-purple-600 text-white rounded-br-none' : 'bg-gray-100 dark:bg-gray-700/80 text-gray-800 dark:text-gray-200 rounded-bl-none'}`}>
+            <div className={`max-w-md space-y-2 p-3 rounded-2xl ${isUser ? 'bg-[#F1641E] text-white rounded-br-none' : 'bg-gray-100 dark:bg-gray-700/80 text-gray-800 dark:text-gray-200 rounded-bl-none'}`}>
                 <p className="whitespace-pre-wrap">{message.text}</p>
                 {message.products && message.products.length > 0 && (
                     <div className="pt-2">
@@ -165,7 +165,7 @@ const VoiceAssistantPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
-                        <Volume2 className="w-8 h-8 me-3 text-purple-500" />
+                        <Volume2 className="w-8 h-8 me-3 text-[#F1641E]" />
                         {t('assistant_page_title')}
                     </h1>
                     <p className="text-gray-500 dark:text-gray-400 mt-1">{t('assistant_page_subtitle')}</p>
@@ -181,7 +181,7 @@ const VoiceAssistantPage: React.FC = () => {
                     {messages.map((msg) => <MessageBubble key={msg.id} message={msg} />)}
                     {isProcessing && (
                          <div className="flex items-start gap-3 justify-start">
-                            <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                            <div className="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0">
                                 <Bot className="w-5 h-5 text-purple-400" />
                             </div>
                             <div className="p-3 rounded-2xl bg-gray-100 dark:bg-gray-700/80 rounded-bl-none">
@@ -193,7 +193,7 @@ const VoiceAssistantPage: React.FC = () => {
                 </div>
                 <div className="p-4 border-t border-gray-200 dark:border-gray-700">
                     <form onSubmit={handleSubmit} className="flex items-center gap-2">
-                       <button type="button" onClick={handleMicClick} className={`p-3 rounded-full transition-colors flex-shrink-0 ${isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-purple-600 hover:bg-purple-700 text-white'}`}>
+                       <button type="button" onClick={handleMicClick} className={`p-3 rounded-full transition-colors flex-shrink-0 ${isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-[#F1641E] hover:bg-[#D95A1B] text-white'}`}>
                            <Mic className="w-6 h-6"/>
                        </button>
                        <input 
@@ -201,7 +201,7 @@ const VoiceAssistantPage: React.FC = () => {
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
                         placeholder={isListening ? t('assistant_listening') : t('assistant_placeholder')}
-                        className="w-full bg-gray-100 dark:bg-gray-700/50 border-transparent focus:border-purple-500 focus:ring-purple-500 rounded-full px-5 py-3"
+                        className="w-full bg-gray-100 dark:bg-gray-700/50 border-transparent focus:border-[#F1641E] focus:ring-[#F1641E] rounded-full px-5 py-3"
                         disabled={isProcessing}
                        />
                        <button type="submit" className="p-3 rounded-full bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 flex-shrink-0" disabled={isProcessing || !inputValue}>

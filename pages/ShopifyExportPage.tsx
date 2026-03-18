@@ -205,7 +205,7 @@ const ShopifyExportPage: React.FC = () => {
                         <h3 className="font-bold text-gray-900 dark:text-white">{t('shopify_select_products')}</h3>
                         <button 
                             onClick={toggleSelectAll}
-                            className="text-xs font-bold text-purple-600 dark:text-purple-400 hover:underline"
+                            className="text-xs font-bold text-[#F1641E] dark:text-purple-400 hover:underline"
                         >
                             {selectedIds.length === products.length ? t('shopify_deselect_all') : t('shopify_select_all')}
                         </button>
@@ -225,10 +225,10 @@ const ShopifyExportPage: React.FC = () => {
                                     <tr 
                                         key={p.id} 
                                         onClick={() => toggleSelect(p.id)}
-                                        className={`hover:bg-purple-50/30 dark:hover:bg-purple-900/10 cursor-pointer transition-colors ${selectedIds.includes(p.id) ? 'bg-purple-50/50 dark:bg-purple-900/20' : ''}`}
+                                        className={`hover:bg-orange-50/30 dark:hover:bg-orange-900/10 cursor-pointer transition-colors ${selectedIds.includes(p.id) ? 'bg-orange-50/50 dark:bg-purple-900/20' : ''}`}
                                     >
                                         <td className="px-6 py-4">
-                                            <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${selectedIds.includes(p.id) ? 'bg-purple-600 border-purple-600' : 'border-gray-300 dark:border-gray-600'}`}>
+                                            <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${selectedIds.includes(p.id) ? 'bg-[#F1641E] border-purple-600' : 'border-gray-300 dark:border-gray-600'}`}>
                                                 {selectedIds.includes(p.id) && <Check className="w-3 h-3 text-white" />}
                                             </div>
                                         </td>

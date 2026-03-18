@@ -28,7 +28,7 @@ const SentimentIndicator: React.FC<{sentiment: ReviewResponse['sentiment']}> = (
         positive: { icon: ThumbsUp, color: 'text-green-500', bgColor: 'bg-green-500/10', key: 'sentiment_positive' },
         neutral: { icon: Meh, color: 'text-blue-500', bgColor: 'bg-blue-500/10', key: 'sentiment_neutral' },
         negative: { icon: ThumbsDown, color: 'text-red-500', bgColor: 'bg-red-500/10', key: 'sentiment_negative' },
-        mixed: { icon: Bot, color: 'text-purple-500', bgColor: 'bg-purple-500/10', key: 'sentiment_mixed' },
+        mixed: { icon: Bot, color: 'text-[#F1641E]', bgColor: 'bg-orange-500/10', key: 'sentiment_mixed' },
     }
     const config = sentimentConfig[sentiment] || sentimentConfig.neutral;
     return (
@@ -54,7 +54,7 @@ const AuditLogModal: React.FC<{ history: AuditLogEntry[], onClose: () => void }>
                     {sortedHistory.length > 0 ? sortedHistory.map(log => (
                         <div key={log.id} className="flex gap-3">
                             <div className="flex flex-col items-center">
-                                <div className="w-3 h-3 bg-purple-500 rounded-full mt-1.5"></div>
+                                <div className="w-3 h-3 bg-orange-500 rounded-full mt-1.5"></div>
                                 <div className="w-px h-full bg-gray-300 dark:bg-gray-600"></div>
                             </div>
                             <div>
@@ -154,7 +154,7 @@ const ReviewCard: React.FC<{ reviewData: FullReviewData }> = ({ reviewData }) =>
             
             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                 {!response ? (
-                    <button onClick={handleGenerate} disabled={isLoading} className="w-full bg-purple-600 text-white font-semibold py-2.5 rounded-lg flex items-center justify-center space-x-2 hover:bg-purple-700 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">
+                    <button onClick={handleGenerate} disabled={isLoading} className="w-full bg-[#F1641E] text-white font-semibold py-2.5 rounded-lg flex items-center justify-center space-x-2 hover:bg-[#D95A1B] transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">
                         {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Bot className="w-5 h-5" />}
                         <span>{isLoading ? t('review_generating_response') : t('review_generate_response')}</span>
                     </button>
@@ -194,7 +194,7 @@ const ReviewCard: React.FC<{ reviewData: FullReviewData }> = ({ reviewData }) =>
                                     <h5 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">{t('review_quick_replies_title')}</h5>
                                     <div className="flex flex-wrap gap-2">
                                         {quickReplies.map(qr => (
-                                            <button key={qr.id} onClick={() => handleQuickReply(qr.text)} disabled={isLoading || isPosting} className="px-2 py-1 text-xs font-medium rounded-md text-purple-700 bg-purple-100 hover:bg-purple-200 dark:text-purple-300 dark:bg-purple-900/50 dark:hover:bg-purple-900 disabled:opacity-50">
+                                            <button key={qr.id} onClick={() => handleQuickReply(qr.text)} disabled={isLoading || isPosting} className="px-2 py-1 text-xs font-medium rounded-md text-purple-700 bg-orange-100 hover:bg-purple-200 dark:text-orange-300 dark:bg-purple-900/50 dark:hover:bg-purple-900 disabled:opacity-50">
                                                 {qr.title}
                                             </button>
                                         ))}
@@ -269,7 +269,7 @@ const ReviewAnalytics: React.FC = () => {
         { label: t('sentiment_positive'), value: analytics.sentimentCounts.positive, color: 'bg-green-500' },
         { label: t('sentiment_neutral'), value: analytics.sentimentCounts.neutral, color: 'bg-blue-500' },
         { label: t('sentiment_negative'), value: analytics.sentimentCounts.negative, color: 'bg-red-500' },
-        { label: t('sentiment_mixed'), value: analytics.sentimentCounts.mixed, color: 'bg-purple-500' },
+        { label: t('sentiment_mixed'), value: analytics.sentimentCounts.mixed, color: 'bg-orange-500' },
     ];
     
     const statusData = [
@@ -281,7 +281,7 @@ const ReviewAnalytics: React.FC = () => {
     return (
         <Card>
             <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center mb-4">
-                <TrendingUp className="w-6 h-6 me-2 text-purple-500" />
+                <TrendingUp className="w-6 h-6 me-2 text-[#F1641E]" />
                 {t('review_analytics_title')}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -322,7 +322,7 @@ const ReviewsPage: React.FC = () => {
     const FilterButton: React.FC<{type: FilterType; label: string}> = ({ type, label }) => (
         <button 
             onClick={() => setFilter(type)}
-            className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 border ${filter === type ? 'bg-purple-600 text-white border-purple-600 shadow-lg shadow-purple-500/20' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'} disabled:opacity-50 disabled:cursor-not-allowed`}
+            className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 border ${filter === type ? 'bg-[#F1641E] text-white border-purple-600 shadow-lg shadow-purple-500/20' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'} disabled:opacity-50 disabled:cursor-not-allowed`}
         >
             {label}
         </button>
@@ -332,7 +332,7 @@ const ReviewsPage: React.FC = () => {
         if (isReviewsLoading) {
             return (
                 <div className="flex justify-center items-center h-64">
-                    <Loader2 className="w-12 h-12 text-purple-500 animate-spin" />
+                    <Loader2 className="w-12 h-12 text-[#F1641E] animate-spin" />
                 </div>
             );
         }
@@ -363,7 +363,7 @@ const ReviewsPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
-            <MessageSquareDashed className="w-8 h-8 me-3 text-purple-500" />
+            <MessageSquareDashed className="w-8 h-8 me-3 text-[#F1641E]" />
             {t('reviews_page_title')}
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">{t('reviews_page_subtitle')}</p>

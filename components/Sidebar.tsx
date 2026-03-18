@@ -20,21 +20,21 @@ const NavItem: React.FC<{
       title={collapsed ? label : undefined}
       className={`relative flex items-center w-full h-11 px-3 rounded-lg text-sm font-medium transition-colors duration-200 group
         ${isActive && !disabled
-          ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-200'
+          ? 'bg-orange-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-200'
           : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
         }
         ${collapsed ? 'justify-center' : ''}
         ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
       `}
     >
-      <Icon className={`w-5 h-5 flex-shrink-0 ${isActive && !disabled ? 'text-purple-600 dark:text-purple-300' : ''}`} />
+      <Icon className={`w-5 h-5 flex-shrink-0 ${isActive && !disabled ? 'text-[#F1641E] dark:text-orange-300' : ''}`} />
       <span className={`ml-3 whitespace-nowrap overflow-hidden transition-opacity ${collapsed ? 'opacity-0 w-0' : 'opacity-100'}`}>{label}</span>
       
       {disabled && !collapsed && (
           <Lock className="w-4 h-4 ml-auto text-gray-500" />
       )}
 
-      {isActive && !disabled && <div className={`absolute top-1/2 -translate-y-1/2 h-6 w-1 bg-purple-600 rounded-full left-0`}></div>}
+      {isActive && !disabled && <div className={`absolute top-1/2 -translate-y-1/2 h-6 w-1 bg-[#F1641E] rounded-full left-0`}></div>}
        {!collapsed && (
         <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-30 lg:hidden">
             {label}

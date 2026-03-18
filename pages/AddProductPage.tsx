@@ -27,7 +27,7 @@ const AddProductPage: React.FC = () => {
         <div className="space-y-8">
             <div>
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
-                    <PlusSquare className="w-8 h-8 me-3 text-purple-500" />
+                    <PlusSquare className="w-8 h-8 me-3 text-[#F1641E]" />
                     {t('add_product_page_title')}
                 </h1>
                 <p className="text-gray-500 dark:text-gray-400 mt-1">{t('add_product_page_subtitle')}</p>
@@ -39,10 +39,10 @@ const AddProductPage: React.FC = () => {
                         {steps.map((stepName, i) => (
                         <div key={stepName} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
                             currentStep === i + 1
-                            ? 'border-purple-500 text-purple-600'
+                            ? 'border-[#F1641E] text-[#F1641E]'
                             : 'border-transparent text-gray-500'
                         }`}>
-                            <span className={`w-6 h-6 rounded-full me-2 inline-flex items-center justify-center text-xs ${currentStep > i ? 'bg-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}>{i + 1}</span>
+                            <span className={`w-6 h-6 rounded-full me-2 inline-flex items-center justify-center text-xs ${currentStep > i ? 'bg-[#F1641E] text-white' : 'bg-gray-200 dark:bg-gray-700'}`}>{i + 1}</span>
                             {stepName}
                         </div>
                         ))}
@@ -124,8 +124,8 @@ const Step1: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
                  <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_is_supply_label')}</label>
                     <div className="mt-2 flex gap-4">
-                        <label className="flex items-center text-gray-700 dark:text-gray-300"><input type="radio" name="is_supply" value="false" checked={newProductData.is_supply === false} onChange={handleChange} className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300" /> <span className="ml-2">{t('add_product_no')}</span></label>
-                        <label className="flex items-center text-gray-700 dark:text-gray-300"><input type="radio" name="is_supply" value="true" checked={newProductData.is_supply === true} onChange={handleChange} className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300" /> <span className="ml-2">{t('add_product_yes')}</span></label>
+                        <label className="flex items-center text-gray-700 dark:text-gray-300"><input type="radio" name="is_supply" value="false" checked={newProductData.is_supply === false} onChange={handleChange} className="h-4 w-4 text-[#F1641E] focus:ring-[#F1641E] border-gray-300" /> <span className="ml-2">{t('add_product_no')}</span></label>
+                        <label className="flex items-center text-gray-700 dark:text-gray-300"><input type="radio" name="is_supply" value="true" checked={newProductData.is_supply === true} onChange={handleChange} className="h-4 w-4 text-[#F1641E] focus:ring-[#F1641E] border-gray-300" /> <span className="ml-2">{t('add_product_yes')}</span></label>
                     </div>
                 </div>
             </div>
@@ -352,7 +352,7 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
                 <button
                     onClick={handleAnalyze}
                     disabled={isAnalyzing || !(newProductData.images && newProductData.images.length)}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-white bg-purple-600 hover:bg-purple-700 shadow-sm transition disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-white bg-[#F1641E] hover:bg-[#D95A1B] shadow-sm transition disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                     {isAnalyzing ? <Loader2 className="w-4 h-4 animate-spin"/> : <Sparkles className="w-4 h-4"/>}
                     {isAnalyzing ? t('add_product_btn_analyzing') : t('add_product_btn_analyze')}
@@ -360,10 +360,10 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
             </div>
 
             <div onDragEnter={() => setIsDragging(true)} onDragLeave={() => setIsDragging(false)} onDragOver={(e) => e.preventDefault()} onDrop={handleDrop}
-                className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md ${isDragging ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' : 'border-gray-300 dark:border-gray-600'}`}>
+                className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md ${isDragging ? 'border-[#F1641E] bg-orange-50 dark:bg-purple-900/20' : 'border-gray-300 dark:border-gray-600'}`}>
                 <div className="space-y-1 text-center">
                     <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
-                    <label htmlFor="file-upload" className="relative cursor-pointer bg-transparent rounded-md font-medium text-purple-600 hover:text-purple-500 focus-within:outline-none">
+                    <label htmlFor="file-upload" className="relative cursor-pointer bg-transparent rounded-md font-medium text-[#F1641E] hover:text-[#F1641E] focus-within:outline-none">
                         <span>{t('add_product_image_upload_cta')}</span>
                         <input id="file-upload" name="file-upload" type="file" multiple accept="image/png, image/jpeg" className="sr-only" onChange={(e) => handleFileChange(e.target.files)} />
                     </label>
@@ -432,21 +432,21 @@ const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, on
                 <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_is_supply_label')}</label>
                     <div className="mt-2 flex gap-4">
-                        <label className="flex items-center text-gray-700 dark:text-gray-300"><input type="radio" name="is_supply" value="false" checked={newProductData.is_supply === false} onChange={handleChange} className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300" /> <span className="ml-2">{t('add_product_no')}</span></label>
-                        <label className="flex items-center text-gray-700 dark:text-gray-300"><input type="radio" name="is_supply" value="true" checked={newProductData.is_supply === true} onChange={handleChange} className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300" /> <span className="ml-2">{t('add_product_yes')}</span></label>
+                        <label className="flex items-center text-gray-700 dark:text-gray-300"><input type="radio" name="is_supply" value="false" checked={newProductData.is_supply === false} onChange={handleChange} className="h-4 w-4 text-[#F1641E] focus:ring-[#F1641E] border-gray-300" /> <span className="ml-2">{t('add_product_no')}</span></label>
+                        <label className="flex items-center text-gray-700 dark:text-gray-300"><input type="radio" name="is_supply" value="true" checked={newProductData.is_supply === true} onChange={handleChange} className="h-4 w-4 text-[#F1641E] focus:ring-[#F1641E] border-gray-300" /> <span className="ml-2">{t('add_product_yes')}</span></label>
                     </div>
                 </div>
             </div>
 
             {seoInsight && (
-                <div className="rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50/60 dark:bg-purple-900/20 p-4 space-y-2">
+                <div className="rounded-xl border border-purple-200 dark:border-purple-800 bg-orange-50/60 dark:bg-purple-900/20 p-4 space-y-2">
                     {(() => {
                         const englishOnly = (seoInsight.recommendations || []).filter(r => !(/[\u0600-\u06FF]/.test(String(r))));
                         return (
                             <>
                                 <div className="flex items-center justify-between">
-                                    <h4 className="font-semibold text-purple-800 dark:text-purple-200">{t('add_product_seo_insight_title')}</h4>
-                                    <span className="text-sm font-bold text-purple-700 dark:text-purple-300">{seoInsight.yourScore}/100</span>
+                                    <h4 className="font-semibold text-orange-800 dark:text-purple-200">{t('add_product_seo_insight_title')}</h4>
+                                    <span className="text-sm font-bold text-purple-700 dark:text-orange-300">{seoInsight.yourScore}/100</span>
                                 </div>
                                 <p className="text-sm text-gray-700 dark:text-gray-300">{t('add_product_rank_label', { rank: seoInsight.yourRank, total: seoInsight.totalCompared, avg: seoInsight.avgTopScore })}</p>
                                 {seoInsight.topCompetitorTitle && (
@@ -534,7 +534,7 @@ const Step3: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNext, onP
                 <div>
                     <h3 className="text-lg font-bold">{t('add_product_ai_seo_title')}</h3>
                     <p className="text-sm text-gray-500">{t('add_product_ai_seo_subtitle')}</p>
-                    <p className="text-xs text-purple-600 mt-1">{t('add_product_ai_seo_regeneration_desc')}</p>
+                    <p className="text-xs text-[#F1641E] mt-1">{t('add_product_ai_seo_regeneration_desc')}</p>
                 </div>
                  <button onClick={handleGenerate} disabled={isGenerating || !(newProductData.images && newProductData.images.length)} className="btn-primary flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
                     {isGenerating ? <Loader2 className="w-5 h-5 animate-spin"/> : <Sparkles className="w-5 h-5"/>}
@@ -554,7 +554,7 @@ const Step3: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNext, onP
                 <div className="mt-1">
                     <div className="flex flex-wrap gap-2 p-2 border border-gray-300 dark:border-gray-600 rounded-md min-h-[40px]">
                         {newProductData.tags?.map(tag => (
-                            <span key={tag} className="flex items-center gap-1 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 text-sm font-medium px-2 py-1 rounded-full">
+                            <span key={tag} className="flex items-center gap-1 bg-orange-100 dark:bg-purple-900/50 text-purple-700 dark:text-orange-300 text-sm font-medium px-2 py-1 rounded-full">
                                 {tag}
                                 <button onClick={() => removeTag(tag)}><X className="w-3 h-3" /></button>
                             </span>

@@ -88,7 +88,7 @@ const FaqItem = ({ question, answer }: { question: string, answer: string }) => 
         className="w-full flex justify-between items-center p-6 text-left focus:outline-none"
       >
         <span className="font-bold text-gray-900 dark:text-white text-lg pr-4">{question}</span>
-        {isOpen ? <ChevronUp className="w-5 h-5 text-purple-500 shrink-0" /> : <ChevronDown className="w-5 h-5 text-gray-400 shrink-0" />}
+        {isOpen ? <ChevronUp className="w-5 h-5 text-[#F1641E] shrink-0" /> : <ChevronDown className="w-5 h-5 text-gray-400 shrink-0" />}
       </button>
       <div className={`px-6 overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 pb-6 opacity-100' : 'max-h-0 opacity-0'}`}>
         <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{answer}</p>
@@ -110,7 +110,7 @@ const LandingPage: React.FC = () => {
   const features = [
     { icon: <Zap className="w-6 h-6 text-yellow-500" />, title: t('landing_feat_ai_title'), description: t('landing_feat_ai_desc') },
     { icon: <BarChart3 className="w-6 h-6 text-blue-500" />, title: t('landing_feat_radar_title'), description: t('landing_feat_radar_desc') },
-    { icon: <Bot className="w-6 h-6 text-purple-500" />, title: t('landing_feat_auto_title'), description: t('landing_feat_auto_desc') }
+    { icon: <Bot className="w-6 h-6 text-[#F1641E]" />, title: t('landing_feat_auto_title'), description: t('landing_feat_auto_desc') }
   ];
 
   const faqs = [
@@ -148,7 +148,7 @@ const LandingPage: React.FC = () => {
   ];
 
   return (
-    <div className="relative min-h-screen bg-transparent text-gray-900 dark:text-white selection:bg-purple-500/30 overflow-x-hidden">
+    <div className="relative min-h-screen bg-transparent text-gray-900 dark:text-white selection:bg-orange-500/30 overflow-x-hidden">
       <ParticleBackground />
       {/* NAVBAR */}
       <nav className="fixed top-0 w-full z-50 bg-white/40 dark:bg-gray-950/40 backdrop-blur-md border-b border-gray-100 dark:border-gray-900">
@@ -158,11 +158,11 @@ const LandingPage: React.FC = () => {
             <span className="text-xl font-bold text-gray-900 dark:text-white tracking-tight uppercase">ETSY SEOLAB</span>
           </div>
           <div className="hidden md:flex items-center space-x-8 text-sm font-medium">
-            <button onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')} className="hover:text-purple-600 transition-colors font-bold text-[#F1641E]">
+            <button onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')} className="hover:text-[#F1641E] transition-colors font-bold text-[#F1641E]">
               {language === 'en' ? 'FR' : 'EN'}
             </button>
-            <a href="#features" className="hover:text-purple-600 transition-colors">{t('landing_nav_features')}</a>
-            <a href="#pricing" className="hover:text-purple-600 transition-colors">{t('landing_nav_pricing')}</a>
+            <a href="#features" className="hover:text-[#F1641E] transition-colors">{t('landing_nav_features')}</a>
+            <a href="#pricing" className="hover:text-[#F1641E] transition-colors">{t('landing_nav_pricing')}</a>
             <button 
               onClick={login}
               className="px-6 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full font-bold hover:scale-105 transition-transform"
@@ -176,7 +176,7 @@ const LandingPage: React.FC = () => {
       {/* HERO SECTION */}
       <section className="relative pt-40 pb-20 px-6 bg-transparent">
         <div className="max-w-7xl mx-auto text-center">
-          <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 text-xs font-bold mb-8 animate-fade-in">
+          <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-orange-50 dark:bg-purple-900/20 text-[#F1641E] dark:text-purple-400 text-xs font-bold mb-8 animate-fade-in">
             <Rocket className="w-4 h-4" />
             <span>{t('landing_social_proof')}</span>
           </div>
@@ -187,7 +187,7 @@ const LandingPage: React.FC = () => {
           <p className="text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto mb-4 animate-fade-in-up delay-100">
             {t('landing_hero_subtitle')}
           </p>
-          <p className="text-lg font-medium text-purple-600 dark:text-purple-400 mb-10 animate-fade-in-up delay-150 italic">
+          <p className="text-lg font-medium text-[#F1641E] dark:text-purple-400 mb-10 animate-fade-in-up delay-150 italic">
             "Hasti AI: Because your competitors need a reason to cry."
           </p>
           <div className="flex flex-col items-center justify-center animate-fade-in-up delay-200">
@@ -266,7 +266,7 @@ const LandingPage: React.FC = () => {
                   <img src={t.avatar} alt={t.name} className="w-10 h-10 rounded-full bg-gray-200" />
                   <div>
                     <h4 className="font-bold text-sm text-gray-900 dark:text-white">{t.name}</h4>
-                    <p className="text-xs text-purple-600 dark:text-purple-400">{t.shop}</p>
+                    <p className="text-xs text-[#F1641E] dark:text-purple-400">{t.shop}</p>
                   </div>
                 </div>
               </div>
@@ -284,9 +284,9 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {pricing.map((p, i) => (
-              <div key={i} className={`p-8 rounded-3xl border ${p.highlight ? 'border-purple-500 ring-4 ring-purple-500/10 bg-white dark:bg-gray-900 relative scale-105 z-10' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950'}`}>
+              <div key={i} className={`p-8 rounded-3xl border ${p.highlight ? 'border-[#F1641E] ring-4 ring-[#F1641E]/10 bg-white dark:bg-gray-900 relative scale-105 z-10' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950'}`}>
                 {p.highlight && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-purple-600 text-white text-xs font-bold rounded-full">
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-[#F1641E] text-white text-xs font-bold rounded-full">
                     {t('landing_pricing_popular')}
                   </div>
                 )}
@@ -306,7 +306,7 @@ const LandingPage: React.FC = () => {
                 </div>
                 <button 
                   onClick={login}
-                  className={`w-full py-4 rounded-2xl font-bold transition-all ${p.highlight ? 'bg-purple-600 text-white hover:bg-purple-700 shadow-lg shadow-purple-500/20' : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                  className={`w-full py-4 rounded-2xl font-bold transition-all ${p.highlight ? 'bg-[#F1641E] text-white hover:bg-[#D95A1B] shadow-lg shadow-purple-500/20' : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
                 >
                   {p.buttonText}
                 </button>
@@ -333,9 +333,9 @@ const LandingPage: React.FC = () => {
 
       {/* CTA SECTION */}
       <section className="py-20 px-6 relative z-10">
-        <div className="max-w-5xl mx-auto bg-transparent backdrop-blur-xl border border-purple-500/30 dark:border-white/20 rounded-[3rem] p-12 md:p-20 text-center relative overflow-hidden shadow-2xl">
+        <div className="max-w-5xl mx-auto bg-transparent backdrop-blur-xl border border-[#F1641E]/30 dark:border-white/20 rounded-[3rem] p-12 md:p-20 text-center relative overflow-hidden shadow-2xl">
           {/* Extremely subtle ambient glows */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+          <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/5 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl"></div>
           
           <div className="relative z-10">
@@ -357,16 +357,16 @@ const LandingPage: React.FC = () => {
       <footer className="py-20 px-6 border-t border-gray-100 dark:border-gray-900">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0">
           <div className="flex items-center space-x-2">
-            <Zap className="h-7 w-7 text-purple-600" />
+            <Zap className="h-7 w-7 text-[#F1641E]" />
             <span className="text-lg font-bold tracking-tight text-gray-900 dark:text-white uppercase">ETSY SEOLAB</span>
           </div>
           <div className="flex space-x-8 text-sm text-gray-500">
-            <button onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')} className="hover:text-purple-600 transition-colors font-bold text-[#F1641E]">
+            <button onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')} className="hover:text-[#F1641E] transition-colors font-bold text-[#F1641E]">
               {language === 'en' ? 'FR' : 'EN'}
             </button>
-            <button onClick={() => setPage('privacy')} className="hover:text-purple-600 transition-colors">{t('landing_nav_privacy')}</button>
-            <button onClick={() => setPage('terms')} className="hover:text-purple-600 transition-colors">{t('landing_nav_terms')}</button>
-            <button onClick={() => setPage('contact')} className="hover:text-purple-600 transition-colors">{t('landing_nav_contact')}</button>
+            <button onClick={() => setPage('privacy')} className="hover:text-[#F1641E] transition-colors">{t('landing_nav_privacy')}</button>
+            <button onClick={() => setPage('terms')} className="hover:text-[#F1641E] transition-colors">{t('landing_nav_terms')}</button>
+            <button onClick={() => setPage('contact')} className="hover:text-[#F1641E] transition-colors">{t('landing_nav_contact')}</button>
           </div>
           <div className="text-sm text-gray-500">
             © 2026 dXb Tech Ltd. Built with ❤️ for Etsy Sellers.

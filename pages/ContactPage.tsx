@@ -16,14 +16,14 @@ const ContactPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-white p-8 md:p-20 relative">
       <div className="absolute top-8 right-8">
-        <button onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')} className="px-4 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 rounded-full font-bold hover:opacity-80 transition-opacity">
+        <button onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')} className="px-4 py-2 bg-orange-100 dark:bg-orange-900/30 text-[#F1641E] rounded-full font-bold hover:opacity-80 transition-opacity">
           {language === 'en' ? 'FR' : 'EN'}
         </button>
       </div>
       <div className="max-w-5xl mx-auto">
         <button 
           onClick={() => setPage(auth.isAuthenticated ? 'dashboard' : 'landing')}
-          className="flex items-center text-sm font-medium text-purple-600 mb-8 hover:opacity-80 transition-opacity"
+          className="flex items-center text-sm font-medium text-[#F1641E] mb-8 hover:opacity-80 transition-opacity"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           {t('contact_back')}
@@ -38,7 +38,7 @@ const ContactPage: React.FC = () => {
 
             <div className="space-y-8">
               <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center text-purple-600">
+                <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-2xl flex items-center justify-center text-[#F1641E]">
                   <Mail className="w-6 h-6" />
                 </div>
                 <div>
@@ -72,18 +72,18 @@ const ContactPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-sm font-bold ml-1">{t('contact_form_name')}</label>
-                  <input required type="text" className="w-full p-4 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-2xl focus:ring-2 focus:ring-purple-500 outline-none" placeholder={t('contact_form_name_placeholder')} />
+                  <input required type="text" className="w-full p-4 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-2xl focus:ring-2 focus:ring-[#F1641E] outline-none" placeholder={t('contact_form_name_placeholder')} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-bold ml-1">{t('contact_form_email')}</label>
-                  <input required type="email" className="w-full p-4 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-2xl focus:ring-2 focus:ring-purple-500 outline-none" placeholder={t('contact_form_email_placeholder')} />
+                  <input required type="email" className="w-full p-4 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-2xl focus:ring-2 focus:ring-[#F1641E] outline-none" placeholder={t('contact_form_email_placeholder')} />
                 </div>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-bold ml-1">{t('contact_form_message')}</label>
-                <textarea required rows={5} className="w-full p-4 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-2xl focus:ring-2 focus:ring-purple-500 outline-none resize-none" placeholder={t('contact_form_message_placeholder')} />
+                <textarea required rows={5} className="w-full p-4 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-2xl focus:ring-2 focus:ring-[#F1641E] outline-none resize-none" placeholder={t('contact_form_message_placeholder')} />
               </div>
-              <button type="submit" className="w-full py-4 bg-purple-600 text-white rounded-2xl font-bold text-lg hover:bg-purple-700 transition-all flex items-center justify-center space-x-2">
+              <button type="submit" className="w-full py-4 bg-[#F1641E] text-white rounded-2xl font-bold text-lg hover:bg-[#D95A1B] transition-all flex items-center justify-center space-x-2">
                 <Send className="w-5 h-5" />
                 <span>{t('contact_form_submit')}</span>
               </button>

@@ -17,7 +17,7 @@ const EmptyState: React.FC<{ onAction: () => void; title: string; subtitle: stri
         <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-white">{title}</h3>
         <p className="mt-1 text-sm text-gray-500">{subtitle}</p>
         <div className="mt-6">
-            <button onClick={onAction} type="button" className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+            <button onClick={onAction} type="button" className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#F1641E] hover:bg-[#D95A1B] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#F1641E]">
                 <PlusCircle className="-ml-1 mr-2 h-5 w-5" />
                 {buttonText}
             </button>
@@ -72,7 +72,7 @@ const StoryEditor: React.FC<{
         <Card className="flex flex-col h-full">
             <div className="flex justify-between items-center pb-4 border-b border-gray-200 dark:border-gray-700">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
-                    <Edit className="w-6 h-6 me-3 text-purple-500" />
+                    <Edit className="w-6 h-6 me-3 text-[#F1641E]" />
                     {story?.id ? t('story_editor_title') : t('story_editor_new_story_title')}
                 </h3>
                 <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
@@ -82,15 +82,15 @@ const StoryEditor: React.FC<{
             <div className="flex-grow space-y-6 pt-6 overflow-y-auto">
                 <div>
                     <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('story_title_label')}</label>
-                    <input type="text" id="title" value={title} onChange={e => setTitle(e.target.value)} placeholder={t('story_title_placeholder')} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 bg-gray-50 dark:bg-gray-700/50 sm:text-sm" />
+                    <input type="text" id="title" value={title} onChange={e => setTitle(e.target.value)} placeholder={t('story_title_placeholder')} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-[#F1641E] focus:ring-[#F1641E] bg-gray-50 dark:bg-gray-700/50 sm:text-sm" />
                 </div>
                  <div>
                     <label htmlFor="featuredImageUrl" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('story_featured_image_label')}</label>
-                    <input type="text" id="featuredImageUrl" value={featuredImageUrl} onChange={e => setFeaturedImageUrl(e.target.value)} placeholder={t('story_featured_image_placeholder')} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 bg-gray-50 dark:bg-gray-700/50 sm:text-sm" />
+                    <input type="text" id="featuredImageUrl" value={featuredImageUrl} onChange={e => setFeaturedImageUrl(e.target.value)} placeholder={t('story_featured_image_placeholder')} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-[#F1641E] focus:ring-[#F1641E] bg-gray-50 dark:bg-gray-700/50 sm:text-sm" />
                 </div>
                 <div>
                     <label htmlFor="content" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('story_content_label')}</label>
-                    <textarea id="content" value={content} onChange={e => setContent(e.target.value)} rows={10} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 bg-gray-50 dark:bg-gray-700/50 sm:text-sm font-mono"></textarea>
+                    <textarea id="content" value={content} onChange={e => setContent(e.target.value)} rows={10} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-[#F1641E] focus:ring-[#F1641E] bg-gray-50 dark:bg-gray-700/50 sm:text-sm font-mono"></textarea>
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('story_products_label')}</label>
@@ -100,9 +100,9 @@ const StoryEditor: React.FC<{
                     </div>
                     <div className="mt-2 h-32 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-md p-2 space-y-1">
                         {filteredProducts.map(p => (
-                            <button key={p.id} onClick={() => toggleProduct(p.id)} className={`w-full text-left p-2 rounded-md flex items-center justify-between transition-colors ${selectedProductIds.includes(p.id) ? 'bg-purple-100 dark:bg-purple-900/50' : 'hover:bg-gray-100 dark:hover:bg-gray-700/50'}`}>
+                            <button key={p.id} onClick={() => toggleProduct(p.id)} className={`w-full text-left p-2 rounded-md flex items-center justify-between transition-colors ${selectedProductIds.includes(p.id) ? 'bg-orange-100 dark:bg-purple-900/50' : 'hover:bg-gray-100 dark:hover:bg-gray-700/50'}`}>
                                 <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{p.title}</span>
-                                {selectedProductIds.includes(p.id) && <CheckCircle className="w-5 h-5 text-purple-600" />}
+                                {selectedProductIds.includes(p.id) && <CheckCircle className="w-5 h-5 text-[#F1641E]" />}
                             </button>
                         ))}
                     </div>
@@ -170,7 +170,7 @@ const StoryMagazinePage: React.FC = () => {
 
     const renderContent = () => {
         if (isStoriesLoading) {
-            return <div className="flex justify-center items-center h-64"><Loader2 className="w-12 h-12 text-purple-500 animate-spin" /></div>;
+            return <div className="flex justify-center items-center h-64"><Loader2 className="w-12 h-12 text-[#F1641E] animate-spin" /></div>;
         }
         if (storiesError) {
             return <ErrorDisplay message={storiesError} />;
@@ -180,13 +180,13 @@ const StoryMagazinePage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div className="md:col-span-1">
                     <Card>
-                        <button onClick={handleCreateNew} className="w-full mb-4 bg-purple-600 text-white font-semibold py-2.5 rounded-lg flex items-center justify-center space-x-2 hover:bg-purple-700 transition-opacity">
+                        <button onClick={handleCreateNew} className="w-full mb-4 bg-[#F1641E] text-white font-semibold py-2.5 rounded-lg flex items-center justify-center space-x-2 hover:bg-[#D95A1B] transition-opacity">
                             <PlusCircle className="w-5 h-5"/>
                             <span>{t('story_create_new')}</span>
                         </button>
                         <div className="space-y-3 max-h-[60vh] overflow-y-auto">
                             {stories.length > 0 ? stories.map(story => (
-                                <button key={story.id} onClick={() => handleSelectStory(story)} className={`w-full p-3 rounded-lg text-left transition-colors ${selectedStory?.id === story.id ? 'bg-purple-100 dark:bg-purple-900/50' : 'bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                                <button key={story.id} onClick={() => handleSelectStory(story)} className={`w-full p-3 rounded-lg text-left transition-colors ${selectedStory?.id === story.id ? 'bg-orange-100 dark:bg-purple-900/50' : 'bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
                                     <div className="flex justify-between items-center">
                                         <p className="font-semibold text-gray-800 dark:text-gray-200 truncate">{story.title}</p>
                                         <StatusBadge status={story.status} />
@@ -216,7 +216,7 @@ const StoryMagazinePage: React.FC = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
-                        <LayoutTemplate className="w-8 h-8 me-3 text-purple-500" />
+                        <LayoutTemplate className="w-8 h-8 me-3 text-[#F1641E]" />
                         {t('story_magazine_page_title')}
                     </h1>
                     <p className="text-gray-500 dark:text-gray-400 mt-1">{t('story_magazine_page_subtitle')}</p>

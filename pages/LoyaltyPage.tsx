@@ -42,7 +42,7 @@ const LoyaltyPage: React.FC = () => {
         switch(type) {
             case 'purchase': return <ShoppingBag className="w-5 h-5 text-green-500" />;
             case 'referral_signup': return <UserPlus className="w-5 h-5 text-blue-500" />;
-            case 'referral_purchase': return <Award className="w-5 h-5 text-purple-500" />;
+            case 'referral_purchase': return <Award className="w-5 h-5 text-[#F1641E]" />;
             case 'review_left': return <Sparkles className="w-5 h-5 text-yellow-500" />;
             default: return <ChevronsRight className="w-5 h-5 text-gray-400" />;
         }
@@ -50,7 +50,7 @@ const LoyaltyPage: React.FC = () => {
 
     const renderContent = () => {
         if (isLoyaltyLoading) {
-            return <div className="flex justify-center items-center h-64"><Loader2 className="w-12 h-12 text-purple-500 animate-spin" /></div>;
+            return <div className="flex justify-center items-center h-64"><Loader2 className="w-12 h-12 text-[#F1641E] animate-spin" /></div>;
         }
         if (loyaltyError) {
             return <ErrorDisplay message={loyaltyError} />;
@@ -67,15 +67,15 @@ const LoyaltyPage: React.FC = () => {
                     <Card>
                         <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400">{t('loyalty_current_points')}</h3>
                         <p className="text-5xl font-bold text-gray-900 dark:text-white mt-2">{status.currentPoints.toLocaleString()}</p>
-                        <p className="text-lg font-medium text-purple-600 dark:text-purple-400">{t('loyalty_points')}</p>
+                        <p className="text-lg font-medium text-[#F1641E] dark:text-purple-400">{t('loyalty_points')}</p>
                     </Card>
                     <Card>
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center">
-                           <Users className="w-5 h-5 me-2 text-purple-500" /> {t('loyalty_referral_code_title')}
+                           <Users className="w-5 h-5 me-2 text-[#F1641E]" /> {t('loyalty_referral_code_title')}
                         </h3>
                         <div className="mt-4 flex items-center gap-2 bg-gray-100 dark:bg-gray-700/50 p-2 rounded-lg">
                             <input type="text" readOnly value={status.referralCode} className="flex-grow bg-transparent font-mono text-lg p-1 focus:outline-none" />
-                            <button onClick={handleCopy} className="p-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors">
+                            <button onClick={handleCopy} className="p-2 bg-[#F1641E] text-white rounded-md hover:bg-[#D95A1B] transition-colors">
                                 {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
                             </button>
                         </div>
@@ -87,10 +87,10 @@ const LoyaltyPage: React.FC = () => {
                             </h3>
                             <p className="text-gray-600 dark:text-gray-300 mt-2 italic">"{aiRecommendation.reason}"</p>
                             <div className="mt-4 bg-white dark:bg-gray-700 p-3 rounded-lg text-center shadow-sm">
-                                <p className="font-semibold text-purple-700 dark:text-purple-300">{t(aiRecommendation.reward.tKey)}</p>
+                                <p className="font-semibold text-purple-700 dark:text-orange-300">{t(aiRecommendation.reward.tKey)}</p>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">{t('loyalty_points_required', { points: aiRecommendation.reward.pointsRequired })}</p>
                             </div>
-                            <button onClick={() => handleRedeem(aiRecommendation.reward.id)} disabled={redeemingId === aiRecommendation.reward.id} className="w-full mt-4 bg-purple-600 text-white font-semibold py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-purple-700 transition-colors disabled:opacity-50">
+                            <button onClick={() => handleRedeem(aiRecommendation.reward.id)} disabled={redeemingId === aiRecommendation.reward.id} className="w-full mt-4 bg-[#F1641E] text-white font-semibold py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-[#D95A1B] transition-colors disabled:opacity-50">
                                 {redeemingId === aiRecommendation.reward.id ? <Loader2 className="w-5 h-5 animate-spin"/> : <Gift className="w-5 h-5" />}
                                 {t('loyalty_redeem_now_button')}
                             </button>
@@ -100,14 +100,14 @@ const LoyaltyPage: React.FC = () => {
                 <div className="lg:col-span-2 space-y-8">
                     <Card>
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center mb-4">
-                            <Gift className="w-5 h-5 me-2 text-purple-500" /> {t('loyalty_available_rewards_title')}
+                            <Gift className="w-5 h-5 me-2 text-[#F1641E]" /> {t('loyalty_available_rewards_title')}
                         </h3>
                         <div className="space-y-3">
                             {status.availableRewards.map(reward => (
                                 <div key={reward.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                                     <div>
                                         <p className="font-semibold text-gray-800 dark:text-gray-200">{t(reward.tKey)}</p>
-                                        <p className="text-sm text-purple-600 dark:text-purple-400 font-medium">{t('loyalty_points_required', { points: reward.pointsRequired.toLocaleString() })}</p>
+                                        <p className="text-sm text-[#F1641E] dark:text-purple-400 font-medium">{t('loyalty_points_required', { points: reward.pointsRequired.toLocaleString() })}</p>
                                     </div>
                                     <button onClick={() => handleRedeem(reward.id)} disabled={redeemingId === reward.id || status.currentPoints < reward.pointsRequired} className="px-4 py-2 text-sm font-semibold rounded-md bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                                         {redeemingId === reward.id ? <Loader2 className="w-4 h-4 animate-spin"/> : t('loyalty_redeem_button')}
@@ -120,7 +120,7 @@ const LoyaltyPage: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                          <Card>
                             <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center mb-4">
-                                <Users className="w-5 h-5 me-2 text-purple-500" /> {t('loyalty_referral_status_title')}
+                                <Users className="w-5 h-5 me-2 text-[#F1641E]" /> {t('loyalty_referral_status_title')}
                             </h3>
                              {status.referrals.length > 0 ? (
                                 <table className="w-full text-sm">
@@ -147,7 +147,7 @@ const LoyaltyPage: React.FC = () => {
                         </Card>
                          <Card>
                             <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center mb-4">
-                                <Trophy className="w-5 h-5 me-2 text-purple-500" /> {t('loyalty_activity_history_title')}
+                                <Trophy className="w-5 h-5 me-2 text-[#F1641E]" /> {t('loyalty_activity_history_title')}
                             </h3>
                             <div className="space-y-4 max-h-60 overflow-y-auto">
                                 {status.history.length > 0 ? status.history.map(act => (
@@ -175,7 +175,7 @@ const LoyaltyPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
-                        <Trophy className="w-8 h-8 me-3 text-purple-500" />
+                        <Trophy className="w-8 h-8 me-3 text-[#F1641E]" />
                         {t('loyalty_page_title')}
                     </h1>
                     <p className="text-gray-500 dark:text-gray-400 mt-1">{t('loyalty_page_subtitle')}</p>

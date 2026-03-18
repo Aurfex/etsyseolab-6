@@ -217,7 +217,7 @@ const OptimizerPage: React.FC = () => {
                         placeholder={t('opt_search_placeholder')} 
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                        className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-[#F1641E] focus:border-transparent outline-none"
                     />
                 </div>
             </div>
@@ -255,7 +255,7 @@ const OptimizerPage: React.FC = () => {
                                 </div>
                             </div>
                             <div className="p-4">
-                                <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-2 text-sm mb-2 group-hover:text-purple-500 transition-colors">
+                                <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-2 text-sm mb-2 group-hover:text-[#F1641E] transition-colors">
                                     {product.title}
                                 </h3>
                                 <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
@@ -316,7 +316,7 @@ const OptimizerPage: React.FC = () => {
         {/* Suggestion Card */}
         <Card className="h-full">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
-            <Sparkles className="w-5 h-5 me-2 text-purple-500" />
+            <Sparkles className="w-5 h-5 me-2 text-[#F1641E]" />
             {t('optimizer_title_suggestions_title')}
           </h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">{t('optimizer_title_suggestions_subtitle')}</p>
@@ -331,7 +331,7 @@ const OptimizerPage: React.FC = () => {
               <label className="text-xs font-medium text-gray-400 dark:text-gray-500">{t('optimizer_ai_variants_label')}</label>
               <div className="mt-1 flex justify-between items-center bg-gray-100 dark:bg-gray-700/50 p-3 rounded-lg group min-h-[3rem]">
                 {isLoading ? (
-                    <div className="flex items-center space-x-2 text-purple-500 text-sm w-full justify-center py-2">
+                    <div className="flex items-center space-x-2 text-[#F1641E] text-sm w-full justify-center py-2">
                         <Loader2 className="w-4 h-4 animate-spin" />
                         <span>Generating AI suggestions...</span>
                     </div>
@@ -341,7 +341,7 @@ const OptimizerPage: React.FC = () => {
                             {optimizedData?.title || "Click 'Optimize Now' to generate suggestions."}
                          </span>
                         {optimizedData && (
-                            <button className="text-gray-400 hover:text-purple-500 transition-colors p-1" onClick={() => handleCopyToClipboard(optimizedData.title)}>
+                            <button className="text-gray-400 hover:text-[#F1641E] transition-colors p-1" onClick={() => handleCopyToClipboard(optimizedData.title)}>
                                 <Copy className="w-4 h-4" />
                             </button>
                         )}
@@ -420,35 +420,35 @@ const OptimizerPage: React.FC = () => {
         <div className="flex border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 overflow-x-auto">
           <button 
             onClick={() => setActiveTab('title')}
-            className={`flex items-center px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'title' ? 'text-purple-600 border-purple-600 bg-white dark:bg-gray-800 dark:text-purple-400' : 'text-gray-500 border-transparent hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+            className={`flex items-center px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'title' ? 'text-[#F1641E] border-purple-600 bg-white dark:bg-gray-800 dark:text-purple-400' : 'text-gray-500 border-transparent hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
           >
             <Type className="w-4 h-4 mr-2" />
             {t('optimizer_tab_title')}
           </button>
           <button 
             onClick={() => setActiveTab('description')}
-            className={`flex items-center px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'description' ? 'text-purple-600 border-purple-600 bg-white dark:bg-gray-800 dark:text-purple-400' : 'text-gray-500 border-transparent hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+            className={`flex items-center px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'description' ? 'text-[#F1641E] border-purple-600 bg-white dark:bg-gray-800 dark:text-purple-400' : 'text-gray-500 border-transparent hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
           >
             <FileText className="w-4 h-4 mr-2" />
             {t('optimizer_tab_description')}
           </button>
           <button 
             onClick={() => setActiveTab('altText')}
-            className={`flex items-center px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'altText' ? 'text-purple-600 border-purple-600 bg-white dark:bg-gray-800 dark:text-purple-400' : 'text-gray-500 border-transparent hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+            className={`flex items-center px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'altText' ? 'text-[#F1641E] border-purple-600 bg-white dark:bg-gray-800 dark:text-purple-400' : 'text-gray-500 border-transparent hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
           >
             <ImageIcon className="w-4 h-4 mr-2" />
             {t('optimizer_tab_alt_text')}
           </button>
           <button 
             onClick={() => setActiveTab('tags')}
-            className={`flex items-center px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'tags' ? 'text-purple-600 border-purple-600 bg-white dark:bg-gray-800 dark:text-purple-400' : 'text-gray-500 border-transparent hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+            className={`flex items-center px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'tags' ? 'text-[#F1641E] border-purple-600 bg-white dark:bg-gray-800 dark:text-purple-400' : 'text-gray-500 border-transparent hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
           >
             <Tag className="w-4 h-4 mr-2" />
             {t('optimizer_tab_tags')}
           </button>
           <button 
             onClick={() => setActiveTab('prices')}
-            className={`flex items-center px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'prices' ? 'text-purple-600 border-purple-600 bg-white dark:bg-gray-800 dark:text-purple-400' : 'text-gray-500 border-transparent hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+            className={`flex items-center px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'prices' ? 'text-[#F1641E] border-purple-600 bg-white dark:bg-gray-800 dark:text-purple-400' : 'text-gray-500 border-transparent hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
           >
             <DollarSign className="w-4 h-4 mr-2" />
             {t('optimizer_tab_prices')}
@@ -465,7 +465,7 @@ const OptimizerPage: React.FC = () => {
 
             {isLoading && (
                 <div className="flex flex-col items-center justify-center py-12">
-                     <Loader2 className="w-8 h-8 animate-spin text-purple-500 mb-2" />
+                     <Loader2 className="w-8 h-8 animate-spin text-[#F1641E] mb-2" />
                      <p className="text-gray-500">{t('opt_generating_best_seo_desc')}</p>
                 </div>
             )}
@@ -481,9 +481,9 @@ const OptimizerPage: React.FC = () => {
                                     value={optimizedData.title} 
                                     onChange={(e) => setOptimizedData({...optimizedData, title: e.target.value})}
                                     rows={3}
-                                    className="w-full bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg pr-12 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 outline-none resize-none" 
+                                    className="w-full bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg pr-12 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-[#F1641E] outline-none resize-none" 
                                 />
-                                <button onClick={() => handleCopyToClipboard(optimizedData.title)} className="absolute right-3 top-3 p-2 text-gray-400 hover:text-purple-500 bg-white dark:bg-gray-800 rounded-md shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onClick={() => handleCopyToClipboard(optimizedData.title)} className="absolute right-3 top-3 p-2 text-gray-400 hover:text-[#F1641E] bg-white dark:bg-gray-800 rounded-md shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
                                     <Copy className="w-4 h-4" />
                                 </button>
                             </div>
@@ -502,7 +502,7 @@ const OptimizerPage: React.FC = () => {
                                 <button 
                                     onClick={handleGenerateDescription}
                                     disabled={isGeneratingItem === 'description'}
-                                    className="text-xs flex items-center bg-purple-100 hover:bg-purple-200 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 px-3 py-1.5 rounded transition-colors"
+                                    className="text-xs flex items-center bg-orange-100 hover:bg-purple-200 text-purple-700 dark:bg-orange-900/30 dark:text-orange-300 px-3 py-1.5 rounded transition-colors"
                                 >
                                     {isGeneratingItem === 'description' ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Sparkles className="w-3 h-3 mr-1" />}
                                     {t('opt_btn_regenerate_desc')}
@@ -513,9 +513,9 @@ const OptimizerPage: React.FC = () => {
                                     value={optimizedData.description} 
                                     onChange={(e) => setOptimizedData({...optimizedData, description: e.target.value})}
                                     rows={10}
-                                    className="w-full bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg pr-12 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 outline-none resize-none text-sm" 
+                                    className="w-full bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg pr-12 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-[#F1641E] outline-none resize-none text-sm" 
                                 />
-                                <button onClick={() => handleCopyToClipboard(optimizedData.description)} className="absolute right-3 top-3 p-2 text-gray-400 hover:text-purple-500 bg-white dark:bg-gray-800 rounded-md shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onClick={() => handleCopyToClipboard(optimizedData.description)} className="absolute right-3 top-3 p-2 text-gray-400 hover:text-[#F1641E] bg-white dark:bg-gray-800 rounded-md shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
                                     <Copy className="w-4 h-4" />
                                 </button>
                             </div>
@@ -535,9 +535,9 @@ const OptimizerPage: React.FC = () => {
                                     value={optimizedData.altText || "No alt text generated."} 
                                     readOnly 
                                     rows={3}
-                                    className="w-full bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg pr-12 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 outline-none resize-none" 
+                                    className="w-full bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg pr-12 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-[#F1641E] outline-none resize-none" 
                                 />
-                                <button onClick={() => handleCopyToClipboard(optimizedData.altText || "")} className="absolute right-3 top-3 p-2 text-gray-400 hover:text-purple-500 bg-white dark:bg-gray-800 rounded-md shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onClick={() => handleCopyToClipboard(optimizedData.altText || "")} className="absolute right-3 top-3 p-2 text-gray-400 hover:text-[#F1641E] bg-white dark:bg-gray-800 rounded-md shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
                                     <Copy className="w-4 h-4" />
                                 </button>
                             </div>
@@ -557,12 +557,12 @@ const OptimizerPage: React.FC = () => {
                                     <button 
                                         onClick={handleGenerateTags}
                                         disabled={isGeneratingItem === 'tags'}
-                                        className="text-xs flex items-center bg-purple-100 hover:bg-purple-200 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 px-3 py-1.5 rounded transition-colors"
+                                        className="text-xs flex items-center bg-orange-100 hover:bg-purple-200 text-purple-700 dark:bg-orange-900/30 dark:text-orange-300 px-3 py-1.5 rounded transition-colors"
                                     >
                                         {isGeneratingItem === 'tags' ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Sparkles className="w-3 h-3 mr-1" />}
                                         {t('opt_btn_regenerate_tags')}
                                     </button>
-                                    <button onClick={() => handleCopyToClipboard(optimizedData.tags.join(', '))} className="text-xs text-purple-600 hover:text-purple-700 flex items-center px-3 py-1.5">
+                                    <button onClick={() => handleCopyToClipboard(optimizedData.tags.join(', '))} className="text-xs text-[#F1641E] hover:text-purple-700 flex items-center px-3 py-1.5">
                                         <Copy className="w-3 h-3 mr-1" /> {t('opt_btn_copy_all')}
                                     </button>
                                 </div>
@@ -570,7 +570,7 @@ const OptimizerPage: React.FC = () => {
                              
                              <div className="flex flex-wrap gap-2 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700 min-h-[100px]">
                                 {optimizedData.tags.map((tag, idx) => (
-                                    <span key={idx} className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${tag.length > 20 ? 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300' : 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-800/50'}`}>
+                                    <span key={idx} className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${tag.length > 20 ? 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300' : 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 border-purple-200 dark:border-purple-800/50'}`}>
                                         <Tag className="w-3 h-3 mr-1.5 opacity-70" />
                                         {tag} {tag.length > 20 && "(!)"}
                                     </span>
@@ -612,7 +612,7 @@ const OptimizerPage: React.FC = () => {
                     min="0"
                     value={priceToSave ?? ''}
                     onChange={(e) => setPriceToSave(e.target.value ? Number(e.target.value) : null)}
-                    className="mt-1 w-full bg-gray-50 dark:bg-gray-900 p-3 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 outline-none"
+                    className="mt-1 w-full bg-gray-50 dark:bg-gray-900 p-3 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-[#F1641E] outline-none"
                     placeholder="e.g. 249.99"
                   />
                   <p className="text-xs text-gray-500 mt-2">{t('opt_pricing_tab_desc')}</p>
