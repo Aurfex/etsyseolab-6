@@ -18,9 +18,35 @@ const AnalysisItem: React.FC<{item: string, value: string, color?: string}> = ({
   </div>
 );
 
+import React, { useState, useEffect } from 'react';
+
 const CompetitorRadarPage: React.FC = () => {
-  const { products, showToast } = useAppContext();
+  const { products, showToast, auth } = useAppContext();
   const { t } = useTranslation();
+  const storeNiche = auth?.user?.niche || 'Jewelry';
+
+  const [trends, setTrends] = useState<any[]>([]);
+  const [trendsLoading, setTrendsLoading] = useState(true);
+  const [insight, setInsight] = useState<string | null>(null);
+
+  useEffect(() => {
+      const loadTrends = async () => {
+          try {
+              const response = await fetch(`/api/trends?niche=${encodeURIComponent(storeNiche)}`);
+              if (!response.ok) throw new Error('Failed to fetch trends');
+              const data = await response.json();
+              if (data.trends && Array.isArray(data.trends)) {
+                  setTrends(data.trends);
+                  setInsight(data.insight);
+              }
+          } catch (err) {
+              console.error("Trends Error:", err);
+          } finally {
+              setTrendsLoading(false);
+          }
+      };
+      loadTrends();
+  }, [storeNiche]);
 
   const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -149,7 +175,7 @@ const CompetitorRadarPage: React.FC = () => {
             <div className="mt-4 p-4 bg-purple-50 dark:bg-purple-900/10 rounded-xl border border-purple-100 dark:border-purple-800/50">
                 <p className="text-sm text-purple-800 dark:text-purple-300 leading-relaxed">
                     <Sparkles className="w-4 h-4 inline mr-1 mb-1" />
-                    <strong>{t('comp_ai_insight_title')}</strong> Your competitors are using more specific "long-tail" keywords in their first 40 characters. We recommend restructuring your title to lead with material and occasion.
+                    <strong>{t('comp_ai_insight_title')}</strong> {trendsLoading ? "Analyzing market..." : (insight || 'Your competitors are using more specific "long-tail" keywords in their first 40 characters.')}
                 </p>
             </div>
           </Card>

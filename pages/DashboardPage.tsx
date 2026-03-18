@@ -44,6 +44,27 @@ const DashboardPage: React.FC = () => {
     const { t, language } = useTranslation();
     const storeNiche = auth.user?.niche || 'Jewelry';
 
+    const [trends, setTrends] = useState<any[]>([]);
+    const [trendsLoading, setTrendsLoading] = useState(true);
+
+    useEffect(() => {
+        const loadTrends = async () => {
+            try {
+                const response = await fetch(`/api/trends?niche=${encodeURIComponent(storeNiche)}`);
+                if (!response.ok) throw new Error('Failed to fetch trends');
+                const data = await response.json();
+                if (data.trends && Array.isArray(data.trends)) {
+                    setTrends(data.trends);
+                }
+            } catch (err) {
+                console.error("Trends Error:", err);
+            } finally {
+                setTrendsLoading(false);
+            }
+        };
+        loadTrends();
+    }, [storeNiche]);
+
     console.log("Dashboard Debug: Language is", language);
 
     // State
@@ -500,13 +521,30 @@ const DashboardPage: React.FC = () => {
 
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card border border-gray-100 dark:border-gray-700 h-full">
                         <div className="flex items-center gap-3 mb-6"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"><Flame className="w-4 h-4" /></span><h3 className="font-bold text-gray-900 dark:text-white">{t('dash_trending_keywords')}</h3></div>
-                        <ul className="space-y-6">
-                            <li className="flex justify-between items-center group/item"><div className="flex flex-col"><span className="text-sm font-bold text-gray-700 dark:text-gray-300">1. Art Deco {storeNiche}</span><span className="text-[10px] text-gray-400">High Volume</span></div><span className="text-xs text-green-500 font-black">+156%</span></li>
-                            <li className="flex justify-between items-center group/item"><div className="flex flex-col"><span className="text-sm font-bold text-gray-700 dark:text-gray-300">2. Custom 14K Gold {storeNiche}</span><span className="text-[10px] text-gray-400">Low Competition</span></div><span className="text-xs text-green-500 font-black">+112%</span></li>
-                            <li className="flex justify-between items-center group/item"><div className="flex flex-col"><span className="text-sm font-bold text-gray-700 dark:text-gray-300">3. Personalized {storeNiche} Gift</span><span className="text-[10px] text-gray-400">Rising Trend</span></div><span className="text-xs text-green-500 font-black">+89%</span></li>
-                            <li className="flex justify-between items-center group/item"><div className="flex flex-col"><span className="text-sm font-bold text-gray-700 dark:text-gray-300">4. Minimalist Bridal Set</span><span className="text-[10px] text-gray-400">Seasonal Spike</span></div><span className="text-xs text-green-500 font-black">+74%</span></li>
-                            <li className="flex justify-between items-center group/item"><div className="flex flex-col"><span className="text-sm font-bold text-gray-700 dark:text-gray-300">5. Vintage Style Lockets</span><span className="text-[10px] text-gray-400">Niche Opportunity</span></div><span className="text-xs text-green-500 font-black">+62%</span></li>
-                        </ul>
+                        {trendsLoading ? (
+                            <div className="flex justify-center items-center h-40">
+                                <RotateCw className="w-6 h-6 animate-spin text-orange-500" />
+                            </div>
+                        ) : trends.length > 0 ? (
+                            <ul className="space-y-6">
+                                {trends.map((trend, idx) => (
+                                    <li key={idx} className="flex justify-between items-center group/item">
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-bold text-gray-700 dark:text-gray-300">{idx + 1}. {trend.keyword}</span>
+                                            <span className="text-[10px] text-gray-400">{trend.volume}</span>
+                                        </div>
+                                        <span className="text-xs text-green-500 font-black">{trend.growth}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <ul className="space-y-6">
+                                <li className="flex justify-between items-center group/item"><div className="flex flex-col"><span className="text-sm font-bold text-gray-700 dark:text-gray-300">1. Art Deco {storeNiche}</span><span className="text-[10px] text-gray-400">High Volume</span></div><span className="text-xs text-green-500 font-black">+156%</span></li>
+                                <li className="flex justify-between items-center group/item"><div className="flex flex-col"><span className="text-sm font-bold text-gray-700 dark:text-gray-300">2. Custom 14K Gold {storeNiche}</span><span className="text-[10px] text-gray-400">Low Competition</span></div><span className="text-xs text-green-500 font-black">+112%</span></li>
+                                <li className="flex justify-between items-center group/item"><div className="flex flex-col"><span className="text-sm font-bold text-gray-700 dark:text-gray-300">3. Personalized {storeNiche} Gift</span><span className="text-[10px] text-gray-400">Rising Trend</span></div><span className="text-xs text-green-500 font-black">+89%</span></li>
+                                <li className="flex justify-between items-center group/item"><div className="flex flex-col"><span className="text-sm font-bold text-gray-700 dark:text-gray-300">4. Minimalist Bridal Set</span><span className="text-[10px] text-gray-400">Seasonal Spike</span></div><span className="text-xs text-green-500 font-black">+74%</span></li>
+                            </ul>
+                        )}
                     </div>
                 </div>
             </div>
