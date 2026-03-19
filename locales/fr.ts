@@ -827,7 +827,7 @@ const fr: Translations = {
     "landing_price_3_feat_2": "Support multi-boutique",
     "landing_price_3_feat_3": "Assistant vocal IA personnalisé",
     "landing_price_3_feat_4": "Configuration assistée",
-    "landing_price_3_btn": "Contacter les ventes",
+    "landing_price_3_btn": "Passer à l'Élite",
     "landing_watch_demo": "Voir la démo",
     
     // Waitlist

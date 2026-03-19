@@ -826,7 +826,7 @@ const en: Translations = {
     "landing_price_3_feat_2": "Multi-shop Support",
     "landing_price_3_feat_3": "Custom AI Voice Assistant",
     "landing_price_3_feat_4": "White-glove Setup",
-    "landing_price_3_btn": "Contact Sales",
+    "landing_price_3_btn": "Go Elite",
     "landing_watch_demo": "Watch Demo",
     
     // Waitlist
