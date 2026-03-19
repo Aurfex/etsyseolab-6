@@ -30,12 +30,14 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     : 'Path=/; HttpOnly; Secure; SameSite=None; Max-Age=300';
 
   // Prevent any intermediary caching on OAuth start endpoint
-  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
 
   // Store verifier and state in cookies
   res.setHeader('Set-Cookie', [
-    `etsy_code_verifier=${codeVerifier}; ${cookieAttrs}`,
-    `etsy_oauth_state=${state}; ${cookieAttrs}`
+    `etsy_code_verifier=${codeVerifier}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=3600`,
+    `etsy_oauth_state=${state}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=3600`
   ]);
 
   let scopes = process.env.ETSY_SCOPES || 'listings_r listings_w listings_d profile_r shops_r email_r';

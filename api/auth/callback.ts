@@ -19,10 +19,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // Prevent any intermediary caching on OAuth callback endpoint
-  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
 
   // Retrieve code verifier and state from cookies
-  const rawCookieHeader = req.headers.cookie || '';
+  const rawCookieHeader = req.headers['cookie'] || '';
   const cookies = Object.fromEntries(
     rawCookieHeader
       .split(';')
@@ -37,10 +39,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const codeVerifier = cookies.etsy_code_verifier;
   const storedState = cookies.etsy_oauth_state;
 
-  if (!rawCookieHeader || !codeVerifier || !storedState) {
+  if (!codeVerifier || !storedState) {
+    const debugInfo = {
+      hasCookieHeader: !!rawCookieHeader,
+      cookieCount: Object.keys(cookies).length,
+      verifierFound: !!codeVerifier,
+      stateFound: !!storedState,
+      timestamp: new Date().toISOString()
+    };
+    console.error('Missing cookies during callback:', debugInfo);
     return res.status(400).json({
       error: 'No cookies found',
-      hint: 'Start login from the same domain as callback (use https://etsyseolab-6.vercel.app).'
+      hint: 'Please ensure you are using https://etsyseolab-6.vercel.app and that your browser accepts cookies.',
+      debug: process.env.NODE_ENV === 'development' ? debugInfo : undefined
     });
   }
 
