@@ -334,7 +334,7 @@ const LandingPage: React.FC = () => {
                 </div>
                 <button 
                   onClick={() => handleStartPlan(p.id)}
-                  className={`w-full py-4 rounded-2xl font-bold transition-all ${p.highlight ? 'bg-[#F1641E] text-white hover:bg-[#D95A1B] shadow-lg shadow-purple-500/20' : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                  className={`w-full py-4 rounded-2xl font-bold transition-all ${p.highlight ? 'bg-[#F1641E] text-white hover:bg-[#D95A1B] shadow-lg shadow-orange-500/20' : 'bg-orange-50 dark:bg-orange-900/10 text-[#F1641E] border border-[#F1641E]/20 hover:bg-orange-100 dark:hover:bg-orange-900/20'}`}
                 >
                   {p.buttonText}
                 </button>
