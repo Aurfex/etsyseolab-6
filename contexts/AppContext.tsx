@@ -377,6 +377,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 });
             });
 
+            if (data.shop && data.shop.name) {
+                setAuth(prev => {
+                    const next = { ...prev, user: { ...prev.user, name: data.shop.name, email: prev.user?.email || '' } };
+                    sessionStorage.setItem('auth', JSON.stringify(next));
+                    return next;
+                });
+            }
+
             setProducts(realProducts);
             showToast({ message: `Loaded ${realProducts.length} products from Etsy!`, type: 'success' });
 

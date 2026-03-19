@@ -117,6 +117,7 @@ const fr: Translations = {
     "automation_schedule_config_title": "Configuration de la Planification",
     "automation_auto_optimization_label": "Optimisation Automatique",
     "automation_frequency_label": "Fréquence",
+    "automation_freq_none": "Aucune (Désactivé)",
     "automation_freq_6h": "Toutes les 6 Heures",
     "automation_freq_daily": "Quotidien",
     "automation_freq_weekly": "Hebdomadaire",

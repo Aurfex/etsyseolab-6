@@ -54,15 +54,25 @@ const getHeaders = async (req: VercelRequest) => {
   } as Record<string, string>;
 };
 
-const getShopId = async (headers: Record<string, string>) => {
+const getShopInfo = async (headers: Record<string, string>) => {
   const userResponse = await axios.get('https://openapi.etsy.com/v3/application/users/me', { headers });
   let shopId = userResponse.data?.shop_id;
+  let shopName = 'Etsy Shop';
+
   if (!shopId) {
     const userId = userResponse.data?.user_id;
     const shopResponse = await axios.get(`https://openapi.etsy.com/v3/application/users/${userId}/shops`, { headers });
-    if (shopResponse.data?.shops?.[0]) shopId = shopResponse.data.shops[0].shop_id;
+    if (shopResponse.data?.shops?.[0]) {
+        shopId = shopResponse.data.shops[0].shop_id;
+        shopName = shopResponse.data.shops[0].shop_name;
+    }
+  } else {
+    // If we have shopId, fetch shop details to get the name
+    const shopResponse = await axios.get(`https://openapi.etsy.com/v3/application/shops/${shopId}`, { headers });
+    shopName = shopResponse.data?.shop_name || 'Etsy Shop';
   }
-  return shopId;
+  
+  return { shopId, shopName };
 };
 
 const getDefaultReadinessStateId = async (headers: Record<string, string>, shopId: string | number): Promise<number | null> => {
@@ -165,7 +175,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     if (req.method === 'GET') {
-      const shopId = await getShopId(headers);
+      const { shopId, shopName } = await getShopInfo(headers);
       if (!shopId) return res.status(404).json({ error: 'No Etsy shop found.' });
 
       // INCREASE LIMIT TO 1000 (Max Etsy limit per request is usually 100, so we might need multiple pages if 1000 is needed)
@@ -232,7 +242,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         };
       });
 
-      return res.status(200).json({ products: formattedProducts, shop: { id: shopId } });
+      return res.status(200).json({ products: formattedProducts, shop: { id: shopId, name: shopName } });
     }
 
     if (req.method !== 'POST') {
@@ -257,7 +267,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!image?.filepath) return res.status(400).json({ error: 'Missing image file.' });
       if (!altText) return res.status(400).json({ error: 'Missing alt_text.' });
 
-      const shopId = await getShopId(headers);
+      const { shopId } = await getShopInfo(headers);
       if (!shopId) return res.status(404).json({ error: 'No Etsy shop found.' });
 
       const bytes = await readFile(image.filepath);
@@ -300,7 +310,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const body = await parseJsonBody(req);
     const action = body?.action;
     if (action === 'get_sales_data') {
-      const shopId = await getShopId(headers);
+      const { shopId } = await getShopInfo(headers);
       if (!shopId) return res.status(404).json({ error: 'No Etsy shop found.' });
 
       try {
@@ -373,7 +383,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 
     if (action === 'get_listings') {
-      const shopId = await getShopId(headers);
+      const { shopId, shopName } = await getShopInfo(headers);
       if (!shopId) return res.status(404).json({ error: 'No Etsy shop found.' });
 
       const fetchPage = async (offset = 0) => {
@@ -435,11 +445,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         };
       });
 
-      return res.status(200).json({ products: formattedProducts, shop: { id: shopId } });
+      return res.status(200).json({ products: formattedProducts, shop: { id: shopId, name: shopName } });
     }
 
     if (action === 'create_listing') {
-      const shopId = await getShopId(headers);
+      const { shopId } = await getShopInfo(headers);
       if (!shopId) return res.status(404).json({ error: 'No Etsy shop found.' });
 
       const payload = body?.payload || {};

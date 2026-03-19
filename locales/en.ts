@@ -93,6 +93,7 @@ const en: Translations = {
     "automation_schedule_config_title": "Schedule Configuration",
     "automation_auto_optimization_label": "Auto Optimization",
     "automation_frequency_label": "Frequency",
+    "automation_freq_none": "None (Disabled)",
     "automation_freq_6h": "Every 6 Hours",
     "automation_freq_daily": "Daily",
     "automation_freq_weekly": "Weekly",

@@ -97,6 +97,7 @@ const SettingsPage: React.FC = () => {
                     <div>
                         <label className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('settings_frequency')}</label>
                         <select name="frequency" value={settings.autopilot.frequency} onChange={e => handleSettingChange('autopilot', 'frequency', e.target.value)} className="mt-1 block w-full bg-gray-100 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-[#F1641E]">
+                            <option value="none">{t('automation_freq_none')}</option>
                             <option value="6h">{t('automation_freq_6h')}</option>
                             <option value="daily">{t('automation_freq_daily')}</option>
                             <option value="weekly">{t('automation_freq_weekly')}</option>
