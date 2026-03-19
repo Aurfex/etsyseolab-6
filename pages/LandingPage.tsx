@@ -99,7 +99,32 @@ const FaqItem = ({ question, answer }: { question: string, answer: string }) => 
 
 const LandingPage: React.FC = () => {
   const { t, language, setLanguage } = useTranslation();
-  const { setPage, login } = useAppContext();
+  const { setPage, login, showToast } = useAppContext();
+
+  const handleStartPlan = async (plan: string) => {
+    if (plan === 'free') {
+      login(); // Free plan just login/connect Etsy
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan }),
+      });
+
+      const { url, error } = await response.json();
+      if (error) throw new Error(error);
+      
+      if (url) {
+        window.location.href = url; // Redirect to Stripe
+      }
+    } catch (err: any) {
+      console.error("Stripe Checkout Error:", err);
+      showToast({ message: "Payment system is currently in maintenance. Please join waitlist or try again later.", type: 'error' });
+    }
+  };
 
   const testimonials = [
     { name: t('landing_testi_1_name'), shop: "VintageVibePrints", content: t('landing_testi_1_content'), avatar: "https://i.pravatar.cc/150?u=sarah" },
@@ -122,6 +147,7 @@ const LandingPage: React.FC = () => {
 
   const pricing = [
     {
+      id: 'free',
       name: t('landing_price_1_name'),
       price: t('landing_price_1_price'),
       description: t('landing_price_1_desc'),
@@ -130,6 +156,7 @@ const LandingPage: React.FC = () => {
       highlight: false
     },
     {
+      id: 'growth',
       name: t('landing_price_2_name'),
       price: t('landing_price_2_price'),
       description: t('landing_price_2_desc'),
@@ -138,6 +165,7 @@ const LandingPage: React.FC = () => {
       highlight: true
     },
     {
+      id: 'elite',
       name: t('landing_price_3_name'),
       price: t('landing_price_3_price'),
       description: t('landing_price_3_desc'),
@@ -305,7 +333,7 @@ const LandingPage: React.FC = () => {
                   ))}
                 </div>
                 <button 
-                  onClick={login}
+                  onClick={() => handleStartPlan(p.id)}
                   className={`w-full py-4 rounded-2xl font-bold transition-all ${p.highlight ? 'bg-[#F1641E] text-white hover:bg-[#D95A1B] shadow-lg shadow-purple-500/20' : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
                 >
                   {p.buttonText}

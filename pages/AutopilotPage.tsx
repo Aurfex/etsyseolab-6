@@ -257,10 +257,16 @@ const AutopilotPage: React.FC = () => {
             <p className="text-sm text-green-700 dark:text-green-400">{t('auto_stats_products')}: {stats.totalProducts} | {t('auto_stats_issues')}: {stats.totalIssues} ({t('auto_stats_high')}: {stats.high})</p>
             <p className="text-xs text-green-700 dark:text-green-400 mt-1 uppercase tracking-tighter">{t('auto_stats_title')}: {stats.byType.title} | {t('auto_stats_tags')}: {stats.byType.tags} | {t('auto_stats_description')}: {stats.byType.description} | {t('auto_stats_seo')}: {stats.byType.seo}</p>
           </div>
-          <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-            <input type="checkbox" id="autopilot-toggle" checked={settings.autopilot.enabled} onChange={handleAutopilotToggle} className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
-            <label htmlFor="autopilot-toggle" className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 dark:bg-gray-700 cursor-pointer"></label>
-          </div>
+          <button
+            onClick={() => handleAutopilotToggle({ target: { checked: !settings.autopilot.enabled } } as any)}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#F1641E] focus:ring-offset-2 dark:focus:ring-offset-gray-900 mr-2 ${settings.autopilot.enabled ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`}
+            role="switch"
+            aria-checked={settings.autopilot.enabled}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.autopilot.enabled ? 'translate-x-6' : 'translate-x-1'}`}
+            />
+          </button>
         </div>
 
         <div className="mt-4 flex gap-3">

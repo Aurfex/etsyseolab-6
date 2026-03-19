@@ -16,14 +16,19 @@ const SettingsGroup: React.FC<{title: string, children: React.ReactNode}> = ({ t
     </div>
 );
 
-const Toggle: React.FC<{label: string; description?: string; id: string; checked: boolean; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void }> = ({ label, description, id, checked, onChange }) => (
+const Toggle: React.FC<{label: string; description?: string; id: string; checked: boolean; onChange: (e: any) => void }> = ({ label, description, id, checked, onChange }) => (
     <div>
         <div className="flex items-center justify-between">
             <label htmlFor={id} className="font-medium text-gray-800 dark:text-gray-200">{label}</label>
-            <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                <input type="checkbox" name={id} id={id} checked={checked} onChange={onChange} className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
-                <label htmlFor={id} className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 dark:bg-gray-700 cursor-pointer"></label>
-            </div>
+            <button
+                type="button"
+                onClick={() => onChange({ target: { name: id, checked: !checked } })}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#F1641E] focus:ring-offset-2 dark:focus:ring-offset-gray-900 mr-2 ${checked ? 'bg-[#F1641E]' : 'bg-gray-300 dark:bg-gray-600'}`}
+                role="switch"
+                aria-checked={checked}
+            >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
+            </button>
         </div>
         {description && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{description}</p>}
     </div>
