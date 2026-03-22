@@ -59,86 +59,6 @@ const AddProductPage: React.FC = () => {
     );
 };
 
-// Step 1: Basic Info
-const Step1: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, onPrev }) => {
-    const { t } = useTranslation();
-    const { newProductData, updateNewProductData, etsyCategories, showToast } = useAppContext();
-
-    const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value, type } = e.target;
-        let finalValue: string | number | boolean = value;
-        if (type === 'number') finalValue = parseFloat(value);
-        if (name === 'is_supply') finalValue = value === 'true';
-        updateNewProductData({ [name]: finalValue });
-    };
-
-    const handleNext = () => {
-        if (!newProductData.title || !newProductData.taxonomy_id || !newProductData.price || !newProductData.quantity) {
-            showToast({tKey: 'add_product_validation_error', type: 'error'});
-            return;
-        }
-        onNext();
-    }
-
-    return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_title_label')}</label>
-                    <input type="text" name="title" id="title" value={newProductData.title} onChange={handleChange} placeholder={t('add_product_title_placeholder')} className="mt-1 block w-full input-field" />
-                </div>
-                <div>
-                    <label htmlFor="taxonomy_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_category_label')}</label>
-                    <select name="taxonomy_id" id="taxonomy_id" value={newProductData.taxonomy_id || ''} onChange={handleChange} className="mt-1 block w-full input-field">
-                        <option value="">{t('add_product_select_category')}</option>
-                        {etsyCategories.map(cat => (
-                            <option key={cat.id} value={cat.id}>{cat.path}</option>
-                        ))}
-                    </select>
-                </div>
-                 <div>
-                    <label htmlFor="price" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_price_label')}</label>
-                    <input type="number" name="price" id="price" value={newProductData.price || ''} min="0" step="0.01" onChange={handleChange} className="mt-1 block w-full input-field" />
-                </div>
-                 <div>
-                    <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_quantity_label')}</label>
-                    <input type="number" name="quantity" id="quantity" value={newProductData.quantity || ''} min="1" step="1" onChange={handleChange} className="mt-1 block w-full input-field" />
-                </div>
-                 <div>
-                    <label htmlFor="who_made" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_who_made_label')}</label>
-                    <select name="who_made" id="who_made" value={newProductData.who_made} onChange={handleChange} className="mt-1 block w-full input-field">
-                        <option value="i_did">{t('add_product_who_made_i_did')}</option>
-                        <option value="collective">{t('add_product_who_made_collective')}</option>
-                        <option value="someone_else">{t('add_product_who_made_someone_else')}</option>
-                    </select>
-                </div>
-                 <div>
-                    <label htmlFor="when_made" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_when_made_label')}</label>
-                    <select name="when_made" id="when_made" value={newProductData.when_made} onChange={handleChange} className="mt-1 block w-full input-field">
-                        <option value="made_to_order">{t('add_product_when_made_to_order')}</option>
-                        <option value="2020_2026">{t('add_product_when_made_2020_2026')}</option>
-                        <option value="2010_2019">{t('add_product_when_made_2010_2019')}</option>
-                        <option value="before_2010">{t('add_product_when_made_before_2010')}</option>
-                    </select>
-                </div>
-                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_is_supply_label')}</label>
-                    <div className="mt-2 flex gap-4">
-                        <label className="flex items-center text-gray-700 dark:text-gray-300"><input type="radio" name="is_supply" value="false" checked={newProductData.is_supply === false} onChange={handleChange} className="h-4 w-4 text-[#F1641E] focus:ring-[#F1641E] border-gray-300" /> <span className="ml-2">{t('add_product_no')}</span></label>
-                        <label className="flex items-center text-gray-700 dark:text-gray-300"><input type="radio" name="is_supply" value="true" checked={newProductData.is_supply === true} onChange={handleChange} className="h-4 w-4 text-[#F1641E] focus:ring-[#F1641E] border-gray-300" /> <span className="ml-2">{t('add_product_yes')}</span></label>
-                    </div>
-                </div>
-            </div>
-            <div className="flex justify-between">
-                {onPrev ? (
-                    <button onClick={onPrev} className="btn-secondary flex items-center"><ArrowLeft className="w-4 h-4 me-2"/>{t('add_product_prev_step')}</button>
-                ) : <span />}
-                <button onClick={handleNext} className="btn-primary">{t('add_product_next_step')}</button>
-            </div>
-        </div>
-    );
-};
-
 // Step 1: Image Analyze + Basic Info
 const Step2: React.FC<{onNext: () => void; onPrev?: () => void}> = ({ onNext, onPrev }) => {
     const { t } = useTranslation();
@@ -543,11 +463,11 @@ const Step3: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNext, onP
             </div>
              <div>
                 <label htmlFor="ai-title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_title_label')}</label>
-                <input type="text" name="title" id="ai-title" value={newProductData.title} onChange={(e) => updateNewProductData({ title: e.target.value })} maxLength={140} className="mt-1 block w-full input-field" />
+                <input type="text" name="title" id="ai-title" value={newProductData.title || ''} onChange={(e) => updateNewProductData({ title: e.target.value })} maxLength={140} className="mt-1 block w-full input-field" />
             </div>
             <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_description_label')}</label>
-                <textarea name="description" id="description" value={newProductData.description} onChange={(e) => updateNewProductData({ description: e.target.value })} rows={6} className="mt-1 block w-full input-field font-mono"></textarea>
+                <textarea name="description" id="description" value={newProductData.description || ''} onChange={(e) => updateNewProductData({ description: e.target.value })} rows={6} className="mt-1 block w-full input-field font-mono"></textarea>
             </div>
             <div>
                 <label htmlFor="tags" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('add_product_tags_label')}</label>
@@ -584,6 +504,7 @@ const Step3: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNext, onP
 
 // Step 4: Variants + Pricing CSV + Etsy Required Fields
 const StepPricing: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNext, onPrev }) => {
+    const { t } = useTranslation();
     const { newProductData, updateNewProductData, showToast } = useAppContext();
     const [csvStatus, setCsvStatus] = useState<string>('');
 
