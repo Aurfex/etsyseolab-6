@@ -1,5 +1,5 @@
 import React, { useState, useMemo, ChangeEvent, DragEvent } from 'react';
-import { PlusSquare, Info, UploadCloud, Sparkles, Eye, Send, ArrowLeft, Loader2, X, Tag, Image as ImageIcon } from 'lucide-react';
+import { PlusSquare, Info, UploadCloud, Sparkles, Eye, Send, ArrowLeft, Loader2, X, Tag, Image as ImageIcon, Trash2 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { useAppContext } from '../contexts/AppContext';
 import { useTranslation } from '../contexts/LanguageContext';
@@ -508,16 +508,12 @@ const StepPricing: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNex
     const { newProductData, updateNewProductData, showToast } = useAppContext();
     const [csvStatus, setCsvStatus] = useState<string>('');
 
-    const sizes = newProductData.ring_sizes || ['6', '7', '8', '9', '10', '11', '12'];
-    const materials = newProductData.ring_materials || ['sterling silver', '14k gold', 'platinum'];
-
     const handleCsvUpload = async (file: File) => {
         const data = await file.arrayBuffer();
         const workbook = XLSX.read(data, { type: 'array' });
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const rowsRaw: any[] = XLSX.utils.sheet_to_json(sheet, { defval: '' });
 
-        // Match Optimizer Prices tab behavior (accept both summary/export variants)
         const rows = rowsRaw
             .map((r) => {
                 const size = String(r.Size ?? r.size ?? r['Ring Size'] ?? '').trim();
@@ -544,7 +540,25 @@ const StepPricing: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNex
         }
 
         updateNewProductData({ pricing_rows: rows });
-        setCsvStatus(`Loaded ${rows.length} pricing rows (Optimizer-compatible).`);
+        setCsvStatus(`Loaded ${rows.length} pricing rows.`);
+    };
+
+    const addManualRow = () => {
+        const rows = [...(newProductData.pricing_rows || [])];
+        rows.push({ size: 'Default', material: 'Default', price: Number(newProductData.price || 29.99), quantity: 1, sku: '' });
+        updateNewProductData({ pricing_rows: rows });
+    };
+
+    const removeRow = (idx: number) => {
+        const rows = [...(newProductData.pricing_rows || [])];
+        rows.splice(idx, 1);
+        updateNewProductData({ pricing_rows: rows });
+    };
+
+    const updateRow = (idx: number, field: string, value: any) => {
+        const rows = [...(newProductData.pricing_rows || [])];
+        rows[idx] = { ...rows[idx], [field]: value };
+        updateNewProductData({ pricing_rows: rows });
     };
 
     const onFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -588,23 +602,45 @@ const StepPricing: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNex
                 <p className="text-sm text-gray-500">{t('add_product_pricing_csv_desc')}</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700">
-                    <div className="font-semibold mb-1">{t('add_product_sizes_label')}</div>
-                    <div>{sizes.join(', ')}</div>
-                </div>
-                <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700">
-                    <div className="font-semibold mb-1">{t('add_product_materials_label')}</div>
-                    <div>{materials.join(', ')}</div>
-                </div>
-            </div>
-
             <div className="p-4 rounded-lg border border-dashed border-indigo-300 dark:border-indigo-700 bg-indigo-50/50 dark:bg-indigo-900/20">
                 <label className="block text-sm font-medium mb-2">{t('add_product_upload_csv_label')}</label>
                 <input type="file" accept=".csv,.xlsx,.xls" onChange={onFileChange} className="block w-full text-sm" />
                 <p className="text-xs text-gray-500 mt-2">{t('add_product_upload_csv_desc')}</p>
                 {csvStatus && <p className="text-xs mt-2 text-indigo-700 dark:text-indigo-300">{csvStatus}</p>}
-                <p className="text-xs mt-1 text-gray-600 dark:text-gray-400">{t('add_product_rows_loaded', { count: newProductData.pricing_rows?.length || 0 })}</p>
+            </div>
+
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-gray-900 dark:text-white">Pricing Variants</h4>
+                    <button onClick={addManualRow} className="btn-secondary text-xs py-1 px-3">+ Add Row</button>
+                </div>
+                <div className="max-h-64 overflow-auto border border-gray-200 dark:border-gray-700 rounded-xl">
+                    <table className="w-full text-xs">
+                        <thead className="bg-gray-50 dark:bg-gray-900/50 sticky top-0">
+                            <tr>
+                                <th className="text-left p-2">Size/Option</th>
+                                <th className="text-left p-2">Material/Type</th>
+                                <th className="text-left p-2">Price (CAD)</th>
+                                <th className="text-left p-2">Qty</th>
+                                <th className="p-2 w-10"></th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                            {(newProductData.pricing_rows || []).map((r, i) => (
+                                <tr key={i}>
+                                    <td className="p-2"><input type="text" value={r.size} onChange={(e) => updateRow(i, 'size', e.target.value)} className="w-full bg-transparent border-none focus:ring-0 p-0 text-xs" /></td>
+                                    <td className="p-2"><input type="text" value={r.material} onChange={(e) => updateRow(i, 'material', e.target.value)} className="w-full bg-transparent border-none focus:ring-0 p-0 text-xs" /></td>
+                                    <td className="p-2"><input type="number" value={r.price} onChange={(e) => updateRow(i, 'price', Number(e.target.value))} className="w-full bg-transparent border-none focus:ring-0 p-0 text-xs font-bold" /></td>
+                                    <td className="p-2"><input type="number" value={r.quantity ?? 1} onChange={(e) => updateRow(i, 'quantity', Number(e.target.value))} className="w-full bg-transparent border-none focus:ring-0 p-0 text-xs" /></td>
+                                    <td className="p-2 text-right"><button onClick={() => removeRow(i)} className="text-red-500 hover:text-red-700"><Trash2 className="w-4 h-4" /></button></td>
+                                </tr>
+                            ))}
+                            {(!newProductData.pricing_rows || newProductData.pricing_rows.length === 0) && (
+                                <tr><td colSpan={5} className="p-8 text-center text-gray-400">No pricing variants added. Upload CSV or add manual rows.</td></tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -616,40 +652,8 @@ const StepPricing: React.FC<{onNext: () => void; onPrev: () => void}> = ({ onNex
                     </select>
                 </div>
                 <div>
-                    <label className="block text-sm font-medium">{t('add_product_production_type_label')}</label>
-                    <select name="production_type" value={newProductData.production_type || 'made_to_order'} onChange={handleField} className="mt-1 block w-full input-field">
-                        <option value="made_to_order">{t('add_product_type_made_to_order')}</option>
-                        <option value="finished">{t('add_product_type_finished')}</option>
-                    </select>
-                </div>
-                <div>
                     <label className="block text-sm font-medium">{t('add_product_shipping_profile_label')}</label>
                     <input name="shipping_profile_id" value={newProductData.shipping_profile_id || ''} onChange={handleField} className="mt-1 block w-full input-field" />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium">{t('add_product_return_policy_label')}</label>
-                    <input name="return_policy_id" value={newProductData.return_policy_id || ''} onChange={handleField} className="mt-1 block w-full input-field" />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium">{t('add_product_processing_profile_label')}</label>
-                    <input name="processing_profile_id" value={newProductData.processing_profile_id || ''} onChange={handleField} className="mt-1 block w-full input-field" />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium">{t('add_product_shop_section_label')}</label>
-                    <input name="shop_section_id" value={newProductData.shop_section_id || ''} onChange={handleField} className="mt-1 block w-full input-field" />
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="personalization_enabled" checked={Boolean(newProductData.personalization_enabled)} onChange={handleField} /> {t('add_product_personalization_enabled')}</label>
-                <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="personalization_optional" checked={Boolean(newProductData.personalization_optional)} onChange={handleField} /> {t('add_product_personalization_optional')}</label>
-                <div className="md:col-span-2">
-                    <label className="block text-sm font-medium">{t('add_product_personalization_instructions_label')}</label>
-                    <textarea name="personalization_instructions" maxLength={256} value={newProductData.personalization_instructions || ''} onChange={handleField} className="mt-1 block w-full input-field" rows={2} />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium">{t('add_product_buyer_limit_label')}</label>
-                    <input type="number" min={1} max={1024} name="personalization_buyer_limit" value={newProductData.personalization_buyer_limit || 256} onChange={handleField} className="mt-1 block w-full input-field" />
                 </div>
             </div>
 
@@ -671,7 +675,6 @@ const Step4: React.FC<{onPrev: () => void}> = ({ onPrev }) => {
         setIsPublishing(true);
         try {
             await publishNewProduct(newProductData as NewProductData);
-            // On success, we could redirect or show a success message. Context handles reset.
         } catch(e) {
             console.error(e);
         } finally {
@@ -692,7 +695,7 @@ const Step4: React.FC<{onPrev: () => void}> = ({ onPrev }) => {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                     <p><strong className="text-gray-500">{t('add_product_quantity_label')}:</strong> {newProductData.quantity}</p>
                     <p><strong className="text-gray-500">{t('add_product_category_label')}:</strong> {categoryName}</p>
-                    <p><strong className="text-gray-500">{t('add_product_rows_loaded', { count: '' })}</strong> {newProductData.pricing_rows?.length || 0}</p>
+                    <p><strong className="text-gray-500">Variants:</strong> {newProductData.pricing_rows?.length || 0}</p>
                 </div>
                  <div>
                     <strong className="text-gray-500 text-sm">{t('add_product_description_label')}:</strong>
@@ -706,43 +709,6 @@ const Step4: React.FC<{onPrev: () => void}> = ({ onPrev }) => {
                         ))}
                     </div>
                 </div>
-                <div>
-                    <strong className="text-gray-500 text-sm">{t('add_product_step_2')}:</strong>
-                     <div className="flex flex-wrap gap-2 mt-1">
-                        {newProductData.images?.map((file, index) => (
-                           <img key={index} src={URL.createObjectURL(file)} className="h-20 w-20 object-cover rounded-md" alt={`final preview ${index}`} />
-                        ))}
-                    </div>
-                </div>
-                {newProductData.pricing_rows && newProductData.pricing_rows.length > 0 && (
-                    <div>
-                        <strong className="text-gray-500 text-sm">{t('add_product_pricing_preview_label')}</strong>
-                        <div className="mt-2 max-h-56 overflow-auto border rounded-lg border-gray-200 dark:border-gray-700">
-                            <table className="w-full text-xs">
-                                <thead className="bg-gray-100 dark:bg-gray-800 sticky top-0">
-                                    <tr>
-                                        <th className="text-left p-2">{t('add_product_col_size')}</th>
-                                        <th className="text-left p-2">{t('add_product_col_material')}</th>
-                                        <th className="text-left p-2">{t('add_product_col_price')}</th>
-                                        <th className="text-left p-2">{t('add_product_col_qty')}</th>
-                                        <th className="text-left p-2">{t('add_product_col_sku')}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {newProductData.pricing_rows.slice(0, 120).map((r, i) => (
-                                        <tr key={`${r.size}-${r.material}-${i}`} className="border-t border-gray-100 dark:border-gray-800">
-                                            <td className="p-2">{r.size}</td>
-                                            <td className="p-2">{r.material}</td>
-                                            <td className="p-2">${Number(r.price || 0).toFixed(2)}</td>
-                                            <td className="p-2">{r.quantity ?? '-'}</td>
-                                            <td className="p-2">{r.sku || '-'}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                )}
             </div>
             <div className="flex justify-between">
                 <button onClick={onPrev} className="btn-secondary flex items-center"><ArrowLeft className="w-4 h-4 me-2"/>{t('add_product_prev_step')}</button>
