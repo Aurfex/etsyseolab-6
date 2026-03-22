@@ -26,6 +26,16 @@ const getHeaders = (token: string) => {
   } as Record<string, string>;
 };
 
+const sanitizeEtsyTitle = (title: string): string => {
+  if (!title) return '';
+  // Etsy allows only one '&' in titles. Replace extra ones with 'and'.
+  const parts = title.split('&');
+  if (parts.length > 2) {
+    return parts[0] + '&' + parts.slice(1).join(' and ');
+  }
+  return title;
+};
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
@@ -63,6 +73,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // --- STEP 1: Basic Listing Update (Title, Description, etc.) ---
     const { pricingRows, ...basicPayload } = payload;
+    
+    // Sanitize title if present (Etsy allows only one '&')
+    if (basicPayload.title) {
+      basicPayload.title = sanitizeEtsyTitle(basicPayload.title);
+    }
+
     if (Object.keys(basicPayload).length > 0) {
         console.log(`Updating basic info for listing: ${cleanId}`);
         await axios.patch(
@@ -76,20 +92,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (pricingRows && Array.isArray(pricingRows) && pricingRows.length > 0) {
         console.log(`Updating inventory (variations) for listing: ${cleanId}`);
         
-        // 1. Determine Property ID (Usually 100 for Size or 200 for Material)
-        // For custom flexibility, we'll try to use standard IDs or find what's valid
-        // Etsy v3 Inventory is complex. We'll start with a standard structured payload.
-        
         const products = pricingRows.map((row, idx) => ({
             sku: row.sku || `SKU-${cleanId}-${idx}`,
             property_values: [
                 {
-                    property_id: 507, // Custom Property ID for 'Variation' or similar
+                    property_id: 507, 
                     property_name: "Option",
                     values: [String(row.size || row.option || "Default")],
                 },
                 {
-                    property_id: 508, // Another Custom ID
+                    property_id: 508, 
                     property_name: "Type",
                     values: [String(row.material || row.type || "Default")],
                 }
@@ -103,8 +115,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ]
         }));
 
-        // Note: Real production use requires fetching valid property IDs from Etsy first.
-        // For now, we'll try to push the price update to the main listing if inventory fails.
         try {
             await axios.put(
                 `https://openapi.etsy.com/v3/application/listings/${cleanId}/inventory`,
@@ -113,7 +123,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             );
         } catch (invErr: any) {
             console.warn("Inventory update failed, falling back to simple price update:", invErr.response?.data || invErr.message);
-            // Fallback: If variations fail, at least try to update the main listing price
             if (pricingRows[0]?.price) {
                 await axios.patch(
                     `https://openapi.etsy.com/v3/application/shops/${shopId}/listings/${cleanId}`,
