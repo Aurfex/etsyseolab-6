@@ -26,8 +26,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
         const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
         const genAI = new GoogleGenerativeAI(apiKey);
-        // Using gemini-2.0-flash which is widely available and stable in the current SDK
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        // Using gemini-1.5-flash-latest which is more standard than plain 1.5-flash in some environments
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
         
         let promptParts: any[] = [];
         
