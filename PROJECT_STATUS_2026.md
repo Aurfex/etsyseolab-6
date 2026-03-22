@@ -39,3 +39,8 @@ The platform is now fully equipped for lead generation and has the foundation fo
 - Hasti AI Branding & Landing Page Polish.
 - Interactive FAQ Section and Particle Background.
 - Shopify Migration module and Sales Intelligence module creation.
+- **2026-03-21 [STABLE MILESTONE]:** 
+    - Updated AI Engine to `gemini-3-flash-preview` across all modules.
+    - Refactored Add Product page for manual pricing variants and flexible options.
+    - Implemented Etsy title validation filters (one '&' limit).
+    - Archived stable version as `v3.0-flash-inventory-stable`.
